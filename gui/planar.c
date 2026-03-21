@@ -94,8 +94,13 @@ gui_planar_draw_pattern(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_
         .pixels = tile_pixels,
     };
 
-    for (int i = 0; i < pat_w * pat_h; ++i) {
-        tile_pixels[i] = pattern->pixels[i] ? c1 : c2;
+    for (int row = 0; row < pat_h; ++row) {
+        for (int col = 0; col < pat_w; ++col) {
+            int byte_no = row * pattern->pitch + col / 8;
+            int bit_no = 7 - (col % 8);
+            int bit = (pattern->pixels[byte_no] >> bit_no) & 1;
+            tile_pixels[row * pat_w + col] = bit ? c1 : c2;
+        }
     }
 
     int ofs_x = dst_rect.x % pat_w;
@@ -281,9 +286,9 @@ gui_planar_draw_pointer(int dst_x, int dst_y)
                     int bmp_x = px_x - dst_x;
 
                     if (bmp_x >= 0 && bmp_x < bmp_w &&
-                        bitmap->pixels[row * bitmap->size.width + bmp_x] != alpha) {
+                        bitmap->pixels[row * bitmap->pitch + bmp_x] != alpha) {
 
-                        uint8_t c = bitmap->pixels[row * bitmap->size.width + bmp_x];
+                        uint8_t c = bitmap->pixels[row * bitmap->pitch + bmp_x];
                         val |= ((c >> plane) & 1) << (7 - bit);
                     } else {
                         int byte_ofs = y * FB_PITCH + px_x / 8;

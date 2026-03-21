@@ -46,13 +46,14 @@ def load_pixels(path):
 
     return rows
 
-def load_image(path, palette):
-    print(f"Loading image: {path}")
+def load_image_8bpp(path, palette):
+    print(f"Loading image (8bpp): {path}")
     name = os.path.splitext(os.path.basename(path))[0]
     alpha = int(0x56)
     pixels = load_pixels(path)
     width = len(pixels[0])
     height = len(pixels)
+    pitch = width
 
     pixel_lines = []
 
@@ -68,6 +69,8 @@ def load_image(path, palette):
     lines = [
         f"bitmap_st bitmap_{name} = {{",
         f"    .size = {{ .width = {width}, .height = {height} }},",
+        f"    .bpp = 8,",
+        f"    .pitch = {pitch},",
         f"    .foreground = 0x00,",
         f"    .alpha = {hex(alpha)},",
         f"    .pixels = (uint8_t *)",
@@ -77,6 +80,52 @@ def load_image(path, palette):
     ]
 
     return("\n".join(lines))
+
+def load_image_1bpp(path):
+    print(f"Loading image (1bpp): {path}")
+    name = os.path.splitext(os.path.basename(path))[0]
+    pixels = load_pixels(path)
+    width = len(pixels[0])
+    height = len(pixels)
+    pitch = (width + 7) // 8
+
+    pixel_lines = []
+
+    for row in pixels:
+        bits = []
+        for x in row:
+            bits.append(1 if x == 0 else 0)
+
+        bytez = []
+        for i in range(0, len(bits), 8):
+            byte = 0
+            for bit_pos in range(8):
+                if i + bit_pos < len(bits):
+                    byte |= bits[i + bit_pos] << (7 - bit_pos)
+            bytez.append(byte)
+
+        pixel_str = "".join(f"\\x{byte:02x}" for byte in bytez)
+        pixel_lines.append(f'        "{pixel_str}" \\')
+
+    lines = [
+        f"bitmap_st bitmap_{name} = {{",
+        f"    .size = {{ .width = {width}, .height = {height} }},",
+        f"    .bpp = 1,",
+        f"    .pitch = {pitch},",
+        f"    .pixels = (uint8_t *)",
+        *pixel_lines,
+        f"}};",
+        "",
+    ]
+
+    return("\n".join(lines))
+
+def load_image(path, palette):
+    name = os.path.splitext(os.path.basename(path))[0]
+    if name == "pointer":
+        return load_image_8bpp(path, palette)
+    else:
+        return load_image_1bpp(path)
 
 def main():
     palette = load_palette("misc/vga-256.gpl")

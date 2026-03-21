@@ -118,13 +118,50 @@ gui_surface_draw_str_centered(surface_st *surface, rect_st rect,
     gui_surface_draw_str(surface, x, y, font, s, fg, bg);
 }
 
-void
-gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap,
-    uint8_t fill)
+static void
+gui_surface_draw_bitmap_8bpp(surface_st *surface, rect_st src_rect, int dst_x, int dst_y,
+    bitmap_st *bitmap)
 {
     uint8_t alpha = (uint8_t)bitmap->alpha;
-    uint8_t foreground = (uint8_t)bitmap->foreground;
 
+    for (uint16_t i = 0; i < src_rect.height; i++) {
+        for (uint16_t j = 0; j < src_rect.width; j++) {
+            if (bitmap->pixels[i * bitmap->pitch + j] == alpha) {
+                continue;
+            }
+
+            size_t src_pixel_no = i * bitmap->pitch + j;
+            size_t dst_pixel_no = (dst_x + j) + (dst_y + i) * surface->pitch;
+
+            uint8_t pixel = bitmap->pixels[src_pixel_no];
+            surface->pixels[dst_pixel_no] = pixel;
+        }
+    }
+}
+
+void
+gui_surface_draw_bitmap_1bpp(surface_st *surface, rect_st src_rect, int dst_x, int dst_y,
+    bitmap_st *bitmap, uint8_t fill)
+{
+    for (uint16_t i = 0; i < src_rect.height; i++) {
+        for (uint16_t j = 0; j < src_rect.width; j++) {
+            int byte_no = i * bitmap->pitch + j / 8;
+            int bit_no = 7 - (j % 8);
+            int active = (bitmap->pixels[byte_no] >> bit_no) & 1;
+
+            if (!active) {
+                continue;
+            }
+
+            size_t dst_pixel_no = (dst_x + j) + (dst_y + i) * surface->pitch;
+            surface->pixels[dst_pixel_no] = fill;
+        }
+    }
+}
+
+void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap,
+    uint8_t fill)
+{
     rect_st src_rect = {
         .x = 0,
         .y = 0,
@@ -141,18 +178,10 @@ gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bi
         src_rect.height = src_rect.height < 0 ? 0 : src_rect.height;
     }
 
-    for (uint16_t i = 0; i < src_rect.height; i++) {
-        for (uint16_t j = 0; j < src_rect.width; j++) {
-            if (bitmap->pixels[i * bitmap->size.width + j] == alpha) {
-                continue;
-            }
-
-            size_t src_pixel_no = i * bitmap->size.width + j;
-            size_t dst_pixel_no = (dst_x + j) + (dst_y + i) * surface->pitch;
-
-            uint8_t pixel = bitmap->pixels[src_pixel_no];
-            surface->pixels[dst_pixel_no] = (pixel == foreground) ? fill : pixel;
-        }
+    if (bitmap->bpp == 1) {
+        gui_surface_draw_bitmap_1bpp(surface, src_rect, dst_x, dst_y, bitmap, fill);
+    } else if (bitmap->bpp == 8) {
+        gui_surface_draw_bitmap_8bpp(surface, src_rect, dst_x, dst_y, bitmap);
     }
 }
 
@@ -172,10 +201,12 @@ gui_surface_draw_pattern(surface_st *surface, rect_st reg,
 {
     for (uint16_t y = reg.y; y < reg.y + reg.height; y++) {
         for (uint16_t x = reg.x; x < reg.x + reg.width; x++) {
-            size_t src_pixel_no = ((y % b->size.height) * b->size.width) +
-                (x % b->size.width);
+            int tile_x = x % b->size.width;
+            int tile_y = y % b->size.height;
+            int byte_no = tile_y * b->pitch + tile_x / 8;
+            int bit_no = 7 - (tile_x % 8);
+            int src_bit = (b->pixels[byte_no] >> bit_no) & 1;
             size_t dst_pixel_no = y * surface->pitch + x;
-            int src_bit = b->pixels[src_pixel_no];
 
             surface->pixels[dst_pixel_no] = src_bit ? col1 : col2;
         }
