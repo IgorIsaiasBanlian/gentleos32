@@ -120,6 +120,7 @@ struct window {
     void (*on_pointer)(window_st *, event_st event);
     void (*on_key_down)(window_st *, event_st event);
     void (*on_key_up)(window_st *, event_st event);
+    void (*on_tick)(window_st *);
     void (*on_active_change)(window_st *);
 };
 

@@ -65,8 +65,7 @@ krn_timer_get_cpu_usage(void)
 void
 krn_timer_init(void)
 {
-    uint8_t hz = 100;
-    uint32_t div = 1193180 / hz;
+    uint32_t div = 1193180 / TICK_FREQUENCY;
 
     // Set Counter 0, write both LSB and MSB, use mode 3, binary counter
     outb(0x36, PIT_CWR);

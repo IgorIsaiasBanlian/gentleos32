@@ -18,6 +18,8 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+#define TICK_FREQUENCY 100
+
 #define _unsd __attribute__((unused))
 
 #define RETURN_IF_ALREADY_CALLED        \

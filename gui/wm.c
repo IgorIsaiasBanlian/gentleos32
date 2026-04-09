@@ -214,6 +214,22 @@ gui_wm_top_window(void)
 }
 
 void
+gui_wm_on_tick(void)
+{
+    for (size_t i = 0; i < WINDOWS_COUNT_MAX; ++i) {
+        window_st *w = gui_wm_windows[i];
+
+        if (!w) {
+            break;
+        }
+
+        if (w->on_tick) {
+            w->on_tick(w);
+        }
+    }
+}
+
+void
 gui_wm_set_panel_window(window_st *w)
 {
     gui_wm_panel_window = w;
