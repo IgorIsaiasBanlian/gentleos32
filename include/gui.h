@@ -138,9 +138,6 @@ typedef struct {
     void (*show)(void);
 } app_st;
 
-typedef void *timeout_payload;
-typedef void (*timeout_callback_fn)(timeout_payload);
-
 enum {
     COLOR_BLACK = 0x00,
     COLOR_WHITE = 0x0f,

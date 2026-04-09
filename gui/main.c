@@ -32,7 +32,6 @@ gui_main(void)
         }
 
         if (event.type == EVENT_TIMER_TICK) {
-            gui_timeout_on_tick(event);
             gui_wm_on_tick();
         } else if (event.type == EVENT_POINTER_DOWN) {
             gui_pointer_move(event.pointer_x, event.pointer_y);

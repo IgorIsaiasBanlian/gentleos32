@@ -69,10 +69,6 @@ extern void gui_surface_draw_bitmap_1bpp(surface_st *surface, rect_st src_rect, 
 extern void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap, uint8_t fill);
 extern void gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *bitmap, uint8_t fill);
 extern void gui_surface_draw_pattern(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
-/* gui/timeout.c */
-extern void gui_timeout_remove(uint64_t id);
-extern int gui_timeout_add(uint32_t msecs, timeout_callback_fn callback, timeout_payload payload);
-extern void gui_timeout_on_tick(event_st event);
 /* gui/title_bar.c */
 extern void gui_title_bar_init(widget_st *bar, window_st *window);
 /* gui/vga.c */
