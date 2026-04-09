@@ -5,6 +5,7 @@
 // File: snake.c - Snake game
 // --------------------------------------------------------------------------------------
 
+#include "lib.h"
 #include <gui.h>
 
 enum {
@@ -21,7 +22,7 @@ enum {
     WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 
-    TIMEOUT_DURATION = 120,
+    MOVE_TICKS = TICK_FREQUENCY * 12 / 100, // 0.12s
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
@@ -60,20 +61,12 @@ static enum {
 
 static int score = 0;
 static int best_score = 0;
-static uint64_t timeout_id = 0;
-
-static void on_timeout(void *);
-
-static int
-is_game_paused(void)
-{
-    return timeout_id == 0;
-}
+static int game_paused = 0;
 
 static void
 update_status(void)
 {
-    const char *msg = is_game_paused() ? "  \xb3  Press 'p' to resume" : "";
+    const char *msg = game_paused ? "  \xb3  Press 'p' to resume" : "";
 
     gui_status_set("Score: %d  Best: %d%s", score, best_score, msg);
 }
@@ -81,25 +74,14 @@ update_status(void)
 static void
 pause_game(void)
 {
-    if (is_game_paused()) {
-        return;
-    }
-
-    gui_timeout_remove(timeout_id);
-    timeout_id = 0;
-
+    game_paused = 1;
     update_status();
 }
 
 static void
 resume_game(void)
 {
-    if (!is_game_paused()) {
-        return;
-    }
-
-    timeout_id = gui_timeout_add(TIMEOUT_DURATION, on_timeout, NULL);
-
+    game_paused = 0;
     update_status();
 }
 
@@ -198,13 +180,21 @@ restart_game(void)
 }
 
 static void
-on_timeout(void *unused _unsd)
+on_tick(window_st *window)
 {
-    if (!window.visible) {
+    static unsigned count = 0;
+
+    if (!window->visible || game_paused) {
         return;
     }
 
-    timeout_id = gui_timeout_add(TIMEOUT_DURATION, on_timeout, NULL);
+    ++count;
+
+    if (count < MOVE_TICKS) {
+        return;
+    }
+
+    count = 0;
 
     coords_st next_head = move_head(*body.head);
 
@@ -240,7 +230,7 @@ static void
 on_keyboard(window_st *window _unsd, event_st event)
 {
     if (event.key_char == 'p') {
-        if (is_game_paused()) {
+        if (game_paused) {
             resume_game();
         } else {
             pause_game();
@@ -281,6 +271,7 @@ init_window(void)
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_key_down = on_keyboard;
     window.on_active_change = on_active_change;
+    window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }

@@ -5,6 +5,7 @@
 // File: about.c - System info app
 // --------------------------------------------------------------------------------------
 
+#include "lib.h"
 #include <gui.h>
 
 enum {
@@ -24,6 +25,8 @@ enum {
     LABEL_COL = 2,
     VALUE_COL = 11,
     VALUE_LEN = GRID_COLS - VALUE_COL - 2,
+
+    REFRESH_TICKS = TICK_FREQUENCY, // 1s
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
@@ -141,6 +144,25 @@ draw_info(void)
 }
 
 static void
+on_tick(window_st *window)
+{
+    static unsigned count = 0;
+
+    if (!window->visible) {
+        return;
+    }
+
+    ++count;
+
+    if (count < REFRESH_TICKS) {
+        return;
+    }
+
+    count = 0;
+    draw_cpu_usage();
+}
+
+static void
 init_window(void)
 {
     window_surface.size.width = WINDOW_WIDTH;
@@ -153,6 +175,7 @@ init_window(void)
     window.bg_color = COLOR_WINDOW;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }
@@ -169,16 +192,6 @@ init_grid(void)
 }
 
 static void
-on_timeout(void *unused _unsd)
-{
-    if (window.visible) {
-        draw_cpu_usage();
-    }
-
-    gui_timeout_add(1000, on_timeout, NULL);
-}
-
-static void
 show_app(void)
 {
     static int initialized = 0;
@@ -186,7 +199,6 @@ show_app(void)
     if (!initialized) {
         init_window();
         init_grid();
-        on_timeout(NULL);
         initialized = 1;
     }
 

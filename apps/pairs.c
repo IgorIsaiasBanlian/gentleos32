@@ -22,7 +22,8 @@ enum {
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 
     PAIR_COUNT = GRID_CELL_COUNT / 2,
-    MISMATCH_DELAY = 800,
+
+    MISMATCH_TICKS = TICK_FREQUENCY * 8 / 10, // 0.8s
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
@@ -62,7 +63,7 @@ static int first_pick;
 static int second_pick;
 static int tries;
 static int matched_count;
-static int waiting;
+static unsigned waiting = 0;
 
 static void
 shuffle_icons(void)
@@ -153,8 +154,16 @@ restart_game(void)
 }
 
 static void
-on_mismatch_timeout(timeout_payload payload _unsd)
+on_tick(window_st *window _unsd)
 {
+    if (!waiting) {
+        return;
+    }
+
+    if (--waiting) {
+        return;
+    }
+
     hide_icon(first_pick);
     first_pick = -1;
 
@@ -201,8 +210,7 @@ on_cell_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
         second_pick = -1;
         matched_count++;
     } else {
-        waiting = 1;
-        gui_timeout_add(MISMATCH_DELAY, on_mismatch_timeout, NULL);
+        waiting = MISMATCH_TICKS;
     }
 
     update_status();
@@ -230,6 +238,7 @@ init_window(void)
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;
+    window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }

@@ -5,6 +5,7 @@
 // File: clock.c - Clock app
 // --------------------------------------------------------------------------------------
 
+#include "lib.h"
 #include <gui.h>
 
 enum {
@@ -16,6 +17,9 @@ enum {
     GRID_Y = TITLE_BAR_HEIGHT,
     GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
     GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS),
+
+    REFRESH_FREQUENCY = 3,
+    REFRESH_TICKS = TICK_FREQUENCY / REFRESH_FREQUENCY,
 
     WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
@@ -81,13 +85,22 @@ draw_time(void)
 }
 
 static void
-on_timeout(void *unused _unsd)
+on_tick(window_st *window _unsd)
 {
-    if (window.visible) {
-        draw_time();
+    static unsigned count = 0;
+
+    if (!window->visible) {
+        return;
     }
 
-    gui_timeout_add(200, on_timeout, NULL);
+    ++count;
+
+    if (count < REFRESH_TICKS) {
+        return;
+    }
+
+    count = 0;
+    draw_time();
 }
 
 static void
@@ -103,6 +116,7 @@ init_window(void)
     window.bg_color = COLOR_WINDOW;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }
@@ -127,7 +141,6 @@ show_app(void)
         init_window();
         init_grid();
         draw_time();
-        on_timeout(NULL);
         initialized = 1;
     }
 
