@@ -13,6 +13,7 @@ A hobby operating system for vintage 32-bit PCs
 - Clang (supporting i486 targets)
 - Binutils (supporting i486 targets)
 - NASM
+- Perl
 - Mtools
 
 ### Running
@@ -25,7 +26,6 @@ A hobby operating system for vintage 32-bit PCs
 - cproto (for rebuilding includes)
 - util-linux (for rebuilding disk image)
 - GRUB (for rebuilding disk image)
-- Python with PIL library (for processing images)
 
 ## Building
 
@@ -59,3 +59,14 @@ dd if=build/disk.img of=<YOUR PENDRIVE> bs=1M conv=fsync
 
 Otherwise, if you have GRUB installed, you can point it directly to
 the kernel.elf file (see misc/grub.cfg)
+
+
+## Attributions
+
+- Assets in [vendor/icons8](vendor/icons8) have been sourced from
+  [Icons8](https://icons8.com/) using the
+  [free license](https://web.archive.org/web/20260325111643/https://icons8.com/license)
+  and modified
+
+- Assets in [vendor/mona](vendor/mona) have been extracted from the
+  [Mona Font](https://github.com/MonadABXY/mona-font) and modified

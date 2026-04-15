@@ -36,6 +36,7 @@ extern void gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_
 extern void gui_planar_draw_pointer(int dst_x, int dst_y);
 extern void gui_planar_xor_corners(rect_st rect);
 /* gui/pointer.c */
+extern bitmap_st bitmap_pointer;
 extern void gui_pointer_draw(void);
 extern void gui_pointer_move(uint16_t x, uint16_t y);
 extern void gui_pointer_init(void);

@@ -19,13 +19,14 @@ LDFLAGS := 	-m elf_i386 -nostdlib -z nodefaultlib \
 			-z noexecstack --no-warn-rwx-segments \
 			-T$(BASEDIR)/misc/kernel.ld
 
-SUBDIRS := gui apps lib kernel data
+SUBDIRS := gui apps lib kernel
 CONFIG_H := $(BASEDIR)/include/config.h
 C_SRCS  := $(foreach d,$(SUBDIRS),$(wildcard $(d)/*.c))
 S_SRCS  := $(foreach d,$(SUBDIRS),$(wildcard $(d)/*.s))
 SRCS    := $(C_SRCS) $(S_SRCS)
 OBJS    := $(patsubst %.c,$(BUILDDIR)/%.o,$(C_SRCS)) \
-           $(patsubst %.s,$(BUILDDIR)/%.o,$(S_SRCS))
+           $(patsubst %.s,$(BUILDDIR)/%.o,$(S_SRCS)) \
+		   $(BUILDDIR)/data.o
 DEPS    := $(OBJS:.o=.d)
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 
@@ -39,6 +40,12 @@ $(OBJDIRS):
 
 $(CONFIG_H):
 	[ -f $@ ] || cp $(BASEDIR)/include/config.sample.h $@
+
+$(BUILDDIR)/data.o: $(BUILDDIR)/data.c
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(BUILDDIR)/data.c: | $(OBJDIRS)
+	./misc/procpbm.pl
 
 $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@

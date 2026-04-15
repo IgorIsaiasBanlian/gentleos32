@@ -42,6 +42,9 @@ enum {
     FONT_COUNT = 2,
 };
 
+#define font_8x16 (&fonts[0])
+#define font_8x8 (&fonts[1])
+
 typedef struct {
     size_st size;
     const char *name;

@@ -38,16 +38,16 @@ static widget_st *widgets[GRID_CELL_COUNT + 2];
 static grid_st grid;
 
 static bitmap_st *icons[PAIR_COUNT] = {
-    &bitmap_icon_pairs_bear,
-    &bitmap_icon_pairs_bot,
-    &bitmap_icon_pairs_butterfly,
-    &bitmap_icon_pairs_cat,
-    &bitmap_icon_pairs_elephant,
-    &bitmap_icon_pairs_fish,
-    &bitmap_icon_pairs_ghost,
-    &bitmap_icon_pairs_rabbit,
-    &bitmap_icon_pairs_snake,
-    &bitmap_icon_pairs_turtle,
+    &bitmap_bbchick,
+    &bitmap_beaver,
+    &bitmap_dolphin,
+    &bitmap_flamingo,
+    &bitmap_octopus,
+    &bitmap_pandafac,
+    &bitmap_rabbit,
+    &bitmap_robotfac,
+    &bitmap_trex,
+    &bitmap_tulip,
 };
 
 enum {
