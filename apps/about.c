@@ -80,7 +80,7 @@ draw_cpu_usage(void)
 static void
 draw_github_line(void)
 {
-    const char *text = "   luke8086/gentleos";
+    const char *text = "   luke8086/gentleos32";
 
     int col = (GRID_COLS - strlen(text)) / 2;
     int line = GRID_ROWS - 2;

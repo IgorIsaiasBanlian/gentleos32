@@ -1,4 +1,4 @@
-# gentleOS
+# GentleOS/32
 
 A hobby operating system for vintage 32-bit PCs
 
