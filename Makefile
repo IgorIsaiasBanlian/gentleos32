@@ -45,7 +45,7 @@ $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(BUILDDIR)/data.c: | $(OBJDIRS)
-	./misc/procpbm.pl
+	./tools/procpbm.pl
 
 $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
