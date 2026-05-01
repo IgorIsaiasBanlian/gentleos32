@@ -236,6 +236,6 @@ show_app(void)
 }
 
 app_st app_fonts = {
-    .icon = &bitmap_icon_fonts,
+    .icon = &icon_fonts,
     .show = show_app,
 };

@@ -304,6 +304,6 @@ show_app(void)
 }
 
 app_st app_snake = {
-    .icon = &bitmap_icon_snake,
+    .icon = &icon_snake,
     .show = show_app,
 };

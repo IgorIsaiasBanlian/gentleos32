@@ -307,6 +307,6 @@ show_app(void)
 
 
 app_st app_calendar = {
-    .icon = &bitmap_icon_calendar,
+    .icon = &icon_calendar,
     .show = show_app,
 };

@@ -149,6 +149,6 @@ show_app(void)
 }
 
 app_st app_colors = {
-    .icon = &bitmap_icon_colors,
+    .icon = &icon_colors,
     .show = show_app,
 };

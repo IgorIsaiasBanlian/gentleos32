@@ -148,6 +148,6 @@ show_app(void)
 }
 
 app_st app_clock = {
-    .icon = &bitmap_icon_clock,
+    .icon = &icon_clock,
     .show = show_app,
 };

@@ -173,7 +173,7 @@ enum {
 #define GRID_HEIGHT_SPACED(cell_height, rows) ((cell_height) * (rows) + (rows) - 1)
 
 #include "proto_gui.h"
-#include "proto_data.h"
+#include "proto_build.h"
 #include "proto_apps.h"
 
 #endif // _GUI_H_

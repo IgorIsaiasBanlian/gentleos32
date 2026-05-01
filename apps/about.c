@@ -89,8 +89,8 @@ draw_github_line(void)
 
     rect_st r = gui_grid_cell_rect(&grid, col, line);
     r.y -= 5;
-    r.size = bitmap_icon_github.size;
-    gui_surface_draw_bitmap_centered(window.surface, r, &bitmap_icon_github,
+    r.size = icon_github.size;
+    gui_surface_draw_bitmap_centered(window.surface, r, &icon_github,
         COLOR_TEXT_ACTIVE);
 }
 
@@ -208,6 +208,6 @@ show_app(void)
 }
 
 app_st app_about = {
-    .icon = &bitmap_icon_about,
+    .icon = &icon_about,
     .show = show_app,
 };

@@ -420,6 +420,6 @@ show_app(void)
 }
 
 app_st app_blackjack = {
-    .icon = &bitmap_icon_blackjack,
+    .icon = &icon_blackjack,
     .show = show_app,
 };

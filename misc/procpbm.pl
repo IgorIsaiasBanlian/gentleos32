@@ -44,7 +44,7 @@ sub load_pbm {
     my ($path) = @_;
     open(my $fh, "<", $path) or die "Cannot read $path: $!\n";
 
-    printf "- %-28s", $path;
+    printf "- %-32s", $path;
 
     my @header;
     my $raster = "";
@@ -122,6 +122,10 @@ sub process_bitmap {
     }
 
     my $prefix = "bitmap_";
+    $prefix = "icon_" if $dirname eq "assets/icons";
+    $prefix = "icon_" if $dirname eq "vendor/icons8";
+    $prefix = "sprite_" if $dirname eq "assets/sprites";
+    $prefix = "glyph_mn_" if $dirname eq "vendor/mona";
 
     my @lines = (
         "bitmap_st $prefix$name = {",
@@ -139,7 +143,7 @@ sub process_bitmap {
 
 sub process_bitmaps {
     my @bitmap_files = sort((
-        glob("bitmaps/*.pbm"),
+        glob("assets/*/*.pbm"),
         glob("vendor/icons8/*.pbm"),
         glob("vendor/mona/*.pbm"),
     ));
