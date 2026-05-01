@@ -12,6 +12,8 @@ extern app_st app_clock;
 extern app_st app_colors;
 /* apps/fonts.c */
 extern app_st app_fonts;
+/* apps/keys.c */
+extern app_st app_keys;
 /* apps/mahjong.c */
 extern app_st app_mahjong;
 /* apps/mines.c */

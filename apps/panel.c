@@ -13,6 +13,7 @@ static app_st *apps[] = {
     &app_calendar,
     &app_calc,
     &app_fonts,
+    &app_keys,
     &app_colors,
     &app_patterns,
     &app_sounds,

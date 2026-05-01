@@ -38,6 +38,7 @@ extern bitmap_st icon_calendar;
 extern bitmap_st icon_clock;
 extern bitmap_st icon_colors;
 extern bitmap_st icon_fonts;
+extern bitmap_st icon_keys;
 extern bitmap_st icon_snake;
 extern bitmap_st icon_sounds;
 extern bitmap_st glyph_mn_bbchick;
