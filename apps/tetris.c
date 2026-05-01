@@ -298,7 +298,7 @@ on_keyboard(window_st *w _unsd, event_st event)
         return;
     }
 
-    if (event.key_char == 'p') {
+    if (event.key_code == KEY_P) {
         if (game_paused) {
             resume_game();
         } else {
@@ -319,7 +319,7 @@ on_keyboard(window_st *w _unsd, event_st event)
         move_current_piece(1, 0, 0);
     } else if (event.key_code == KEY_UP) {
         move_current_piece(0, 0, 1);
-    } else if (event.key_char == ' ') {
+    } else if (event.key_code == KEY_SPACE) {
         while (move_current_piece(1, 0, 0)) {
             // drop
         };

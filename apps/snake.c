@@ -229,7 +229,7 @@ on_tick(window_st *window)
 static void
 on_keyboard(window_st *window _unsd, event_st event)
 {
-    if (event.key_char == 'p') {
+    if (event.key_code == KEY_P) {
         if (game_paused) {
             resume_game();
         } else {
