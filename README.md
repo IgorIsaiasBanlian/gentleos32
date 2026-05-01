@@ -23,7 +23,6 @@ A hobby operating system for vintage 32-bit PCs
 
 ### Development
 
-- cproto (for rebuilding includes)
 - util-linux (for rebuilding disk image)
 - GRUB (for rebuilding disk image)
 

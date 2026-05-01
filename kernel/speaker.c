@@ -13,14 +13,14 @@ enum {
     PPI_PB       = 0x61, // Port B of 8255A-5 PPI
 };
 
-void
+global void
 krn_speaker_stop(void)
 {
     uint8_t val = inb(PPI_PB);
     outb(val & ~0x03, PPI_PB);
  }
 
-void
+global void
 krn_speaker_play(unsigned hz)
 {
     // If hz is 0, turn off the speaker

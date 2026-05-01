@@ -7,7 +7,7 @@
 
 #include <gui.h>
 
-rect_st
+global rect_st
 gui_window_area(window_st *window)
 {
     return (rect_st) {
@@ -18,7 +18,7 @@ gui_window_area(window_st *window)
     };
 }
 
-void
+global void
 gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_button)
 {
     window->rect = (rect_st) {
@@ -46,7 +46,7 @@ gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_
     gui_window_add_widget(window, close_button);
 }
 
-int
+global int
 gui_window_add_widget(window_st *window, widget_st *widget)
 {
     if (window->widgets_count >= window->widgets_capacity) {
@@ -61,7 +61,7 @@ gui_window_add_widget(window_st *window, widget_st *widget)
     return 0;
 }
 
-widget_st *
+global widget_st *
 gui_window_find_widget_at(window_st *window, point_st pos)
 {
     for (size_t i = 0; i < window->widgets_count; i++) {
@@ -74,7 +74,7 @@ gui_window_find_widget_at(window_st *window, point_st pos)
     return NULL;
 }
 
-void
+global void
 gui_window_on_pointer_out(window_st *window, event_st event, point_st pos)
 {
     widget_st *pressed_widget = window->pressed_widget;
@@ -90,7 +90,7 @@ gui_window_on_pointer_out(window_st *window, event_st event, point_st pos)
     }
 }
 
-void
+global void
 gui_window_on_pointer_down(window_st *window, event_st event)
 {
     point_st pos = {
@@ -114,7 +114,7 @@ gui_window_on_pointer_down(window_st *window, event_st event)
     }
 }
 
-void
+global void
 gui_window_on_pointer_move(window_st *window, event_st event)
 {
     point_st pos = {
@@ -153,7 +153,7 @@ gui_window_on_pointer_move(window_st *window, event_st event)
     }
 }
 
-void
+global void
 gui_window_on_pointer_up(window_st *window, event_st event)
 {
     point_st pos = {
@@ -175,7 +175,7 @@ gui_window_on_pointer_up(window_st *window, event_st event)
     }
 }
 
-void
+global void
 gui_window_on_pointer_alt(window_st *window, event_st event)
 {
     point_st pos = {
@@ -196,7 +196,7 @@ gui_window_on_pointer_alt(window_st *window, event_st event)
     }
 }
 
-void
+global void
 gui_window_on_active_change(window_st *window)
 {
     for (size_t i = 0; i < window->widgets_count; i++) {

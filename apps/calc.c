@@ -267,7 +267,7 @@ show_app(void)
     update_display();
 }
 
-app_st app_calc = {
+global app_st app_calc = {
     .icon = &icon_calc,
     .show = show_app,
 };

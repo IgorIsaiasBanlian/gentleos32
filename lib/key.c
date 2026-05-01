@@ -29,7 +29,7 @@ static const char key_char_map_shifted[KEY_CHAR_MAP_SIZE] = {
     '-', 0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-char
+global char
 key_char_for_code(uint8_t code, uint8_t mods)
 {
     int shifted = mods & KEY_MOD_SHIFT;
@@ -38,7 +38,7 @@ key_char_for_code(uint8_t code, uint8_t mods)
     return code < KEY_CHAR_MAP_SIZE ? map[code] : 0;
 }
 
-int
+global int
 key_number_for_code(uint8_t code)
 {
     if (code == KEY_0) {

@@ -7,7 +7,7 @@
 
 #include <gui.h>
 
-void
+global void
 gui_surface_copy(surface_st *dst_sf, int dst_x, int dst_y,
     surface_st *src_sf, rect_st src_rect)
 {
@@ -42,13 +42,13 @@ gui_surface_copy(surface_st *dst_sf, int dst_x, int dst_y,
     }
 }
 
-void
+global void
 gui_surface_draw_h_seg(surface_st *surface, int x, int y, int w, uint8_t color)
 {
     memset(surface->pixels + y * surface->pitch + x, color, w);
 }
 
-void
+global void
 gui_surface_draw_v_seg(surface_st *surface, int x, int y, int h, uint8_t color)
 {
     for (int i = 0; i < h; i++) {
@@ -56,7 +56,7 @@ gui_surface_draw_v_seg(surface_st *surface, int x, int y, int h, uint8_t color)
     }
 }
 
-void
+global void
 gui_surface_draw_border(surface_st *surface, rect_st r, uint8_t color)
 {
     gui_surface_draw_h_seg(surface, r.x, r.y, r.width, color);
@@ -65,7 +65,7 @@ gui_surface_draw_border(surface_st *surface, rect_st r, uint8_t color)
     gui_surface_draw_v_seg(surface, r.x + r.width - 1, r.y, r.height, color);
 }
 
-void
+global void
 gui_surface_draw_rect(surface_st *surface, rect_st r, uint8_t color)
 {
     for (int i = 0; i < r.height; i++) {
@@ -73,7 +73,7 @@ gui_surface_draw_rect(surface_st *surface, rect_st r, uint8_t color)
     }
 }
 
-void
+global void
 gui_surface_draw_char(surface_st *surface, uint16_t x, uint16_t y,
     font_st *font, uint8_t ch, uint8_t fg, uint8_t bg)
 {
@@ -97,7 +97,7 @@ gui_surface_draw_char(surface_st *surface, uint16_t x, uint16_t y,
     }
 }
 
-void
+global void
 gui_surface_draw_str(surface_st *surface, uint16_t x, uint16_t y,
     font_st *font, const char *s, uint8_t fg, uint8_t bg)
 {
@@ -106,7 +106,7 @@ gui_surface_draw_str(surface_st *surface, uint16_t x, uint16_t y,
     }
 }
 
-void
+global void
 gui_surface_draw_str_centered(surface_st *surface, rect_st rect,
     font_st *font, const char *s, uint8_t fg, uint8_t bg)
 {
@@ -139,7 +139,7 @@ gui_surface_draw_bitmap_8bpp(surface_st *surface, rect_st src_rect, int dst_x, i
     }
 }
 
-void
+global void
 gui_surface_draw_bitmap_1bpp(surface_st *surface, rect_st src_rect, int dst_x, int dst_y,
     bitmap_st *bitmap, uint8_t fill)
 {
@@ -159,7 +159,7 @@ gui_surface_draw_bitmap_1bpp(surface_st *surface, rect_st src_rect, int dst_x, i
     }
 }
 
-void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap,
+global void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap,
     uint8_t fill)
 {
     rect_st src_rect = {
@@ -185,7 +185,7 @@ void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_s
     }
 }
 
-void
+global void
 gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *bitmap,
     uint8_t fill)
 {
@@ -195,7 +195,7 @@ gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *b
     gui_surface_draw_bitmap(surface, x, y, bitmap, fill);
 }
 
-void
+global void
 gui_surface_draw_pattern(surface_st *surface, rect_st reg,
     bitmap_st *b, uint8_t col1, uint8_t col2)
 {

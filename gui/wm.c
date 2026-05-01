@@ -11,17 +11,17 @@ enum {
     WINDOWS_COUNT_MAX = 6,
 };
 
-rect_st gui_wm_container = { 0 };
+global rect_st gui_wm_container = { 0 };
 
 static window_st *gui_wm_panel_window = NULL;
 static window_st *gui_wm_status_window = NULL;
 static window_st *gui_wm_windows[WINDOWS_COUNT_MAX];
 
-bitmap_st *gui_wm_bg_pattern = NULL;
-uint8_t gui_wm_desktop_color = COLOR_DESKTOP;
-uint8_t gui_wm_desktop_alt_color = COLOR_DESKTOP_ALT;
+global bitmap_st *gui_wm_bg_pattern = NULL;
+global uint8_t gui_wm_desktop_color = COLOR_DESKTOP;
+global uint8_t gui_wm_desktop_alt_color = COLOR_DESKTOP_ALT;
 
-void
+global void
 gui_wm_toggle_window_active(window_st *w, int active)
 {
     if (w->active == active) {
@@ -37,7 +37,7 @@ gui_wm_toggle_window_active(window_st *w, int active)
     gui_window_on_active_change(w);
 }
 
-void
+global void
 gui_wm_raise_window(struct window *w)
 {
     unsigned i;
@@ -65,7 +65,7 @@ gui_wm_raise_window(struct window *w)
     gui_wm_render_desktop_region(w->rect, w);
 }
 
-int
+global int
 gui_wm_add_window(struct window *w)
 {
     unsigned i;
@@ -89,7 +89,7 @@ gui_wm_add_window(struct window *w)
     return 0;
 }
 
-void
+global void
 gui_wm_remove_window(struct window *w)
 {
     unsigned i;
@@ -128,7 +128,7 @@ gui_wm_render_wallpaper(rect_st rect)
     gui_fb_draw_end();
 }
 
-void
+global void
 gui_wm_render_window_surface(window_st *window, rect_st desktop_reg)
 {
     desktop_reg = gui_rect_clip(desktop_reg, window->rect);
@@ -142,7 +142,7 @@ gui_wm_render_window_surface(window_st *window, rect_st desktop_reg)
 // Re-render a specified region of the desktop to the screen,
 // by rendering that region in all windows from the bottom up,
 // starting from a specified bottom window
-void
+global void
 gui_wm_render_desktop_region(rect_st rect, window_st *bottom_window)
 {
     window_st *w;
@@ -165,7 +165,7 @@ gui_wm_render_desktop_region(rect_st rect, window_st *bottom_window)
     }
 }
 
-void
+global void
 gui_wm_render_window_region(window_st *window, rect_st window_reg)
 {
     rect_st desktop_reg;
@@ -183,7 +183,7 @@ gui_wm_render_window_region(window_st *window, rect_st window_reg)
     }
 }
 
-window_st *
+global window_st *
 gui_wm_find_window(uint16_t x, uint16_t y)
 {
     point_st p = { .x = x, .y = y };
@@ -207,13 +207,13 @@ gui_wm_find_window(uint16_t x, uint16_t y)
     return NULL;
 }
 
-window_st *
+global window_st *
 gui_wm_top_window(void)
 {
     return gui_wm_windows[0];
 }
 
-void
+global void
 gui_wm_on_tick(void)
 {
     for (size_t i = 0; i < WINDOWS_COUNT_MAX; ++i) {
@@ -229,21 +229,21 @@ gui_wm_on_tick(void)
     }
 }
 
-void
+global void
 gui_wm_set_panel_window(window_st *w)
 {
     gui_wm_panel_window = w;
     gui_wm_render_window_region(w, gui_window_area(w));
 }
 
-void
+global void
 gui_wm_set_status_window(window_st *w)
 {
     gui_wm_status_window = w;
     gui_wm_render_window_region(w, gui_window_area(w));
 }
 
-void
+global void
 gui_wm_init(void)
 {
     gui_wm_container.width = GUI_WIDTH - PANEL_WIDTH;

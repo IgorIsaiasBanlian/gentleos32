@@ -2,7 +2,7 @@
 extern uint32_t krn_core_mboot_header[];
 extern mboot_info_st *krn_core_mboot_info;
 extern void krn_core_c_main(void);
-extern void krn_core_c_isr_handle(isr_stack_st *isr_stack);
+extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */
 extern void krn_debug_printf(const char *fmt, ...);
 extern void krn_debug_beep(unsigned hz, unsigned msecs, unsigned count);

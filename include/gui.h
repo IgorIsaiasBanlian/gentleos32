@@ -168,8 +168,8 @@ enum {
 #define GRID_WIDTH_SPACED(cell_width, cols) ((cell_width) * (cols) + (cols) - 1)
 #define GRID_HEIGHT_SPACED(cell_height, rows) ((cell_height) * (rows) + (rows) - 1)
 
-#include "proto_gui.h"
-#include "proto_build.h"
-#include "proto_apps.h"
+#include "p_gui.h"
+#include "p_build.h"
+#include "p_apps.h"
 
 #endif // _GUI_H_

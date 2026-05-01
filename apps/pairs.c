@@ -284,7 +284,7 @@ show_app(void)
     (void)gui_wm_add_window(&window);
 }
 
-app_st app_pairs = {
+global app_st app_pairs = {
     .icon = &icon_pairs,
     .show = show_app,
 };

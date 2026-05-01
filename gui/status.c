@@ -82,7 +82,7 @@ gui_status_set_text(const char *text, uint8_t color)
     status_text_len = len;
 }
 
-void
+global void
 gui_status_set(const char *fmt, ...)
 {
     static char buf[TEXT_MAX_LEN + 1];
@@ -98,7 +98,7 @@ gui_status_set(const char *fmt, ...)
 }
 
 
-void
+global void
 gui_status_set_alert(const char *fmt, ...)
 {
     static char buf[TEXT_MAX_LEN + 1];
@@ -113,7 +113,7 @@ gui_status_set_alert(const char *fmt, ...)
     gui_status_set_text(buf, COLOR_WHITE);
 }
 
-void
+global void
 gui_status_init(void)
 {
     window_surface.size.width = STATUS_WIDTH;

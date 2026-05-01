@@ -14,7 +14,7 @@ enum {
 };
 
 __attribute__((section(".multiboot"))) __attribute__((aligned(4)))
-uint32_t krn_core_mboot_header[] = {
+global uint32_t krn_core_mboot_header[] = {
     MBOOT_MAGIC,
     MBOOT_FLAGS,
     MBOOT_CKSUM,
@@ -30,9 +30,9 @@ uint32_t krn_core_mboot_header[] = {
 #endif
 };
 
-mboot_info_st *krn_core_mboot_info;
+global mboot_info_st *krn_core_mboot_info;
 
-void
+global void
 krn_core_c_main(void)
 {
     krn_main();
@@ -40,7 +40,7 @@ krn_core_c_main(void)
     while (1);
 }
 
-__attribute__((force_align_arg_pointer)) void
+global __attribute__((force_align_arg_pointer)) void
 krn_core_c_isr_handle(isr_stack_st *isr_stack)
 {
     krn_interrupt_handle(isr_stack);

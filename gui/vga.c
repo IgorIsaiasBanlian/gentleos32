@@ -15,7 +15,7 @@ static const uint8_t gui_vga_dac_indexes[16] = {
 };
 #endif
 
-void
+global void
 gui_vga_set_color(int index, uint32_t rgb)
 {
     uint8_t dac_index = index;
@@ -30,7 +30,7 @@ gui_vga_set_color(int index, uint32_t rgb)
     outb((rgb >>  2) & 0x3F, 0x3C9);
 }
 
-void
+global void
 gui_vga_init(void)
 {
     gui_vga_set_color(0x09, 0x3366aa);

@@ -8,7 +8,7 @@
 #include <kernel.h>
 #include <gui.h>
 
-void
+global void
 krn_main(void)
 {
     krn_timer_init();

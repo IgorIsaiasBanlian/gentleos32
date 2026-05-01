@@ -129,7 +129,7 @@ sub process_bitmap {
     $prefix = "glyph_mn_" if $dirname eq "vendor/mona";
 
     my @lines = (
-        "bitmap_st $prefix$name = {",
+        "global bitmap_st $prefix$name = {",
         "    .size = { .width = $width, .height = $height },",
         "    .bpp = 1,",
         "    .pitch = $pitch,",
@@ -225,7 +225,7 @@ sub process_fonts {
     }
 
     my @lines = (
-        "font_st fonts[] = {",
+        "global font_st fonts[] = {",
     );
 
     foreach my $entry (@font_data) {

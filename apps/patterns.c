@@ -268,7 +268,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_patterns = {
+global app_st app_patterns = {
     .icon = &icon_patterns,
     .show = show_app,
 };

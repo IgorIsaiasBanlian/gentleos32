@@ -49,7 +49,7 @@ krn_rtc_read_raw_time(time_st *t)
     t->year = krn_rtc_get_reg(0x09);
 }
 
-int
+global int
 krn_rtc_are_times_equal(time_st *t1, time_st *t2)
 {
     return t1->year == t2->year &&
@@ -60,7 +60,7 @@ krn_rtc_are_times_equal(time_st *t1, time_st *t2)
         t1->second == t2->second;
 }
 
-void
+global void
 krn_rtc_get_time(time_st *t)
 {
     time_st t1, t2;

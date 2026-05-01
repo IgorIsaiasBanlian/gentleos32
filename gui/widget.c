@@ -7,7 +7,7 @@
 
 #include <gui.h>
 
-void
+global void
 gui_widget_draw(widget_st *widget)
 {
     if (widget->hidden) {

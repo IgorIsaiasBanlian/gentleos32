@@ -383,7 +383,7 @@ show_app(void)
     (void)gui_wm_add_window(&window);
 }
 
-app_st app_tetris = {
+global app_st app_tetris = {
     .icon = &icon_tetris,
     .show = show_app,
 };

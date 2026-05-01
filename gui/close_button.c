@@ -36,7 +36,7 @@ gui_close_button_on_pointer_up(widget_st *widget, event_st event, point_st pos)
     gui_wm_remove_window(widget->window);
 }
 
-void
+global void
 gui_close_button_init(widget_st *button, window_st *window)
 {
     button->type = WIDGET_TYPE_BUTTON,

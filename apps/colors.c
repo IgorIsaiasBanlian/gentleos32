@@ -148,7 +148,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_colors = {
+global app_st app_colors = {
     .icon = &icon_colors,
     .show = show_app,
 };

@@ -12,9 +12,9 @@ enum {
     PIT_CWR = 0x43,
 };
 
-volatile uint8_t krn_timer_is_cpu_idle = 0;
+global volatile uint8_t krn_timer_is_cpu_idle = 0;
 
-volatile static uint32_t timer_msecs = 0;
+static volatile uint32_t timer_msecs = 0;
 static uint32_t idle_ticks = 0;
 static uint32_t total_ticks = 0;
 
@@ -36,13 +36,13 @@ krn_timer_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
     (void)krn_event_ipush(event);
 }
 
-uint32_t
+global uint32_t
 krn_timer_get_msecs(void)
 {
     return timer_msecs;
 }
 
-uint8_t
+global uint8_t
 krn_timer_get_cpu_usage(void)
 {
     uint32_t eflags = cpu_get_eflags();
@@ -62,7 +62,7 @@ krn_timer_get_cpu_usage(void)
     return (uint8_t)(100 - (idle * 100 / total));
 }
 
-void
+global void
 krn_timer_init(void)
 {
     uint32_t div = 1193180 / TICK_FREQUENCY;

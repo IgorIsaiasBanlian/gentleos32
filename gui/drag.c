@@ -31,7 +31,7 @@ drag_target_rect(void)
     return gui_rect_limit(r, gui_wm_container);
 }
 
-void
+global void
 gui_drag_start(window_st *window, event_st event)
 {
     drag_origin_x = drag_current_x = event.pointer_x;
@@ -41,7 +41,7 @@ gui_drag_start(window_st *window, event_st event)
     drag_outline_drawn = 0;
 }
 
-void
+global void
 gui_drag_move(event_st event)
 {
     if (!drag_window) {
@@ -52,7 +52,7 @@ gui_drag_move(event_st event)
     drag_current_y = event.pointer_y;
 }
 
-void
+global void
 gui_drag_end(void)
 {
     if (!drag_window) {
@@ -67,7 +67,7 @@ gui_drag_end(void)
     gui_wm_render_desktop_region(final_rect, NULL);
 }
 
-void
+global void
 gui_drag_draw_outline(void)
 {
     if (!drag_window) {
@@ -79,7 +79,7 @@ gui_drag_draw_outline(void)
     drag_outline_drawn = 1;
 }
 
-void
+global void
 gui_drag_clear_outline(void)
 {
     if (!drag_outline_drawn) {

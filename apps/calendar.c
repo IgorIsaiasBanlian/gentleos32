@@ -306,7 +306,7 @@ show_app(void)
 }
 
 
-app_st app_calendar = {
+global app_st app_calendar = {
     .icon = &icon_calendar,
     .show = show_app,
 };

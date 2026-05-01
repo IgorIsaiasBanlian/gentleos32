@@ -7,7 +7,7 @@
 
 #include <kernel.h>
 
-const char *
+global const char *
 krn_system_get_cpu_vendor(void)
 {
     static char buf[13];
@@ -26,7 +26,7 @@ krn_system_get_cpu_vendor(void)
     return buf;
 }
 
-uint32_t
+global uint32_t
 krn_system_get_total_mem(void)
 {
     mboot_info_st *m = krn_core_mboot_info;
@@ -48,13 +48,13 @@ krn_system_get_total_mem(void)
     return total;
 }
 
-uint32_t
+global uint32_t
 krn_system_get_used_mem(void)
 {
     return (uint32_t)&krn_link_end - (uint32_t)&krn_link_start;
 }
 
-uint32_t
+global uint32_t
 krn_system_get_avail_mem(void)
 {
     mboot_info_st *m = krn_core_mboot_info;

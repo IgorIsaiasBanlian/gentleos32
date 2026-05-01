@@ -7,7 +7,7 @@
 
 #include <gui.h>
 
-void
+global void
 gui_main(void)
 {
     event_st event;

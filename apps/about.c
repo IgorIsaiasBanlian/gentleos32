@@ -207,7 +207,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_about = {
+global app_st app_about = {
     .icon = &icon_about,
     .show = show_app,
 };

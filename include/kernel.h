@@ -95,6 +95,6 @@ typedef struct {
 extern void *krn_link_start;
 extern void *krn_link_end;
 
-#include "proto_kernel.h"
+#include "p_kernel.h"
 
 #endif // _KERNEL_H_

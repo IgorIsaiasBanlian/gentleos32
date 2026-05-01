@@ -193,6 +193,6 @@ show_panel(void)
     gui_wm_set_panel_window(&window);
 }
 
-app_st app_panel = {
+global app_st app_panel = {
     .show = show_panel,
 };

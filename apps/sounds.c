@@ -184,7 +184,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_sounds = {
+global app_st app_sounds = {
     .icon = &icon_sounds,
     .show = show_app,
 };

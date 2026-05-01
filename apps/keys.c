@@ -275,7 +275,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_keys = {
+global app_st app_keys = {
     .icon = &icon_keys,
     .show = show_app,
 };

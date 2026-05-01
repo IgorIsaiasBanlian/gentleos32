@@ -9,7 +9,7 @@
 
 static uint32_t rand_seed = 1;
 
-void
+global void
 rand_init(void)
 {
 	time_st t;
@@ -19,7 +19,7 @@ rand_init(void)
     rand_seed = (t.second << 24) | (t.minute << 16) | (t.hour << 8) | t.day;
 }
 
-uint32_t
+global uint32_t
 rand(void)
 {
     // See https://en.wikipedia.org/wiki/Xorshift

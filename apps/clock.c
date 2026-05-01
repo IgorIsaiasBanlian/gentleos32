@@ -147,7 +147,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_clock = {
+global app_st app_clock = {
     .icon = &icon_clock,
     .show = show_app,
 };

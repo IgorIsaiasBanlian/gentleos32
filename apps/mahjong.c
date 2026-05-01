@@ -608,7 +608,7 @@ show_app(void)
     (void)gui_wm_add_window(&window);
 }
 
-app_st app_mahjong = {
+global app_st app_mahjong = {
     .icon = &glyph_mn_central_icon,
     .show = show_app,
 };

@@ -7,13 +7,13 @@
 
 #include <gui.h>
 
-int
+global int
 gui_rect_is_empty(rect_st r)
 {
     return r.width <= 0 || r.height <= 0;
 }
 
-rect_st
+global rect_st
 gui_rect_make(int x, int y, int width, int height)
 {
     return (rect_st) {
@@ -24,7 +24,7 @@ gui_rect_make(int x, int y, int width, int height)
     };
 }
 
-rect_st
+global rect_st
 gui_rect_translate(rect_st r, point_st v)
 {
     r.x += v.x;
@@ -32,7 +32,7 @@ gui_rect_translate(rect_st r, point_st v)
     return r;
 }
 
-rect_st
+global rect_st
 gui_rect_translate_back(rect_st r, point_st v)
 {
     r.x -= v.x;
@@ -40,13 +40,13 @@ gui_rect_translate_back(rect_st r, point_st v)
     return r;
 }
 
-int
+global int
 gui_rect_contains_point(rect_st r, point_st p)
 {
     return p.x >= r.x && p.x < r.x + r.width && p.y >= r.y && p.y < r.y + r.height;
 }
 
-rect_st
+global rect_st
 gui_rect_center(rect_st r, rect_st container)
 {
     r.x = container.x + (container.width - r.width) / 2;
@@ -58,7 +58,7 @@ gui_rect_center(rect_st r, rect_st container)
     return r;
 }
 
-rect_st
+global rect_st
 gui_rect_limit(rect_st r, rect_st container)
 {
     if (r.x < container.x) {
@@ -80,7 +80,7 @@ gui_rect_limit(rect_st r, rect_st container)
     return r;
 }
 
-rect_st
+global rect_st
 gui_rect_shrink(rect_st r, int amount)
 {
     r.x += amount;
@@ -95,7 +95,7 @@ gui_rect_shrink(rect_st r, int amount)
     return r;
 }
 
-rect_st
+global rect_st
 gui_rect_enclose(rect_st a, rect_st b)
 {
     if (gui_rect_is_empty(a)) {
@@ -117,7 +117,7 @@ gui_rect_enclose(rect_st a, rect_st b)
     };
 }
 
-rect_st
+global rect_st
 gui_rect_clip(rect_st r, rect_st clipper)
 {
     if (r.x < clipper.x) {
@@ -156,7 +156,7 @@ gui_rect_clip(rect_st r, rect_st clipper)
 // This function is used to select a part of the screen that needs
 // to be redrawn after a window is moved
 //
-void
+global void
 gui_rect_translate_diff(rect_st r1, rect_st r2, rect_st *hdiff, rect_st *vdiff)
 {
     if (r1.x > r2.x) {
@@ -182,7 +182,7 @@ gui_rect_translate_diff(rect_st r1, rect_st r2, rect_st *hdiff, rect_st *vdiff)
     vdiff->width = MAX(r1.x + r1.width, r2.x + r2.width) - vdiff->x;
 }
 
-const char *
+global const char *
 gui_rect_format(rect_st r)
 {
     static char buf[100];

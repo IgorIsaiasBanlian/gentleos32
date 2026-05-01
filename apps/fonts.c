@@ -235,7 +235,7 @@ show_app(void)
     gui_wm_add_window(&window);
 }
 
-app_st app_fonts = {
+global app_st app_fonts = {
     .icon = &icon_fonts,
     .show = show_app,
 };

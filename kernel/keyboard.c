@@ -91,7 +91,7 @@ krn_keyboard_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
     outb(0x20, 0x20);
 }
 
-void
+global void
 krn_keyboard_init(void)
 {
     krn_interrupt_set_handler(0x21, krn_keyboard_handle_intr);

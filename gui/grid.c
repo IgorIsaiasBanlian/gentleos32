@@ -7,7 +7,7 @@
 
 #include <gui.h>
 
-rect_st
+global rect_st
 gui_grid_rect(grid_st *grid)
 {
     return (rect_st) {
@@ -18,7 +18,7 @@ gui_grid_rect(grid_st *grid)
     };
 }
 
-rect_st
+global rect_st
 gui_grid_cell_rect(grid_st *grid, int col, int row)
 {
     return (rect_st) {
@@ -29,7 +29,7 @@ gui_grid_cell_rect(grid_st *grid, int col, int row)
     };
 }
 
-void
+global void
 gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t color)
 {
     rect_st grid_rect = gui_grid_rect(grid);

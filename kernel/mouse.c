@@ -121,7 +121,7 @@ krn_mouse_getc(uint16_t port)
     return inb(port);
 }
 
-void
+global void
 krn_mouse_init(void)
 {
     // Set initial coordinates to the center of the screen

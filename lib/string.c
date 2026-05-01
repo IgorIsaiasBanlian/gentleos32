@@ -7,7 +7,7 @@
 
 #include <lib.h>
 
-void *
+global void *
 memcpy(void *dest, const void *src, size_t n)
 {
     uint8_t *srcb = (uint8_t *)src;
@@ -33,7 +33,7 @@ memcpy(void *dest, const void *src, size_t n)
     return dest;
 }
 
-void *
+global void *
 memset(void *dest, int c, size_t n)
 {
     uint8_t *dest8 = (uint8_t *)dest;
@@ -58,7 +58,7 @@ memset(void *dest, int c, size_t n)
     return dest;
 }
 
-int32_t
+global int32_t
 strcmp(const char *s1, const char *s2)
 {
     while (*s1 && (*s1 == *s2)) {
@@ -69,7 +69,7 @@ strcmp(const char *s1, const char *s2)
     return (*s1 - *s2);
 }
 
-size_t
+global size_t
 strlen(const char *s1)
 {
     size_t ret = 0;
@@ -81,7 +81,7 @@ strlen(const char *s1)
     return ret;
 }
 
-char *
+global char *
 strncpy(char *dest, const char *src, size_t n)
 {
     size_t i;

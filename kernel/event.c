@@ -59,7 +59,7 @@ krn_event_format(event_st ev)
     return buf;
 }
 
-int
+global int
 krn_event_ipush(event_st event)
 {
     uint16_t next_head = (krn_event_queue.head + 1) % EVENT_QUEUE_SIZE;
@@ -113,7 +113,7 @@ krn_event_ipush(event_st event)
     return 0;
 }
 
-int
+global int
 krn_event_push(event_st event)
 {
     uint32_t eflags;
@@ -130,7 +130,7 @@ krn_event_push(event_st event)
 }
 
 
-int
+global int
 krn_event_pop(event_st *event)
 {
     uint32_t eflags;
@@ -160,7 +160,7 @@ krn_event_pop(event_st *event)
     return 0;
 }
 
-uint16_t
+global uint16_t
 krn_event_count(void)
 {
     uint32_t eflags;

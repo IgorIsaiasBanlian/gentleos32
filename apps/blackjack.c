@@ -419,7 +419,7 @@ show_app(void)
     update_status();
 }
 
-app_st app_blackjack = {
+global app_st app_blackjack = {
     .icon = &icon_blackjack,
     .show = show_app,
 };

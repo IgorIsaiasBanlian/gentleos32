@@ -7,7 +7,7 @@
 
 #include <kernel.h>
 
-void
+global void
 krn_debug_printf(const char *fmt, ...)
 {
     int count;
@@ -24,7 +24,7 @@ krn_debug_printf(const char *fmt, ...)
     }
 }
 
-void
+global void
 krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
 {
     for (unsigned i = 0; i < count; i++) {
@@ -58,7 +58,7 @@ krn_debug_dump_multiboot_mmap(uint64_t len, uint64_t paddr)
     }
 }
 
-void
+global void
 krn_debug_dump_multiboot_info(void)
 {
     mboot_info_st *m = krn_core_mboot_info;
@@ -80,7 +80,7 @@ krn_debug_dump_multiboot_info(void)
     }
 }
 
-void
+global void
 krn_debug_dump_kernel_location(void)
 {
     uint32_t start = (uint32_t) &krn_link_start;

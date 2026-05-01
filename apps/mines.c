@@ -396,7 +396,7 @@ show_app(void)
     (void)gui_wm_add_window(&window);
 }
 
-app_st app_mines = {
+global app_st app_mines = {
     .icon = &icon_mines,
     .show = show_app,
 };

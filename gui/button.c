@@ -7,26 +7,26 @@
 
 #include <gui.h>
 
-void
+global void
 gui_button_on_pointer_down(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
     gui_widget_draw(widget);
 }
 
-void
+global void
 gui_button_on_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
     gui_widget_draw(widget);
 }
 
-void
+global void
 gui_button_on_pointer_out(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
     widget->window->pressed_widget = NULL;
     gui_widget_draw(widget);
 }
 
-void
+global void
 gui_button_draw(widget_st *widget)
 {
     rect_st rect = widget->rect;

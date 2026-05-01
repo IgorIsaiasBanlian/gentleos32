@@ -8,7 +8,7 @@
 #include <gui.h>
 
 
-bitmap_st bitmap_pointer = {
+global bitmap_st bitmap_pointer = {
     .size = { .width = 11, .height = 15 },
     .bpp = 8,
     .pitch = 11,
@@ -34,7 +34,7 @@ bitmap_st bitmap_pointer = {
 
 static rect_st gui_pointer_rect;
 
-void
+global void
 gui_pointer_draw(void)
 {
 #if GUI_PLANAR_MODE
@@ -45,7 +45,7 @@ gui_pointer_draw(void)
 #endif
 }
 
-void
+global void
 gui_pointer_move(uint16_t x, uint16_t y)
 {
     gui_fb_mark_dirty(gui_pointer_rect);
@@ -54,7 +54,7 @@ gui_pointer_move(uint16_t x, uint16_t y)
     gui_pointer_rect.y = y;
 }
 
-void
+global void
 gui_pointer_init(void)
 {
     gui_pointer_rect.x = krn_core_mboot_info->fb_width / 2;

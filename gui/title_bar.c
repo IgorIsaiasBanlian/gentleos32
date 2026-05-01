@@ -43,7 +43,7 @@ gui_title_bar_draw(widget_st *widget)
     gui_wm_render_window_region(widget->window, widget->rect);
 }
 
-void
+global void
 gui_title_bar_init(widget_st *bar, window_st *window)
 {
     bar->rect = (rect_st) {

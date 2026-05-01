@@ -19,7 +19,7 @@ static uint8_t gui_planar_pixels[4][FB_PLANE_SIZE] __attribute__((aligned(16)));
 static uint8_t **gui_planar_pixels;
 #endif
 
-void
+global void
 gui_planar_flush(rect_st rect)
 {
     int x0 = (rect.x / 8) * 8;
@@ -40,7 +40,7 @@ gui_planar_flush(rect_st rect)
     }
 }
 
-void
+global void
 gui_planar_draw_rect(rect_st rect, uint8_t color)
 {
     int l_x = rect.x;
@@ -80,7 +80,7 @@ gui_planar_draw_rect(rect_st rect, uint8_t color)
     }
 }
 
-void
+global void
 gui_planar_draw_pattern(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
     int pat_w = pattern->size.width;
@@ -129,7 +129,7 @@ gui_planar_draw_pattern(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_
     }
 }
 
-void
+global void
 gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect)
 {
     if (src_rect.width <= 0 || src_rect.height <= 0) {
@@ -243,7 +243,7 @@ gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect)
     }
 }
 
-void
+global void
 gui_planar_draw_pointer(int dst_x, int dst_y)
 {
     bitmap_st *bitmap = &bitmap_pointer;
@@ -360,7 +360,7 @@ gui_planar_xor_v_seg(uint8_t *vram, int x, int y, int h)
     }
 }
 
-void
+global void
 gui_planar_xor_corners(rect_st rect)
 {
     uint8_t *vram = gui_fb_vram_surface->pixels;

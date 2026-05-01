@@ -303,7 +303,7 @@ show_app(void)
     (void)gui_wm_add_window(&window);
 }
 
-app_st app_snake = {
+global app_st app_snake = {
     .icon = &icon_snake,
     .show = show_app,
 };
