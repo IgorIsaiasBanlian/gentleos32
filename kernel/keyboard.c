@@ -16,73 +16,79 @@ enum {
     KBD_DEBUG = 0,
 };
 
-static const unsigned char krn_keyboard_map_default[] = {
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
-    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
-    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\',
-    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,
-    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 254, 0,
-    '-', 252, 0, 253, '+', 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
+static void
+krn_keyboard_handle_scancode(uint8_t scancode)
+{
+    static uint8_t lshift = 0;
+    static uint8_t rshift = 0;
+    static uint8_t ctrl = 0;
+    static uint8_t alt = 0;
+    static int last_scan_was_e0 = 0;
 
-static const unsigned char krn_keyboard_map_shift[] = {
-    0,  27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
-    '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',
-    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', 0, '|',
-    'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
-    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 254, 0,
-    '-', 252, 0, 253, '+', 0, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
+    event_st ev;
+    int is_key_down = !(scancode & 0x80);
+    int is_key_escaped = last_scan_was_e0;
+    uint8_t *current_mod;
+
+    if (scancode == 0xe0) {
+        last_scan_was_e0 = 1;
+        return;
+    }
+
+    last_scan_was_e0 = 0;
+
+    ev.type = is_key_down ? EVENT_KEY_DOWN : EVENT_KEY_UP;
+    ev.key_code = scancode & 0x7f;
+
+    switch (ev.key_code) {
+    case KEY_LSHIFT: current_mod = &lshift; break;
+    case KEY_RSHIFT: current_mod = &rshift; break;
+    case KEY_CTRL: current_mod = &ctrl; break;
+    case KEY_ALT: current_mod = &alt; break;
+    default: current_mod = 0;
+    }
+
+    /* Ignore duplicate key presses of modifiers */
+    if (current_mod && *current_mod == is_key_down) {
+        return;
+    }
+
+    if (current_mod) {
+        *current_mod = is_key_down;
+    }
+
+    ev.key_mods =
+        (KEY_MOD_ESC * is_key_escaped) |
+        (KEY_MOD_SHIFT * lshift) |
+        (KEY_MOD_SHIFT * rshift) |
+        (KEY_MOD_CTRL * ctrl) |
+        (KEY_MOD_ALT * alt);
+
+    if (KBD_DEBUG) {
+        krn_debug_printf("Key %s: code=%02X mods=%02X\n",
+            is_key_down ? "down" : "up", ev.key_code, ev.key_mods);
+    }
+
+    if (ev.key_code == KEY_DEL && ctrl && alt && is_key_down) {
+        outb(0xFE, PS2_PORT_CMD);
+    }
+
+    (void)krn_event_ipush(ev);
+}
 
 static void
 krn_keyboard_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
 {
-    static uint8_t shift = 0;
-    static uint8_t ctrl = 0;
-    static uint8_t alt = 0;
+    uint8_t ctrl;
+    uint8_t scan = inb(PS2_PORT_DATA);
 
-    uint8_t scan;
-    int evtype;
+    krn_keyboard_handle_scancode(scan);
 
-    scan = inb(PS2_PORT_DATA);
+    ctrl = inb(0x61);
+    outb(ctrl | 0x80, 0x61);
+    outb(ctrl, 0x61);
 
-    if (scan == 0xe0) {
-        return;
-    }
-
-    evtype = scan & 0x80 ? EVENT_KEY_UP : EVENT_KEY_DOWN,
-    scan = scan & 0x7f;
-
-    if (scan >= sizeof(krn_keyboard_map_default)) {
-        return;
-    }
-
-    event_st ev = {
-        .type = evtype,
-        .key_code = scan,
-        .key_char = shift ? krn_keyboard_map_shift[scan] : krn_keyboard_map_default[scan],
-    };
-
-    if (KBD_DEBUG) {
-        krn_debug_printf("keyboard event: %s code=%02X char=%02X (%c)\n",
-            ev.type == EVENT_KEY_UP ? "up" : "down",
-            ev.key_code,
-            ev.key_char,
-            ev.key_char ? ev.key_char : ' '
-        );
-    }
-
-    if (ev.key_code == 0x2a || ev.key_code == 0x36) {
-        shift = (ev.type == EVENT_KEY_UP) ? 0 : 1;
-    } else if (ev.key_code == 0x1d) {
-        ctrl = (ev.type == EVENT_KEY_UP) ? 0 : 1;
-    } else if (ev.key_code == 0x38) {
-        alt = (ev.type == EVENT_KEY_UP) ? 0 : 1;
-    } else if (ev.key_code == 0x53 && ctrl && alt && ev.type == EVENT_KEY_DOWN) {
-        outb(0xFE, PS2_PORT_CMD);
-    } else {
-        (void)krn_event_ipush(ev);
-    }
+    outb(0x20, 0x20);
 }
 
 void

@@ -47,9 +47,9 @@ krn_event_format(event_st ev)
     } else if (ev.type == EVENT_POINTER_ALT) {
         snprintf(buf, n, "pointer_alt<%d, %d>", ev.pointer_x, ev.pointer_y);
     } else if (ev.type == EVENT_KEY_DOWN) {
-        snprintf(buf, n, "key_down<%d, %c>", ev.key_code, ev.key_char);
+        snprintf(buf, n, "key_down<%02X, %02X>", ev.key_code, ev.key_mods);
     } else if (ev.type == EVENT_KEY_UP) {
-        snprintf(buf, n, "key_up<%d, %c>", ev.key_code, ev.key_char);
+        snprintf(buf, n, "key_up<%02X, %02X>", ev.key_code, ev.key_mods);
     } else if (ev.type == EVENT_TIMER_TICK) {
         snprintf(buf, n, "timer_tick<%u>", ev.timer_msecs);
     } else {
