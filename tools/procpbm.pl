@@ -125,6 +125,7 @@ sub process_bitmap {
     $prefix = "icon_" if $dirname eq "assets/icons";
     $prefix = "icon_" if $dirname eq "vendor/icons8";
     $prefix = "sprite_" if $dirname eq "assets/sprites";
+    $prefix = "sprite_mj_" if $dirname eq "assets/mahjong";
     $prefix = "glyph_mn_" if $dirname eq "vendor/mona";
 
     my @lines = (

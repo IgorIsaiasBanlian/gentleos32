@@ -20,6 +20,7 @@ static app_st *apps[] = {
     &app_mines,
     &app_tetris,
     &app_pairs,
+    &app_mahjong,
     &app_blackjack,
 };
 

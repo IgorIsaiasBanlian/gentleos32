@@ -69,6 +69,7 @@ typedef struct {
 enum {
     WIDGET_TYPE_UNKNOWN = 0,
     WIDGET_TYPE_BUTTON = 1,
+    WIDGET_TYPE_CUSTOM = 2,
 };
 
 struct window;
@@ -144,6 +145,8 @@ typedef struct {
 enum {
     COLOR_BLACK = 0x00,
     COLOR_WHITE = 0x0f,
+    COLOR_BLUE = 0x01,
+    COLOR_GREEN = 0x02,
     COLOR_RED = 0x04,
     COLOR_TITLE_BAR_ACTIVE = 0x0e,
     COLOR_TITLE_BAR_INACTIVE = 0x07,
@@ -161,6 +164,8 @@ enum {
     KEY_DOWN = 0x50,
     KEY_LEFT = 0x4b,
     KEY_RIGHT = 0x4d,
+    KEY_R = 0x13,
+    KEY_S = 0x1f,
 };
 
 enum {
