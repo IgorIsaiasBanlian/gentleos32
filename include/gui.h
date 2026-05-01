@@ -160,15 +160,6 @@ enum {
 };
 
 enum {
-    KEY_UP = 0x48,
-    KEY_DOWN = 0x50,
-    KEY_LEFT = 0x4b,
-    KEY_RIGHT = 0x4d,
-    KEY_R = 0x13,
-    KEY_S = 0x1f,
-};
-
-enum {
     TITLE_BAR_HEIGHT = 24,
     PANEL_WIDTH = 64,
     STATUS_HEIGHT = 24,
