@@ -1,3 +1,6 @@
+/* lib/key.c */
+extern char key_char_for_code(uint8_t code, uint8_t mods);
+extern int key_number_for_code(uint8_t code);
 /* lib/printf.c */
 extern int vsnprintf(char *buf, size_t nbyte, const char *fmt, va_list va);
 extern int snprintf(char *buf, size_t nbyte, const char *fmt, ...);
