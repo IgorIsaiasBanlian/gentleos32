@@ -37,7 +37,7 @@ static rect_st gui_pointer_rect;
 global void
 gui_pointer_draw(void)
 {
-#if GUI_PLANAR_MODE
+#if VGA_MODE_12H
     gui_planar_draw_pointer(gui_pointer_rect.x, gui_pointer_rect.y);
 #else
     gui_surface_draw_bitmap(gui_fb_vram_surface, gui_pointer_rect.x, gui_pointer_rect.y,
@@ -57,8 +57,8 @@ gui_pointer_move(uint16_t x, uint16_t y)
 global void
 gui_pointer_init(void)
 {
-    gui_pointer_rect.x = krn_core_mboot_info->fb_width / 2;
-    gui_pointer_rect.y = krn_core_mboot_info->fb_height / 2;
+    gui_pointer_rect.x = GUI_WIDTH / 2,
+    gui_pointer_rect.y = GUI_HEIGHT / 2,
     gui_pointer_rect.width = bitmap_pointer.size.width;
     gui_pointer_rect.height = bitmap_pointer.size.height;
 }

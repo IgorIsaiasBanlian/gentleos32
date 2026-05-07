@@ -13,6 +13,14 @@
 
 #include <config.h>
 
+#if VGA_MODE_12H
+#define GUI_WIDTH 640
+#define GUI_HEIGHT 480
+#else
+#define GUI_WIDTH VESA_WIDTH
+#define GUI_HEIGHT VESA_HEIGHT
+#endif
+
 #define NULL ((void *)0)
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

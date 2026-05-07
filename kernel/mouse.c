@@ -30,9 +30,6 @@ static struct {
 static void
 krn_mouse_handle_packet(uint8_t a, uint8_t b, uint8_t c)
 {
-    int32_t fb_width = krn_core_mboot_info->fb_width;
-    int32_t fb_height = krn_core_mboot_info->fb_height;
-
     // Ignore packet if overflow bits are set
     if (a & 0xc0) {
         return;
@@ -44,11 +41,11 @@ krn_mouse_handle_packet(uint8_t a, uint8_t b, uint8_t c)
     int32_t current_x = mouse_state.x + dx;
     int32_t current_y = mouse_state.y - dy;
 
-    current_x = current_x > fb_width ? fb_width : current_x;
-    current_x = current_x < 0 ? 0 : current_x;
+    current_x = MIN(current_x, GUI_WIDTH);
+    current_x = MAX(current_x, 0);
 
-    current_y = current_y > fb_height ? fb_height : current_y;
-    current_y = current_y < 0 ? 0 : current_y;
+    current_y = MIN(current_y, GUI_HEIGHT);
+    current_y = MAX(current_y, 0);
 
     uint8_t btn_left = a & 0x01 ? 1 : 0;
     uint8_t btn_right = a & 0x02 ? 1 : 0;
@@ -133,8 +130,8 @@ global void
 krn_mouse_init(void)
 {
     // Set initial coordinates to the center of the screen
-    mouse_state.x = krn_core_mboot_info->fb_width / 2;
-    mouse_state.y = krn_core_mboot_info->fb_height / 2;
+    mouse_state.x = GUI_WIDTH / 2;
+    mouse_state.y = GUI_HEIGHT / 2;
 
     // Activate the second PS/2 port
     krn_mouse_putc(PS2_CMD_ENABLE_AUX, PS2_PORT_COMMAND);

@@ -11,6 +11,7 @@
 global void
 krn_main(void)
 {
+    krn_vga_init();
     krn_timer_init();
     krn_keyboard_init();
     krn_mouse_init();

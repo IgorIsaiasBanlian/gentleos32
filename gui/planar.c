@@ -13,7 +13,7 @@ enum {
     FB_PLANE_SIZE = GUI_HEIGHT * FB_PITCH,
 };
 
-#if GUI_PLANAR_MODE
+#if VGA_MODE_12H
 static uint8_t gui_planar_pixels[4][FB_PLANE_SIZE] __attribute__((aligned(16)));
 #else
 static uint8_t **gui_planar_pixels;
@@ -136,7 +136,7 @@ gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect)
         return;
     }
 
-#if GUI_PLANAR_MODE
+#if VGA_MODE_12H
     uint8_t (*dst)[FB_PLANE_SIZE] = (uint8_t (*)[FB_PLANE_SIZE])gui_planar_pixels;
 #else
     uint8_t (*dst)[FB_PLANE_SIZE] = NULL;

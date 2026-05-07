@@ -8,7 +8,11 @@
 #include <kernel.h>
 
 enum {
+#if VGA_MODE_12H
+    MBOOT_FLAGS = 0x03, // page align & mem info
+#else
     MBOOT_FLAGS = 0x07, // page align & mem info & video mode
+#endif
     MBOOT_MAGIC = 0x1BADB002,
     MBOOT_CKSUM = -(MBOOT_MAGIC + MBOOT_FLAGS),
 };
@@ -20,14 +24,9 @@ global uint32_t krn_core_mboot_header[] = {
     MBOOT_CKSUM,
     0, 0, 0, 0, 0,
     0,
-    GUI_WIDTH,
-    GUI_HEIGHT,
-
-#if GUI_PLANAR_MODE
-    4,
-#else
+    VESA_WIDTH,
+    VESA_HEIGHT,
     8,
-#endif
 };
 
 global mboot_info_st *krn_core_mboot_info;
