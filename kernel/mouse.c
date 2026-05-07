@@ -28,13 +28,21 @@ static struct {
 } mouse_state;
 
 static void
-krn_mouse_handle_packet(int8_t a, int8_t b, int8_t c)
+krn_mouse_handle_packet(uint8_t a, uint8_t b, uint8_t c)
 {
     int32_t fb_width = krn_core_mboot_info->fb_width;
     int32_t fb_height = krn_core_mboot_info->fb_height;
 
-    int32_t current_x = mouse_state.x + b;
-    int32_t current_y = mouse_state.y - c;
+    // Ignore packet if overflow bits are set
+    if (a & 0xc0) {
+        return;
+    }
+
+    int32_t dx = (int32_t)b - ((a & 0x10) ? 256 : 0);
+    int32_t dy = (int32_t)c - ((a & 0x20) ? 256 : 0);
+
+    int32_t current_x = mouse_state.x + dx;
+    int32_t current_y = mouse_state.y - dy;
 
     current_x = current_x > fb_width ? fb_width : current_x;
     current_x = current_x < 0 ? 0 : current_x;
@@ -78,7 +86,7 @@ static void
 krn_mouse_handle_intr(isr_stack_st *isr_stack _unsd)
 {
     static uint8_t mouse_cycle = 0;
-    static int8_t mouse_byte[3];
+    static uint8_t mouse_byte[3];
 
     uint8_t mouse_data = inb(PS2_PORT_DATA);
 
