@@ -13,7 +13,6 @@ gui_main(void)
     event_st event;
     window_st *pressed_window = NULL;
 
-    gui_vga_init();
     gui_fb_init();
     gui_pointer_init();
     gui_wm_init();

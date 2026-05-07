@@ -73,9 +73,6 @@ extern void gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, 
 extern void gui_surface_draw_pattern(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
 /* gui/title_bar.c */
 extern void gui_title_bar_init(widget_st *bar, window_st *window);
-/* gui/vga.c */
-extern void gui_vga_set_color(int index, uint32_t rgb);
-extern void gui_vga_init(void);
 /* gui/widget.c */
 extern void gui_widget_draw(widget_st *widget);
 /* gui/window.c */

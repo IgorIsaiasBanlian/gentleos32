@@ -95,6 +95,37 @@ typedef struct {
 extern void *krn_link_start;
 extern void *krn_link_end;
 
+static inline void
+krn_vga_set_write_planes(uint8_t plane_mask)
+{
+    outw((plane_mask << 8) | 0x02, 0x3C4);
+}
+
+static inline void
+krn_vga_set_bit_mask(uint8_t mask)
+{
+    outw((mask << 8) | 0x08, 0x3CE);
+}
+
+static inline void
+krn_vga_set_write_mode(uint8_t mode)
+{
+    outw((mode << 8) | 0x05, 0x3CE);
+}
+
+static inline void
+krn_vga_set_logic_op(uint8_t op)
+{
+    outw((op << 8) | 0x03, 0x3CE);
+}
+
+static inline void
+krn_vga_latch_write(volatile uint8_t *addr, uint8_t val)
+{
+    (void)*addr;
+    *addr = val;
+}
+
 #include "p_kernel.h"
 
 #endif // _KERNEL_H_

@@ -6,7 +6,6 @@
 // --------------------------------------------------------------------------------------
 
 #include <gui.h>
-#include "vga.h"
 
 enum {
     FB_PITCH = GUI_WIDTH / 8,
@@ -28,7 +27,7 @@ gui_planar_flush(rect_st rect)
     int byte_count = (x1 - x0) / 8;
 
     for (int plane = 0; plane < 4; ++plane) {
-        gui_vga_set_write_planes(1 << plane);
+        krn_vga_set_write_planes(1 << plane);
 
         for (int y = rect.y; y < rect.y + rect.height; ++y) {
             memcpy(
@@ -271,7 +270,7 @@ gui_planar_draw_pointer(int dst_x, int dst_y)
     int dst_byte_count = (dst_r_x - dst_l_x) / 8;
 
     for (int plane = 0; plane < 4; ++plane) {
-        gui_vga_set_write_planes(1 << plane);
+        krn_vga_set_write_planes(1 << plane);
 
         for (int row = 0; row < bmp_h; ++row) {
             int y = dst_y + row;
@@ -323,23 +322,23 @@ gui_planar_xor_h_seg(uint8_t *vram, int x, int y, int w)
     uint8_t *row = vram + y * FB_PITCH;
 
     if (l_byte == r_byte) {
-        gui_vga_set_bit_mask(l_mask & r_mask);
-        gui_vga_latch_write(&row[l_byte], 0xFF);
+        krn_vga_set_bit_mask(l_mask & r_mask);
+        krn_vga_latch_write(&row[l_byte], 0xFF);
         return;
     }
 
-    gui_vga_set_bit_mask(l_mask);
-    gui_vga_latch_write(&row[l_byte], 0xFF);
+    krn_vga_set_bit_mask(l_mask);
+    krn_vga_latch_write(&row[l_byte], 0xFF);
 
     if (r_byte > l_byte + 1) {
-        gui_vga_set_bit_mask(0xFF);
+        krn_vga_set_bit_mask(0xFF);
         for (int b = l_byte + 1; b < r_byte; ++b) {
-            gui_vga_latch_write(&row[b], 0xFF);
+            krn_vga_latch_write(&row[b], 0xFF);
         }
     }
 
-    gui_vga_set_bit_mask(r_mask);
-    gui_vga_latch_write(&row[r_byte], 0xFF);
+    krn_vga_set_bit_mask(r_mask);
+    krn_vga_latch_write(&row[r_byte], 0xFF);
 }
 
 // This must be only be called from gui_planar_xor_corners()
@@ -353,10 +352,10 @@ gui_planar_xor_v_seg(uint8_t *vram, int x, int y, int h)
     int x_byte = x / 8;
     uint8_t mask = 0x80 >> (x & 7);
 
-    gui_vga_set_bit_mask(mask);
+    krn_vga_set_bit_mask(mask);
 
     for (int row = 0; row < h; ++row) {
-        gui_vga_latch_write(vram + (y + row) * FB_PITCH + x_byte, 0xFF);
+        krn_vga_latch_write(vram + (y + row) * FB_PITCH + x_byte, 0xFF);
     }
 }
 
@@ -371,8 +370,8 @@ gui_planar_xor_corners(rect_st rect)
     int r_x = rect.x + rect.width - 1;
     int b_y = rect.y + rect.height - 1;
 
-    gui_vga_set_write_planes(0x0F);
-    gui_vga_set_logic_op(0x18);
+    krn_vga_set_write_planes(0x0F);
+    krn_vga_set_logic_op(0x18);
 
     // Top-left
     gui_planar_xor_h_seg(vram, l_x, t_y, arm);
@@ -390,6 +389,6 @@ gui_planar_xor_corners(rect_st rect)
     gui_planar_xor_h_seg(vram, r_x - arm + 1, b_y, arm);
     gui_planar_xor_v_seg(vram, r_x, b_y - arm + 1, arm - 1);
 
-    gui_vga_set_logic_op(0x00);
-    gui_vga_set_bit_mask(0xFF);
+    krn_vga_set_logic_op(0x00);
+    krn_vga_set_bit_mask(0xFF);
 }
