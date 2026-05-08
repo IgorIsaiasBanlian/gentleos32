@@ -7,6 +7,8 @@
 
 #include <kernel.h>
 
+global void (*krn_debug_status_cb)(const char *, ...) = (void (*)(const char *, ...))NULL;
+
 global void
 krn_debug_printf(const char *fmt, ...)
 {
@@ -22,6 +24,22 @@ krn_debug_printf(const char *fmt, ...)
     for (int i = 0; i < count; i++) {
         outb(buf[i], 0xe9);
     }
+}
+
+global void
+krn_debug_assert(int expr, const char *file, unsigned line)
+{
+    if (expr) {
+        return;
+    }
+
+    krn_debug_printf("Fatal: Assertion failed (%s:%u)\n", file, line);
+
+    if (krn_debug_status_cb) {
+        krn_debug_status_cb("Assert failed (%s:%u)", file, line);
+    }
+
+    halt();
 }
 
 global void

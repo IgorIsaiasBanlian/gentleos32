@@ -18,6 +18,8 @@ gui_main(void)
     gui_wm_init();
     gui_fb_flush();
 
+    krn_debug_status_cb = gui_status_set_alert;
+
     while (1) {
         if (krn_event_count() == 0) {
             krn_timer_is_cpu_idle = 1;

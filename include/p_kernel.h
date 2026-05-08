@@ -4,7 +4,9 @@ extern mboot_info_st *krn_core_mboot_info;
 extern void krn_core_c_main(void);
 extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */
+extern void (*krn_debug_status_cb)(const char *, ...);
 extern void krn_debug_printf(const char *fmt, ...);
+extern void krn_debug_assert(int expr, const char *file, unsigned line);
 extern void krn_debug_beep(unsigned hz, unsigned msecs, unsigned count);
 extern void krn_debug_dump_multiboot_info(void);
 extern void krn_debug_dump_kernel_location(void);

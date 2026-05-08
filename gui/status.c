@@ -109,8 +109,11 @@ gui_status_set_alert(const char *fmt, ...)
     (void) vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    gui_status_set_bg_color(COLOR_RED);
-    gui_status_set_text(buf, COLOR_WHITE);
+    gui_status_set_bg_color(COLOR_WINDOW);
+    gui_status_set_text(buf, COLOR_RED);
+
+    // Flush immediately on alerts
+    gui_fb_flush();
 }
 
 global void

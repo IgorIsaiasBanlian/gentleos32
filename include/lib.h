@@ -39,6 +39,8 @@
     }                                   \
     _already_called = 1;
 
+#define ASSERT(expr) krn_debug_assert((expr), __FILE__, __LINE__)
+
 typedef uint32_t size_t;
 typedef int32_t ssize_t;
 
