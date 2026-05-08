@@ -17,3 +17,13 @@ sleep(uint32_t msecs)
         cpu_hlt();
     }
 }
+
+global void
+halt(void)
+{
+    while (1) {
+        cpu_cli();
+        cpu_hlt();
+    }
+    /* UNREACHABLE */
+}

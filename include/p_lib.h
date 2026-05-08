@@ -9,6 +9,7 @@ extern void rand_init(void);
 extern uint32_t rand(void);
 /* lib/sleep.c */
 extern void sleep(uint32_t msecs);
+extern void halt(void);
 /* lib/string.c */
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern void *memset(void *dest, int c, size_t n);
