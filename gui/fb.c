@@ -58,9 +58,9 @@ global void
 gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
 #if VGA_MODE_12H
-    gui_planar_draw_pattern(rect, pattern, c1, c2);
+    gui_planar_draw_pattern_abs(rect, pattern, c1, c2);
 #else
-    gui_surface_draw_pattern(&gui_fb_surface, rect, pattern, c1, c2);
+    gui_surface_draw_pattern_abs(&gui_fb_surface, rect, pattern, c1, c2);
 #endif
 
     gui_fb_mark_dirty(rect);

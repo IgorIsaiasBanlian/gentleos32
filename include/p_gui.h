@@ -32,7 +32,7 @@ extern void gui_main(void);
 /* gui/planar.c */
 extern void gui_planar_flush(rect_st rect);
 extern void gui_planar_draw_rect(rect_st rect, uint8_t color);
-extern void gui_planar_draw_pattern(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2);
+extern void gui_planar_draw_pattern_abs(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2);
 extern void gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect);
 extern void gui_planar_draw_pointer(int dst_x, int dst_y);
 extern void gui_planar_xor_corners(rect_st rect);
@@ -70,7 +70,8 @@ extern void gui_surface_draw_str_centered(surface_st *surface, rect_st rect, fon
 extern void gui_surface_draw_bitmap_1bpp(surface_st *surface, rect_st src_rect, int dst_x, int dst_y, bitmap_st *bitmap, uint8_t fill);
 extern void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, bitmap_st *bitmap, uint8_t fill);
 extern void gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *bitmap, uint8_t fill);
-extern void gui_surface_draw_pattern(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
+extern void gui_surface_draw_pattern_abs(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
+extern void gui_surface_draw_pattern_rel(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
 /* gui/title_bar.c */
 extern void gui_title_bar_init(widget_st *bar, window_st *window);
 /* gui/widget.c */

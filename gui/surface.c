@@ -195,8 +195,9 @@ gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *b
     gui_surface_draw_bitmap(surface, x, y, bitmap, fill);
 }
 
+// Draw pattern in specified region relative to surface origin
 global void
-gui_surface_draw_pattern(surface_st *surface, rect_st reg,
+gui_surface_draw_pattern_abs(surface_st *surface, rect_st reg,
     bitmap_st *b, uint8_t col1, uint8_t col2)
 {
     for (uint16_t y = reg.y; y < reg.y + reg.height; y++) {
@@ -207,6 +208,25 @@ gui_surface_draw_pattern(surface_st *surface, rect_st reg,
             int bit_no = 7 - (tile_x % 8);
             int src_bit = (b->pixels[byte_no] >> bit_no) & 1;
             size_t dst_pixel_no = y * surface->pitch + x;
+
+            surface->pixels[dst_pixel_no] = src_bit ? col1 : col2;
+        }
+    }
+}
+
+// Draw pattern in specified region relative to this region
+global void
+gui_surface_draw_pattern_rel(surface_st *surface, rect_st reg,
+    bitmap_st *b, uint8_t col1, uint8_t col2)
+{
+    for (int dy = 0; dy < reg.height; dy++) {
+        for (int dx = 0; dx < reg.width; dx++) {
+            int tile_x = dx % b->size.width;
+            int tile_y = dy % b->size.height;
+            int byte_no = tile_y * b->pitch + tile_x / 8;
+            int bit_no = 7 - (tile_x % 8);
+            int src_bit = (b->pixels[byte_no] >> bit_no) & 1;
+            size_t dst_pixel_no = (reg.y + dy) * surface->pitch + (reg.x + dx);
 
             surface->pixels[dst_pixel_no] = src_bit ? col1 : col2;
         }

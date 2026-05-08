@@ -80,7 +80,7 @@ gui_planar_draw_rect(rect_st rect, uint8_t color)
 }
 
 global void
-gui_planar_draw_pattern(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
+gui_planar_draw_pattern_abs(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
     int pat_w = pattern->size.width;
     int pat_h = pattern->size.height;

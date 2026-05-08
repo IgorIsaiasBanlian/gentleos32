@@ -87,7 +87,7 @@ draw_pattern_button(widget_st *widget)
     if (widget->tag1 == 0) {
         gui_surface_draw_rect(sf, rect, COLOR_WINDOW);
     } else {
-        gui_surface_draw_pattern(sf, rect, patterns[idx], COLOR_BLACK, COLOR_WINDOW);
+        gui_surface_draw_pattern_rel(sf, rect, patterns[idx], COLOR_BLACK, COLOR_WINDOW);
     }
 
     gui_wm_render_window_region(widget->window, widget->rect);
