@@ -34,7 +34,6 @@ enum {
     WINDOW_HEIGHT = BUTTONS_Y + BUTTON_HEIGHT + SPACING,
 
     HAND_SIZE_MAX = 11, // 4*A + 4*2 + 3*3
-    DECK_SIZE = 52,
 };
 
 enum {
@@ -42,15 +41,10 @@ enum {
     STATE_OVER = 1,
 };
 
-static const char *rank_str[] = {
-    "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"
-};
-
-static const char *suit_str[] = { "\x03", "\x04", "\x05", "\x06" };
-
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
 static surface_st window_surface;
 static window_st window;
+static card_game_st game;
 
 static widget_st title_bar;
 static widget_st close_button;
@@ -59,13 +53,13 @@ static widget_st stand_button;
 static widget_st deal_button;
 static widget_st *widgets[5];
 
-static uint8_t deck[DECK_SIZE];
+static card_t deck[CARD_DECK_SIZE];
 static int deck_pos;
 
-static uint8_t player_hand[HAND_SIZE_MAX];
+static card_t player_hand[HAND_SIZE_MAX];
 static int player_hand_count;
 
-static uint8_t dealer_hand[HAND_SIZE_MAX];
+static card_t dealer_hand[HAND_SIZE_MAX];
 static int dealer_hand_count;
 
 static const char *status_msg = "";
@@ -77,45 +71,24 @@ static void
 shuffle_deck(void)
 {
     deck_pos = 0;
-
-    for (int i = 0; i < DECK_SIZE; i++) {
-        deck[i] = i;
-    }
-
-    for (int i = DECK_SIZE - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        uint8_t tmp = deck[i];
-        deck[i] = deck[j];
-        deck[j] = tmp;
-    }
+    card_deck_init(deck, CARD_DECK_SIZE);
+    card_deck_shuffle(deck, CARD_DECK_SIZE);
 }
 
-static uint8_t
+static card_t
 deal_card(void)
 {
     return deck[deck_pos++];
 }
 
 static int
-card_rank(uint8_t card)
-{
-    return card % 13;
-}
-
-static int
-card_suit(uint8_t card)
-{
-    return card / 13;
-}
-
-static int
-hand_score(uint8_t *hand, int count)
+hand_score(card_t *hand, int count)
 {
     int score = 0;
     int aces = 0;
 
-    for (int i = 0; i < count; i++) {
-        int rank = card_rank(hand[i]);
+    for (int i = 0; i < count; ++i) {
+        int rank = CARD_RANK(hand[i]);
 
         if (rank == 0) {
             score += 11;
@@ -136,41 +109,23 @@ hand_score(uint8_t *hand, int count)
 }
 
 static int
-is_blackjack(uint8_t *hand, int count)
+is_blackjack(card_t *hand, int count)
 {
     return count == 2 && hand_score(hand, count) == 21;
 }
 
 static void
-draw_card(int x, int y, uint8_t card, int face_up)
+draw_card(int x, int y, card_t card, int face_up)
 {
-    rect_st r = gui_rect_make(x, y, CARD_WIDTH, CARD_HEIGHT);
-
-    if (!face_up) {
-        gui_surface_draw_rect(window.surface, r, COLOR_WINDOW_DARKER);
-        gui_surface_draw_border(window.surface, r, COLOR_BORDER);
-        gui_surface_draw_str_centered(window.surface, r, font_8x16,
-            "?", COLOR_WHITE, COLOR_WINDOW_DARKER);
-        return;
+    if (face_up) {
+        card_draw(&game, x, y, card, 0);
+    } else {
+        card_back_draw(&game, x, y);
     }
-
-    int rank = card_rank(card);
-    int suit = card_suit(card);
-    uint8_t fg = (suit <= 1) ? COLOR_RED : COLOR_BLACK;
-    uint8_t bg = COLOR_WHITE;
-
-    gui_surface_draw_rect(window.surface, r, bg);
-    gui_surface_draw_border(window.surface, r, COLOR_BORDER);
-    gui_surface_draw_str(window.surface, x + 3, y + 2, font_8x8, rank_str[rank], fg, bg);
-    gui_surface_draw_str_centered(window.surface, r, font_8x16, suit_str[suit], fg, bg);
-    gui_surface_draw_str(window.surface,
-        x + CARD_WIDTH - strlen(rank_str[rank]) * 8 - 3,
-        y + CARD_HEIGHT - 10,
-        font_8x8, rank_str[rank], fg, bg);
 }
 
 static void
-draw_hand(uint8_t *hand)
+draw_hand(card_t *hand)
 {
     int is_player = (hand == player_hand);
     int count = is_player ? player_hand_count : dealer_hand_count;
@@ -370,6 +325,10 @@ init_window(void)
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;
+
+    game.surface = &window_surface;
+    game.card_width = CARD_WIDTH;
+    game.card_height = CARD_HEIGHT;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 
