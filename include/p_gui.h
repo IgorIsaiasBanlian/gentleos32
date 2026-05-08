@@ -3,6 +3,23 @@ extern void gui_button_on_pointer_down(widget_st *widget, event_st event, point_
 extern void gui_button_on_pointer_up(widget_st *widget, event_st event, point_st pos);
 extern void gui_button_on_pointer_out(widget_st *widget, event_st event, point_st pos);
 extern void gui_button_draw(widget_st *widget);
+/* gui/card.c */
+extern const char *card_rank_str[CARD_RANK_COUNT];
+extern const char *card_suit_str[CARD_SUIT_COUNT];
+extern void card_deck_init(card_t *deck, int n);
+extern void card_deck_shuffle(card_t *deck, int n);
+extern void card_pile_update_step(card_game_st *game, card_pile_st *p);
+extern int card_pile_get_card_index_by_ypos(card_pile_st *p, int ypos);
+extern card_t card_pile_pop(card_pile_st *p);
+extern void card_pile_push(card_pile_st *p, card_t card);
+extern void card_pile_uncover_top(card_pile_st *p);
+extern int card_pile_top_y(card_pile_st *p);
+extern void card_draw(card_game_st *game, int x, int y, card_t card, int selected);
+extern void card_stub_draw(card_game_st *game, int x, int y, int height, card_t card, int selected);
+extern void card_back_draw(card_game_st *game, int x, int y);
+extern void card_back_stub_draw(card_game_st *game, int x, int y, int height);
+extern void card_pile_draw(card_game_st *game, card_pile_st *p);
+extern void card_game_exec_cur_move(card_game_st *game);
 /* gui/close_button.c */
 extern void gui_close_button_init(widget_st *button, window_st *window);
 /* gui/drag.c */

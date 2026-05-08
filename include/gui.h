@@ -168,6 +168,57 @@ enum {
 #define GRID_WIDTH_SPACED(cell_width, cols) ((cell_width) * (cols) + (cols) - 1)
 #define GRID_HEIGHT_SPACED(cell_height, rows) ((cell_height) * (rows) + (rows) - 1)
 
+enum {
+    CARD_RANK_COUNT = 13,
+    CARD_SUIT_COUNT = 4,
+    CARD_DECK_SIZE = 52,
+
+    CARD_SUIT_HEARTS = 0,
+    CARD_SUIT_DIAMONDS = 1,
+    CARD_SUIT_CLUBS = 2,
+    CARD_SUIT_SPADES = 3,
+
+    CARD_EMPTY = 0xff,
+};
+
+typedef uint8_t card_t;
+
+typedef struct {
+    int type;
+    int index;
+    int count;
+    int capacity;
+    int face_up_from;
+    int sel_seq_count;
+    int is_cascade;
+    int replace_on_push;
+    int step;
+    card_t *cards;
+    widget_st *widget;
+} card_pile_st;
+
+typedef struct {
+    card_pile_st *src;
+    card_pile_st *dst;
+    int count;
+} card_move_st;
+
+typedef struct {
+    surface_st *surface;
+    int card_width;
+    int card_height;
+    int card_step;
+
+    card_move_st cur_move;
+} card_game_st;
+
+
+#define CARD_RANK(c)  ((c) % CARD_RANK_COUNT)
+#define CARD_SUIT(c)  ((c) / CARD_RANK_COUNT)
+#define CARD_COLOR(c) (CARD_SUIT(c) <= CARD_SUIT_DIAMONDS)
+#define CARD_PILE_TOP(p) ((p)->count > 0 ? (p)->cards[(p)->count - 1] : CARD_EMPTY)
+#define CARD_PILE_IS_SELECTED(game, pile) ((game)->cur_move.src == (pile))
+
 #include "p_gui.h"
 #include "p_build.h"
 #include "p_apps.h"
