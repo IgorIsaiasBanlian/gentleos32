@@ -27,6 +27,8 @@ enum {
         VGA_NUM_CRTC_REGS + VGA_NUM_GC_REGS + VGA_NUM_AC_REGS
 };
 
+#if VGA_MODE_12H
+
 static const uint8_t krn_vga_regs_12h[VGA_NUM_TOTAL_REGS] = {
     // MISC
     0xE3,
@@ -102,6 +104,8 @@ krn_vga_set_mode(const uint8_t *regs)
     (void)inb(VGA_INSTAT_READ);
     outb(0x20, VGA_AC_INDEX);
 }
+
+#endif
 
 global void
 krn_vga_set_color(int index, uint32_t rgb)
