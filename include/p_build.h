@@ -30,6 +30,7 @@ extern bitmap_st bitmap_pattern_4;
 extern bitmap_st bitmap_pattern_5;
 extern bitmap_st bitmap_pattern_6;
 extern bitmap_st bitmap_pattern_7;
+extern bitmap_st bitmap_pattern_8;
 extern bitmap_st sprite_flag;
 extern bitmap_st sprite_mine;
 extern bitmap_st icon_about;
