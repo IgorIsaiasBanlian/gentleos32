@@ -8,8 +8,8 @@
 #include <gui.h>
 
 enum {
-    TILE_W = 34,
-    TILE_H = 34,
+    TILE_W = 26,
+    TILE_H = 26,
     TILE_D = 2,
 
     TILE_TYPE_COUNT = 36,
