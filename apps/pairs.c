@@ -10,8 +10,8 @@
 enum {
     GRID_CELL_WIDTH = 40,
     GRID_CELL_HEIGHT = 40,
-    GRID_ROWS = 4,
-    GRID_COLS = 5,
+    GRID_ROWS = 6,
+    GRID_COLS = 7,
     GRID_CELL_COUNT = GRID_ROWS * GRID_COLS,
     GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
     GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS),
@@ -38,16 +38,27 @@ static widget_st *widgets[GRID_CELL_COUNT + 2];
 static grid_st grid;
 
 static bitmap_st *icons[PAIR_COUNT] = {
-    &glyph_mn_bbchick,
-    &glyph_mn_beaver,
-    &glyph_mn_dolphin,
-    &glyph_mn_flamingo,
-    &glyph_mn_octopus,
-    &glyph_mn_pandafac,
-    &glyph_mn_rabbit,
-    &glyph_mn_robotfac,
-    &glyph_mn_trex,
-    &glyph_mn_tulip,
+    &glyph_mn_bbchick_2x,
+    &glyph_mn_beaver_2x,
+    &glyph_mn_cactus_2x,
+    &glyph_mn_dolphin_2x,
+    &glyph_mn_drmcamel_2x,
+    &glyph_mn_elephant_2x,
+    &glyph_mn_flamingo_2x,
+    &glyph_mn_horsefac_2x,
+    &glyph_mn_monkey_2x,
+    &glyph_mn_mushroom_2x,
+    &glyph_mn_octopus_2x,
+    &glyph_mn_pandafac_2x,
+    &glyph_mn_palmtree_2x,
+    &glyph_mn_pumpkin_2x,
+    &glyph_mn_rabbit_2x,
+    &glyph_mn_robotfac_2x,
+    &glyph_mn_sloth_2x,
+    &glyph_mn_snail_2x,
+    &glyph_mn_tigerfac_2x,
+    &glyph_mn_trex_2x,
+    &glyph_mn_tulip_2x,
 };
 
 enum {
