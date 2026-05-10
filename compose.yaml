@@ -1,0 +1,8 @@
+services:
+  dev:
+    build: .
+    image: gentleos32
+    platform: linux/amd64
+    volumes:
+      - .:/src
+    command: make

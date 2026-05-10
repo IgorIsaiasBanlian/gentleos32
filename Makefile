@@ -10,7 +10,8 @@ DISK_IMAGE 			:= $(BUILDDIR)/disk.img
 DISK_FS_OFFSET 		:= 1048576
 
 CFLAGS 	:=  -std=c11 -m32 -march=i486 -O2 \
-			-ffreestanding -Wall -Wextra -pedantic \
+			-ffreestanding -fno-stack-protector \
+			-Wall -Wextra -pedantic \
 			-I$(BASEDIR)/include
 
 ASFLAGS :=
