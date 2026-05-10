@@ -18,7 +18,9 @@ global const char *card_suit_str[CARD_SUIT_COUNT] = {
 global void
 card_deck_init(card_t *deck, int n)
 {
-    for (int i = 0; i < n; ++i) {
+    int i;
+
+    for (i = 0; i < n; ++i) {
         deck[i] = i;
     }
 }
@@ -26,9 +28,12 @@ card_deck_init(card_t *deck, int n)
 global void
 card_deck_shuffle(card_t *deck, int n)
 {
-    for (int i = n - 1; i > 0; --i) {
-        int j = rand() % (i + 1);
-        card_t tmp = deck[i];
+    card_t tmp;
+    int i, j;
+
+    for (i = n - 1; i > 0; --i) {
+        j = rand() % (i + 1);
+        tmp = deck[i];
         deck[i] = deck[j];
         deck[j] = tmp;
     }
