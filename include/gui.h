@@ -179,6 +179,7 @@ enum {
     CARD_SUIT_SPADES = 3,
 
     CARD_EMPTY = 0xff,
+    CARD_PILE_ALL_FACE_DOWN = 0xff,
 };
 
 typedef uint8_t card_t;
@@ -189,7 +190,6 @@ typedef struct {
     int count;
     int capacity;
     int face_up_from;
-    int sel_seq_count;
     int is_cascade;
     int replace_on_push;
     int step;

@@ -14,6 +14,8 @@ extern app_st app_colors;
 extern app_st app_fonts;
 /* apps/keys.c */
 extern app_st app_keys;
+/* apps/klondike.c */
+extern app_st app_klondike;
 /* apps/mahjong.c */
 extern app_st app_mahjong;
 /* apps/mines.c */

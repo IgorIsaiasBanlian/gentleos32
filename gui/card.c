@@ -208,11 +208,14 @@ card_pile_draw(card_game_st *game, card_pile_st *p)
 {
     rect_st rect = p->widget->rect;
     int x = rect.x;
-    int top_y = card_pile_top_y(p);
     card_t top_card = CARD_PILE_TOP(p);
     int is_top_face_down = (p->count > 0 && p->face_up_from > p->count - 1);
-    int seq_start = p->count - p->sel_seq_count;
-    int y, i, step;
+    int sel_count = game->cur_move.src == p ? game->cur_move.count : 0;
+    int seq_start = p->count - sel_count;
+    int y, i, step, top_y;
+
+    card_pile_update_step(game, p);
+    top_y = card_pile_top_y(p);
 
     gui_surface_draw_rect(game->surface, rect, COLOR_WINDOW);
 
@@ -231,7 +234,7 @@ card_pile_draw(card_game_st *game, card_pile_st *p)
     if (is_top_face_down) {
         card_back_draw(game, x, top_y);
     } else {
-        card_draw(game, x, top_y, top_card, p->sel_seq_count > 0);
+        card_draw(game, x, top_y, top_card, sel_count > 0);
     }
 
     gui_wm_render_window_region(p->widget->window, rect);
