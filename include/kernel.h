@@ -28,8 +28,8 @@ typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 
 typedef struct {
     uint32_t size;
-    uint64_t addr;
-    uint64_t len;
+    unsigned long long addr;
+    unsigned long long len;
     uint32_t type;
 } __attribute__((packed)) mboot_mmap_entry_st;
 

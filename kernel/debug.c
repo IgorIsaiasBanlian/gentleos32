@@ -54,10 +54,10 @@ krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
 }
 
 static void
-krn_debug_dump_multiboot_mmap(uint64_t len, uint64_t paddr)
+krn_debug_dump_multiboot_mmap(unsigned long long len, unsigned long long paddr)
 {
     mboot_mmap_entry_st *mmap_start, *mmap_end, *e;
-    uint64_t addr1, addr2;
+    unsigned long long addr1, addr2;
 
     mmap_start  = (mboot_mmap_entry_st*)paddr;
     mmap_end = (mboot_mmap_entry_st*)(paddr + len);
@@ -94,7 +94,7 @@ krn_debug_dump_multiboot_info(void)
     }
 
     if (m->flags & 0x40) {
-        krn_debug_dump_multiboot_mmap(m->mmap_length, (uint64_t) m->mmap_addr);
+        krn_debug_dump_multiboot_mmap(m->mmap_length, (unsigned long long) m->mmap_addr);
     }
 }
 
