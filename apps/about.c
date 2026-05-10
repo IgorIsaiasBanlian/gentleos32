@@ -114,7 +114,7 @@ draw_info(void)
         draw_text_sm(VALUE_COL, line++, buf);
     }
 
-    snprintf(buf, sizeof(buf), "%dx%dx%d", GUI_WIDTH, GUI_HEIGHT, gui_fb_bpp);
+    snprintf(buf, sizeof(buf), "%dx%dx%d", GUI_WIDTH, GUI_HEIGHT, 1 << gui_fb_bpp);
 
     draw_text_sm(LABEL_COL, line, "Display:");
     draw_text_sm(VALUE_COL, line++, buf);
