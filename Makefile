@@ -45,7 +45,9 @@ $(CONFIG_H):
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(BUILDDIR)/data.c: | $(OBJDIRS)
+always_rebuild:
+
+$(BUILDDIR)/data.c: always_rebuild | $(OBJDIRS)
 	./tools/procpbm.pl
 
 $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
