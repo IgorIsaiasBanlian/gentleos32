@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#include <config.h>
+#include "../config.h"
 
 #if VGA_MODE_12H
 #define GUI_WIDTH 640

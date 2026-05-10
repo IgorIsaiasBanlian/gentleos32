@@ -28,8 +28,8 @@ A hobby operating system for vintage 32-bit PCs
 
 ## Building
 
-- Copy `include/config.sample.h` to `include/config.h` and optionally edit
-- Run `make`
+- Copy `config.sample.h` to `config.h` and optionally edit
+- Run `docker compose run --rm dev make -j4`
 
 ## Testing ###
 
