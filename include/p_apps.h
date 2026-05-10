@@ -12,6 +12,8 @@ extern app_st app_clock;
 extern app_st app_colors;
 /* apps/fonts.c */
 extern app_st app_fonts;
+/* apps/freecell.c */
+extern app_st app_freecell;
 /* apps/keys.c */
 extern app_st app_keys;
 /* apps/klondike.c */
