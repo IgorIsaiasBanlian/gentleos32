@@ -49,8 +49,9 @@ update_status(void)
         return;
     }
 
-    gui_status_set("hex:%02x dec:%03d", active_char_button->tag2,
-        active_char_button->tag2);
+    uint8_t n = active_char_button->tag2;
+
+    gui_status_set("Char:%c  Hex:%02x  Dec:%d", n ? n : ' ', n, n);
 }
 
 static void
