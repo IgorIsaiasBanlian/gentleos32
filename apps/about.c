@@ -8,18 +8,24 @@
 #include <gui.h>
 
 enum {
+    TOP_BAR_Y = TITLE_BAR_HEIGHT,
+    TOP_BAR_HEIGHT = 36,
+
     GRID_CELL_WIDTH = 7,
     GRID_CELL_HEIGHT = 15,
-    GRID_ROWS = 13,
+    GRID_ROWS = 7,
     GRID_COLS = 33,
     GRID_CELLS_COUNT = (GRID_ROWS * GRID_COLS),
     GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
-    GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS),
+    GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS) + 7,
     GRID_X = 1,
-    GRID_Y = TITLE_BAR_HEIGHT,
+    GRID_Y = TOP_BAR_Y + TOP_BAR_HEIGHT + 1 + 15,
+
+    BOTTOM_BAR_Y = GRID_Y + GRID_HEIGHT + 1,
+    BOTTOM_BAR_HEIGHT = TOP_BAR_HEIGHT,
 
     WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
-    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
+    WINDOW_HEIGHT = BOTTOM_BAR_Y + BOTTOM_BAR_HEIGHT + 1,
 
     LABEL_COL = 2,
     VALUE_COL = 11,
@@ -39,18 +45,6 @@ static widget_st *widgets[2];
 static grid_st grid;
 
 static void
-draw_text_lg(int col, int row, const char *text)
-{
-    if (row >= GRID_COLS) {
-        return;
-    }
-
-    rect_st r = gui_grid_cell_rect(&grid, col, row);
-    gui_surface_draw_str(window.surface, r.x, r.y, font_8x16,
-        text, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
-}
-
-static void
 draw_text_sm(int col, int row, const char *text)
 {
     if (row >= GRID_COLS) {
@@ -68,7 +62,7 @@ draw_cpu_usage(void)
     static char buf[8];
     snprintf(buf, sizeof(buf), "%u%%   ", krn_timer_get_cpu_usage());
 
-    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 6);
+    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 3);
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
         buf, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
 
@@ -77,18 +71,35 @@ draw_cpu_usage(void)
 }
 
 static void
-draw_github_line(void)
+draw_top_bar(void)
+{
+    const char *text = "-=[ GENTLE OS / 32 ]=-";
+    rect_st r = gui_rect_make(0, TOP_BAR_Y, WINDOW_WIDTH, TOP_BAR_HEIGHT);
+
+    gui_surface_draw_h_seg(window.surface, r.x, r.y + r.height, r.width, COLOR_BORDER);
+
+    r = gui_rect_shrink(r, 1);
+
+    gui_surface_draw_str_centered(window.surface, r, font_8x16, text,
+        COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+}
+
+static void
+draw_bottom_bar(void)
 {
     const char *text = "   luke8086/gentleos32";
+    rect_st r = gui_rect_make(0, BOTTOM_BAR_Y, WINDOW_WIDTH, BOTTOM_BAR_HEIGHT);
 
-    int col = (GRID_COLS - strlen(text)) / 2;
-    int line = GRID_ROWS - 2;
+    gui_surface_draw_h_seg(window.surface, r.x, r.y, r.width, COLOR_BORDER);
 
-    draw_text_sm(col, line, text);
+    r = gui_rect_shrink(r, 1);
 
-    rect_st r = gui_grid_cell_rect(&grid, col, line);
-    r.y -= 5;
-    r.size = icon_github.size;
+    gui_surface_draw_str_centered(window.surface, r, font_8x8, text,
+        COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+
+    r.x = (r.width - strlen(text) * 8) / 2;
+    r.width = icon_github.size.width;
+
     gui_surface_draw_bitmap_centered(window.surface, r, &icon_github,
         COLOR_TEXT_ACTIVE);
 }
@@ -100,13 +111,8 @@ draw_info(void)
     mboot_info_st *m = krn_core_mboot_info;
     static char buf[VALUE_LEN + 1];
     int line = 0;
-    const char *title = "-=[ GENTLE OS ]=-";
 
     gui_surface_draw_rect(window.surface, r, window.bg_color);
-
-    line++;
-    draw_text_lg((GRID_COLS - strlen(title)) / 2, line++, title);
-    line++;
 
     if (m->flags & 0x04) {
         snprintf(buf, sizeof(buf), "%s", m->boot_loader_name);
@@ -138,7 +144,8 @@ draw_info(void)
     draw_text_sm(LABEL_COL, line, "Avail:");
     draw_text_sm(VALUE_COL, line++, buf);
 
-    draw_github_line();
+    draw_top_bar();
+    draw_bottom_bar();
 
     gui_wm_render_window_region(&window, r);
 }
