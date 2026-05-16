@@ -45,6 +45,9 @@ extern rect_st gui_grid_rect(grid_st *grid);
 extern rect_st gui_grid_cell_rect(grid_st *grid, int col, int row);
 extern void gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t color);
 /* gui/main.c */
+extern app_st *gui_apps[];
+extern unsigned gui_apps_count;
+extern void gui_run_app(app_st *app);
 extern void gui_main(void);
 /* gui/planar.c */
 extern void gui_planar_flush(rect_st rect);

@@ -7,6 +7,35 @@
 
 #include <gui.h>
 
+
+global app_st *gui_apps[] = {
+    &app_about,
+    &app_clock,
+    &app_calendar,
+    &app_calc,
+    &app_fonts,
+    &app_keys,
+    &app_colors,
+    &app_patterns,
+    &app_sounds,
+    &app_snake,
+    &app_mines,
+    &app_tetris,
+    &app_pairs,
+    &app_mahjong,
+    &app_freecell,
+    &app_klondike,
+    &app_blackjack,
+};
+
+global unsigned gui_apps_count = (sizeof(gui_apps) / sizeof(gui_apps[0]));
+
+global void
+gui_run_app(app_st *app)
+{
+    app->show();
+}
+
 global void
 gui_main(void)
 {

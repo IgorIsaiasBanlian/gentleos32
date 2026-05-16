@@ -7,28 +7,6 @@
 
 #include <gui.h>
 
-static app_st *apps[] = {
-    &app_about,
-    &app_clock,
-    &app_calendar,
-    &app_calc,
-    &app_fonts,
-    &app_keys,
-    &app_colors,
-    &app_patterns,
-    &app_sounds,
-    &app_snake,
-    &app_mines,
-    &app_tetris,
-    &app_pairs,
-    &app_mahjong,
-    &app_freecell,
-    &app_klondike,
-    &app_blackjack,
-};
-
-#define APPS_COUNT (sizeof(apps) / sizeof(apps[0]))
-
 enum {
     WINDOW_WIDTH = PANEL_WIDTH,
     WINDOW_HEIGHT = GUI_HEIGHT,
@@ -67,12 +45,12 @@ set_page(int page)
     for (size_t i = 0; i < APP_BUTTONS_COUNT; i++) {
         size_t app_idx = current_page * APP_BUTTONS_COUNT + i;
 
-        if (app_idx >= APPS_COUNT) {
+        if (app_idx >= gui_apps_count) {
             app_buttons[i].hidden = 0;
             continue;
         }
 
-        app_buttons[i].bitmap = apps[app_idx]->icon;
+        app_buttons[i].bitmap = gui_apps[app_idx]->icon;
         app_buttons[i].tag1 = app_idx;
         app_buttons[i].hidden = 0;
 
@@ -87,8 +65,8 @@ on_button_pointer_up(widget_st *widget, event_st event, point_st pos)
 {
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (apps[widget->tag1]) {
-        apps[widget->tag1]->show();
+    if (gui_apps[widget->tag1]) {
+        gui_run_app(gui_apps[widget->tag1]);
     }
 }
 
@@ -107,7 +85,7 @@ on_next_pointer_up(widget_st *widget, event_st event, point_st pos)
 {
     gui_button_on_pointer_up(widget, event, pos);
 
-    int max_page = (APPS_COUNT + APP_BUTTONS_COUNT - 1) / APP_BUTTONS_COUNT - 1;
+    int max_page = (gui_apps_count + APP_BUTTONS_COUNT - 1) / APP_BUTTONS_COUNT - 1;
 
     if (current_page < max_page) {
         set_page(current_page + 1);
