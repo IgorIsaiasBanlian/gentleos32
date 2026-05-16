@@ -130,8 +130,8 @@ draw_cell(widget_st *widget)
         gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
     } else if (state == CELL_STATE_REVEALED) {
         num_str[0] = '0' + type;
-        rect_st num_rect = gui_rect_make(rect.x + 1, rect.y + 1,
-            rect.width - 1, rect.height - 1);
+        rect_st num_rect = gui_rect_make(rect.x + 1, rect.y,
+            rect.width - 1, rect.height);
 
         gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
         gui_surface_draw_str_centered(window.surface, num_rect, font_8x8,

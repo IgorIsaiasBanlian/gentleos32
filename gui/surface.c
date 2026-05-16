@@ -113,7 +113,7 @@ gui_surface_draw_str_centered(surface_st *surface, rect_st rect,
     int text_width = strlen(s) * font->size.width;
 
     int x = rect.x + (rect.width - text_width) / 2;
-    int y = rect.y + (rect.height - font->size.height) / 2;
+    int y = rect.y + (rect.height - font->size.height) / 2 + 1;
 
     gui_surface_draw_str(surface, x, y, font, s, fg, bg);
 }
