@@ -44,7 +44,7 @@ update_status(void)
         return;
     };
 
-    gui_status_set("hex:%02x dec:%03d", active_color_button->tag2,
+    gui_status_set("Hex:%02x Dec:%d", active_color_button->tag2,
         active_color_button->tag2);
 }
 static void
