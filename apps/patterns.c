@@ -77,11 +77,6 @@ draw_pattern_button(widget_st *widget)
     surface_st *sf = widget->window->surface;
     int is_active = (widget == active_pattern_button);
 
-    if (is_active) {
-        gui_surface_draw_rect(sf, rect, COLOR_BORDER);
-        rect = gui_rect_shrink(rect, 1);
-    }
-
     int idx = widget->tag1;
 
     if (widget->tag1 == 0) {
@@ -89,6 +84,12 @@ draw_pattern_button(widget_st *widget)
     } else {
         gui_surface_draw_pattern_rel(sf, rect, patterns[idx], COLOR_BLACK, COLOR_WINDOW);
     }
+
+    if (is_active) {
+        gui_surface_draw_border(sf, rect, COLOR_BORDER);
+        rect = gui_rect_shrink(rect, 1);
+    }
+
 
     gui_wm_render_window_region(widget->window, widget->rect);
 }
