@@ -10,7 +10,7 @@ GentleOS/32 is a sibling of [GentleOS/16](https://github.com/luke8086/gentleos),
 a 16-bit OS that targets even older hardware.
 
 <img src="doc/qemu-01.png" width="320"> <img src="doc/qemu-02.png" width="320">
-<img src="doc/qemu-03.png" width="320">
+<img src="doc/qemu-03.png" width="320"> <img src="doc/qemu-04.png" width="320">
 
 ## Building
 
