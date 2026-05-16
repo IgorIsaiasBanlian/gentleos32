@@ -49,6 +49,10 @@ gui_main(void)
 
     krn_debug_status_cb = gui_status_set_alert;
 
+#ifdef DEV_AUTOSTART
+    gui_run_app(gui_apps[DEV_AUTOSTART]);
+#endif
+
     while (1) {
         if (krn_event_count() == 0) {
             krn_timer_is_cpu_idle = 1;
