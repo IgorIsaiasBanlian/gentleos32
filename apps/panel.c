@@ -46,7 +46,7 @@ set_page(int page)
         size_t app_idx = current_page * APP_BUTTONS_COUNT + i;
 
         if (app_idx >= gui_apps_count) {
-            app_buttons[i].hidden = 0;
+            app_buttons[i].hidden = 1;
             continue;
         }
 
