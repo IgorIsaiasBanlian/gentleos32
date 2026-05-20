@@ -7,11 +7,6 @@
 
 #include <kernel.h>
 
-enum {
-    PS2_PORT_DATA = 0x60,
-    PS2_PORT_CMD  = 0x64,
-};
-
 static void
 krn_keyboard_handle_scancode(uint8_t scancode)
 {
@@ -66,7 +61,7 @@ krn_keyboard_handle_scancode(uint8_t scancode)
 #endif
 
     if (ev.key_code == KEY_DEL && ctrl && alt && is_key_down) {
-        outb(0xFE, PS2_PORT_CMD);
+        krn_ps2_reboot();
     }
 
     (void)krn_event_ipush(ev);
@@ -76,7 +71,7 @@ static void
 krn_keyboard_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
 {
     uint8_t ctrl;
-    uint8_t scan = inb(PS2_PORT_DATA);
+    uint8_t scan = krn_ps2_read_data();
 
     krn_keyboard_handle_scancode(scan);
 

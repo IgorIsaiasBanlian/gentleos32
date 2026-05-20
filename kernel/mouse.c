@@ -7,19 +7,6 @@
 
 #include <kernel.h>
 
-enum {
-    PS2_PORT_DATA = 0x60,
-    PS2_PORT_STATUS = 0x64,
-    PS2_PORT_COMMAND = 0x64,
-
-    PS2_CMD_ENABLE_AUX = 0xA8,
-    PS2_CMD_READ_CONFIG = 0x20,
-    PS2_CMD_WRITE_CONFIG = 0x60,
-    PS2_CMD_SEND_AUX = 0xD4,
-    PS2_CMD_SET_DEFAULT = 0xF6,
-    PS2_CMD_ENABLE_REPORTING = 0xF4,
-};
-
 static struct {
     int16_t x;
     int16_t y;
@@ -85,7 +72,7 @@ krn_mouse_handle_intr(isr_stack_st *isr_stack _unsd)
     static uint8_t mouse_cycle = 0;
     static uint8_t mouse_byte[3];
 
-    uint8_t mouse_data = inb(PS2_PORT_DATA);
+    uint8_t mouse_data = krn_ps2_read_data();
 
     // Synchronize incoming data
     if (mouse_cycle == 0 && (mouse_data & 8) == 0) {
@@ -100,56 +87,11 @@ krn_mouse_handle_intr(isr_stack_st *isr_stack _unsd)
     }
 }
 
-static void
-krn_mouse_putc(uint8_t val, uint16_t port)
-{
-    // Status bit 1 clear means 8042 input buffer is empty
-    for (volatile int i = 0; i < 1000000; ++i) {
-        if ((inb(PS2_PORT_STATUS) & 2) == 0) {
-            break;
-        }
-    }
-
-    outb(val, port);
-}
-
-static uint8_t
-krn_mouse_getc(uint16_t port)
-{
-    // Status bit 0 set means 8042 output buffer has data
-    for (volatile int i = 0; i < 1000000; ++i) {
-        if ((inb(PS2_PORT_STATUS) & 1) != 0) {
-            break;
-        }
-    }
-
-    return inb(port);
-}
-
 global void
 krn_mouse_init(void)
 {
-    // Set initial coordinates to the center of the screen
     mouse_state.x = GUI_WIDTH / 2;
     mouse_state.y = GUI_HEIGHT / 2;
 
-    // Activate the second PS/2 port
-    krn_mouse_putc(PS2_CMD_ENABLE_AUX, PS2_PORT_COMMAND);
-    krn_mouse_putc(PS2_CMD_READ_CONFIG, PS2_PORT_COMMAND);
-    uint8_t status = krn_mouse_getc(PS2_PORT_DATA);
-    krn_mouse_putc(PS2_CMD_WRITE_CONFIG, PS2_PORT_COMMAND);
-    krn_mouse_putc((status | 0x03) & ~0x30, PS2_PORT_DATA);
-
-    // Send the default configuration to the mouse
-    krn_mouse_putc(PS2_CMD_SEND_AUX, PS2_PORT_COMMAND);
-    krn_mouse_putc(PS2_CMD_SET_DEFAULT, PS2_PORT_DATA);
-    (void)krn_mouse_getc(PS2_PORT_DATA);
-
-    // Enable mouse interrupts
-    krn_mouse_putc(PS2_CMD_SEND_AUX, PS2_PORT_COMMAND);
-    krn_mouse_putc(PS2_CMD_ENABLE_REPORTING, PS2_PORT_DATA);
-    (void)krn_mouse_getc(PS2_PORT_DATA);
-
-    // Enable interrupt handler
     krn_interrupt_set_handler(0x2c, krn_mouse_handle_intr);
 }
