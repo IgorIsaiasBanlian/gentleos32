@@ -5,6 +5,7 @@
 // File: pairs.c - Pair matching / Memory game
 // --------------------------------------------------------------------------------------
 
+#include "lib.h"
 #include <gui.h>
 
 enum {
@@ -108,10 +109,8 @@ draw_button(widget_st *widget)
 
     if (state == BUTTON_STATE_HIDDEN && !pressed) {
         gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
-        gui_surface_draw_h_seg(window.surface, rect.x, rect.y, rect.width, COLOR_WHITE);
-        gui_surface_draw_v_seg(window.surface, rect.x, rect.y, rect.height, COLOR_WHITE);
     } else if (state == BUTTON_STATE_HIDDEN && pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+        gui_surface_draw_rect(window.surface, rect, COLOR_BUTTON_PRESSED);
     } else {
         gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
         gui_surface_draw_bitmap_centered(window.surface, rect, icons[button_icons[idx]],
