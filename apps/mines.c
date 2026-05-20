@@ -107,33 +107,27 @@ draw_cell(widget_st *widget)
     uint8_t state = cell_state[col][row];
     uint8_t type = cell_type[col][row];
     rect_st rect = widget->rect;
+    rect_st dot_rect, num_rect;
     int pressed = widget->window->pressed_widget == widget;
+    int activated = pressed && state == CELL_STATE_HIDDEN;
     char num_str[2] = { 0, 0 };
 
-    if (state == CELL_STATE_HIDDEN && !pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
-        gui_surface_draw_h_seg(window.surface, rect.x, rect.y, rect.width, COLOR_WHITE);
-        gui_surface_draw_v_seg(window.surface, rect.x, rect.y, rect.height, COLOR_WHITE);
-    } else if (state == CELL_STATE_HIDDEN && pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
-    } else if (state == CELL_STATE_FLAGGED) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
-        gui_surface_draw_h_seg(window.surface, rect.x, rect.y, rect.width, COLOR_WHITE);
-        gui_surface_draw_v_seg(window.surface, rect.x, rect.y, rect.height, COLOR_WHITE);
+    gui_surface_draw_rect(window.surface, rect,
+        activated ? COLOR_BUTTON_PRESSED : COLOR_WINDOW);
+
+    if (state == CELL_STATE_FLAGGED) {
         gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_flag,
             COLOR_TEXT_ACTIVE);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_MINE) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
         gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_mine,
             COLOR_TEXT_ACTIVE);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_EMPTY) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+        dot_rect = gui_rect_make(rect.x + rect.width / 2 - 1, rect.y + rect.height / 2, 2, 1);
+        gui_surface_draw_rect(window.surface, dot_rect, COLOR_WINDOW_DARKER);
     } else if (state == CELL_STATE_REVEALED) {
         num_str[0] = '0' + type;
-        rect_st num_rect = gui_rect_make(rect.x + 1, rect.y,
-            rect.width - 1, rect.height);
+        num_rect = gui_rect_make(rect.x + 1, rect.y, rect.width - 1, rect.height);
 
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
         gui_surface_draw_str_centered(window.surface, num_rect, font_8x8,
             num_str, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
     }
