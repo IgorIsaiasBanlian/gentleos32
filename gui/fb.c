@@ -84,7 +84,7 @@ gui_fb_draw_outline(rect_st rect)
 #if VGA_MODE_12H
     gui_planar_xor_corners(rect);
 #else
-    gui_surface_draw_border(gui_fb_vram_surface, rect, COLOR_BLACK);
+    gui_surface_draw_border(gui_fb_vram_surface, rect, COLOR_BORDER);
 #endif
 }
 

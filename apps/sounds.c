@@ -41,7 +41,7 @@ draw_key_w(widget_st *widget)
 {
     rect_st rect_base = gui_rect_shrink(widget->rect, 1);
     uint8_t color = (widget == widget->window->pressed_widget)
-        ? COLOR_TITLE_BAR_ACTIVE : COLOR_WINDOW;
+        ? COLOR_PIANO_KEY_SEL : COLOR_PIANO_KEY_WHITE;
 
     int octave = widget->tag2 / 7;
     int ofs = widget->tag2 % 7;
@@ -68,7 +68,7 @@ static void
 draw_key_b(widget_st *widget)
 {
     uint8_t color = (widget == widget->window->pressed_widget)
-        ? COLOR_TITLE_BAR_ACTIVE : COLOR_BLACK;
+        ? COLOR_PIANO_KEY_SEL : COLOR_PIANO_KEY_BLACK;
 
     gui_surface_draw_rect(widget->window->surface, widget->rect, color);
 

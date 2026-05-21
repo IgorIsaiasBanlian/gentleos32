@@ -133,7 +133,7 @@ draw_hand(card_t *hand)
     int all_face_up = is_player || game_state == STATE_OVER;
 
     rect_st r = gui_rect_make(CARDS_X, y, CARDS_WIDTH, CARD_HEIGHT);
-    gui_surface_draw_rect(window.surface, r, COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, r, COLOR_WIDGET_BG);
 
     int step = CARD_WIDTH + CARD_SPACING;
     if (count > 1) {
@@ -157,7 +157,7 @@ update_buttons(void)
     deal_button.hidden = game_state == STATE_PLAYING;
 
     rect_st r = gui_rect_make(1, BUTTONS_Y, WINDOW_WIDTH - 2, BUTTON_HEIGHT);
-    gui_surface_draw_rect(window.surface, r, COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, r, COLOR_WIDGET_BG);
 
     gui_widget_draw(&hit_button);
     gui_widget_draw(&stand_button);
@@ -321,7 +321,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Blackjack";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;

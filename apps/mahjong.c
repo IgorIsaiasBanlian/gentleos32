@@ -33,12 +33,6 @@ enum {
     STATE_DEFAULT = 0,
     STATE_WON = 1,
     STATE_STUCK = 2,
-
-    COLOR_FACE_NOR = COLOR_WHITE,
-    COLOR_EDGE_NOR = COLOR_BORDER,
-    COLOR_FACE_SEL = COLOR_TEXT_ACTIVE,
-    COLOR_EDGE_SEL = COLOR_WINDOW,
-    COLOR_SHADOW = COLOR_BORDER,
 };
 
 static bitmap_st *tile_bitmaps[] = {
@@ -219,14 +213,14 @@ draw_tile(int layer, int col, int row)
 
     if (type == TILE_EMPTY) {
         rect = gui_rect_make(x, y, TILE_W + TILE_D, TILE_H + TILE_D);
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
         gui_wm_render_window_region(&window, rect);
         return;
     }
 
     is_selected = (col == sel_col && row == sel_row && layer == sel_layer);
-    face_color = is_selected ? COLOR_FACE_SEL : COLOR_FACE_NOR;
-    glyph_color = is_selected ? COLOR_EDGE_SEL : COLOR_EDGE_NOR;
+    face_color = is_selected ? COLOR_MJ_FACE_A_BG : COLOR_MJ_FACE_BG;
+    glyph_color = is_selected ? COLOR_MJ_EDGE : COLOR_MJ_EDGE;
 
     has_right = (col < BOARD_COLS - 1 && board[layer][row][col + 1] != TILE_EMPTY);
     has_bottom = (row < BOARD_ROWS - 1 && board[layer][row + 1][col] != TILE_EMPTY);
@@ -235,24 +229,24 @@ draw_tile(int layer, int col, int row)
 
     rect = gui_rect_make(x, y, TILE_W, TILE_H);
     gui_surface_draw_rect(window.surface, rect, face_color);
-    gui_surface_draw_border(window.surface, rect, COLOR_EDGE_NOR);
+    gui_surface_draw_border(window.surface, rect, COLOR_MJ_EDGE);
     gui_surface_draw_bitmap_centered(window.surface, rect, tile_bitmaps[type], glyph_color);
 
     if (!has_right) {
         rect = gui_rect_make(x + TILE_W, y + 2, 2, TILE_H - 2);
-        gui_surface_draw_rect(window.surface, rect, COLOR_SHADOW);
-        gui_surface_draw_h_seg(window.surface, x + TILE_W, y + 1, 1, COLOR_EDGE_NOR);
+        gui_surface_draw_rect(window.surface, rect, COLOR_MJ_EDGE);
+        gui_surface_draw_h_seg(window.surface, x + TILE_W, y + 1, 1, COLOR_MJ_EDGE);
     }
 
     if (!has_bottom) {
         rect = gui_rect_make(x + 2, y + TILE_H, TILE_W - 2, 2);
-        gui_surface_draw_rect(window.surface, rect, COLOR_SHADOW);
-        gui_surface_draw_h_seg(window.surface, x + 1, y + TILE_H, 1, COLOR_EDGE_NOR);
+        gui_surface_draw_rect(window.surface, rect, COLOR_MJ_EDGE);
+        gui_surface_draw_h_seg(window.surface, x + 1, y + TILE_H, 1, COLOR_MJ_EDGE);
     }
 
     if (!has_diag) {
         rect = gui_rect_make(x + TILE_W, y + TILE_H, 2, 2);
-        gui_surface_draw_rect(window.surface, rect, COLOR_SHADOW);
+        gui_surface_draw_rect(window.surface, rect, COLOR_MJ_EDGE);
     }
 
     rect = gui_rect_make(x, y, TILE_W + TILE_D, TILE_H + TILE_D);
@@ -331,7 +325,7 @@ redraw_board(void)
     rect_st rect;
 
     rect = gui_rect_make(BOARD_X, BOARD_Y, BOARD_W, BOARD_H);
-    gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
 
     for (layer = 0; layer < BOARD_LAYERS; ++layer) {
         for (row = 0; row < BOARD_ROWS; ++row) {
@@ -580,7 +574,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Mahjong";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_key_down = on_key_down;

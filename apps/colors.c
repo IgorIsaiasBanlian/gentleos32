@@ -101,7 +101,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Colors";
-    window.bg_color = COLOR_BLACK;
+    window.bg_color = COLOR_BORDER;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;

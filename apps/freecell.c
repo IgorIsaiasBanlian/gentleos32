@@ -616,7 +616,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "FreeCell";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;

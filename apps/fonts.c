@@ -62,7 +62,7 @@ draw_char_button(widget_st *widget)
     rect_st rect = widget->rect;
 
     gui_surface_draw_rect(window.surface, rect,
-        is_active ? COLOR_BUTTON_PRESSED : COLOR_WINDOW);
+        is_active ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG);
 
     --rect.height;
 
@@ -71,8 +71,8 @@ draw_char_button(widget_st *widget)
         rect,
         &fonts[current_font],
         (const char *)str,
-        is_active ? COLOR_WINDOW : COLOR_TEXT_ACTIVE,
-        is_active ? COLOR_BUTTON_PRESSED : COLOR_WINDOW
+        is_active ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG,
+        is_active ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG
     );
 
     gui_wm_render_window_region(widget->window, widget->rect);
@@ -97,9 +97,9 @@ draw_font_label(void)
     };
 
     gui_surface_draw_border(window.surface, r, COLOR_BORDER);
-    gui_surface_draw_rect(window.surface, gui_rect_shrink(r, 1), COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, gui_rect_shrink(r, 1), COLOR_WIDGET_BG);
     gui_surface_draw_str_centered(window.surface, r, font_8x16,
-        fonts[current_font].name, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        fonts[current_font].name, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     gui_wm_render_window_region(&window, r);
 }
@@ -164,7 +164,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Fonts";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;

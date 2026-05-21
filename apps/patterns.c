@@ -80,9 +80,9 @@ draw_pattern_button(widget_st *widget)
     int idx = widget->tag1;
 
     if (widget->tag1 == 0) {
-        gui_surface_draw_rect(sf, rect, COLOR_WINDOW);
+        gui_surface_draw_rect(sf, rect, COLOR_WIDGET_BG);
     } else {
-        gui_surface_draw_pattern_rel(sf, rect, patterns[idx], COLOR_BLACK, COLOR_WINDOW);
+        gui_surface_draw_pattern_rel(sf, rect, patterns[idx], COLOR_BORDER, COLOR_WIDGET_BG);
     }
 
     if (is_active) {
@@ -171,7 +171,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Patterns";
-    window.bg_color = COLOR_BLACK;
+    window.bg_color = COLOR_BORDER;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
 

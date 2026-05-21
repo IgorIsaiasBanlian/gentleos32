@@ -137,14 +137,14 @@ update_display(void)
 
     rect_st rect = gui_rect_make(DISPLAY_X, DISPLAY_Y, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
-    gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
 
     font_st *font = font_8x16;
     int text_width = strlen(buf) * font->size.width;
     int text_x = rect.x + rect.width - text_width - 10;
     int text_y = rect.y + (rect.height - font_8x16->size.height) / 2 + 1;
     gui_surface_draw_str(window.surface, text_x, text_y, font,
-        buf, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        buf, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     gui_wm_render_window_region(&window, rect);
 }

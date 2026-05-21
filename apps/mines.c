@@ -113,23 +113,23 @@ draw_cell(widget_st *widget)
     char num_str[2] = { 0, 0 };
 
     gui_surface_draw_rect(window.surface, rect,
-        activated ? COLOR_BUTTON_PRESSED : COLOR_WINDOW);
+        activated ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG);
 
     if (state == CELL_STATE_FLAGGED) {
         gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_flag,
-            COLOR_TEXT_ACTIVE);
+            COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_MINE) {
         gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_mine,
-            COLOR_TEXT_ACTIVE);
+            COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_EMPTY) {
         dot_rect = gui_rect_make(rect.x + rect.width / 2 - 1, rect.y + rect.height / 2, 2, 1);
-        gui_surface_draw_rect(window.surface, dot_rect, COLOR_WINDOW_DARKER);
+        gui_surface_draw_rect(window.surface, dot_rect, COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED) {
         num_str[0] = '0' + type;
         num_rect = gui_rect_make(rect.x + 1, rect.y, rect.width - 1, rect.height);
 
         gui_surface_draw_str_centered(window.surface, num_rect, font_8x8,
-            num_str, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+            num_str, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     }
 
     gui_wm_render_window_region(&window, rect);

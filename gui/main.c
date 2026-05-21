@@ -7,7 +7,6 @@
 
 #include <gui.h>
 
-
 global app_st *gui_apps[] = {
     &app_about,
     &app_clock,

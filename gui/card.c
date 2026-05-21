@@ -126,7 +126,7 @@ card_draw(card_game_st *game, int x, int y, card_t card, int selected)
     rect_st r = gui_rect_make(x, y, game->card_width, game->card_height);
 
     if (card == CARD_EMPTY) {
-        gui_surface_draw_rect(game->surface, r, COLOR_WINDOW);
+        gui_surface_draw_rect(game->surface, r, COLOR_WIDGET_BG);
         gui_surface_draw_border(game->surface, r, COLOR_BORDER);
         return;
     }
@@ -134,12 +134,12 @@ card_draw(card_game_st *game, int x, int y, card_t card, int selected)
     int rank = CARD_RANK(card);
     int suit = CARD_SUIT(card);
 
-    uint8_t fg = CARD_COLOR(card) ? COLOR_RED : COLOR_BLACK;
-    uint8_t bg = COLOR_WHITE;
+    uint8_t fg = CARD_COLOR(card) ? COLOR_CARD_RED_FG : COLOR_CARD_BLACK_FG;
+    uint8_t bg = COLOR_CARD_FRONT_BG;
 
     if (selected) {
-        fg = COLOR_BLACK;
-        bg = COLOR_WINDOW_DARKER;
+        fg = COLOR_CARD_SEL_FG;
+        bg = COLOR_CARD_SEL_BG;
     }
 
     gui_surface_draw_rect(game->surface, r, bg);
@@ -164,12 +164,12 @@ card_stub_draw(card_game_st *game, int x, int y, int height, card_t card, int se
 
     int rank = CARD_RANK(card);
     int suit = CARD_SUIT(card);
-    uint8_t fg = CARD_COLOR(card) ? COLOR_RED : COLOR_BLACK;
-    uint8_t bg = COLOR_WHITE;
+    uint8_t fg = CARD_COLOR(card) ? COLOR_CARD_RED_FG : COLOR_CARD_BLACK_FG;
+    uint8_t bg = COLOR_CARD_FRONT_BG;
 
     if (selected) {
-        fg = COLOR_BLACK;
-        bg = COLOR_WINDOW_DARKER;
+        fg = COLOR_CARD_SEL_FG;
+        bg = COLOR_CARD_SEL_BG;
     }
 
     gui_surface_draw_rect(game->surface, r, bg);
@@ -192,7 +192,7 @@ card_back_draw(card_game_st *game, int x, int y)
     rect_st r = gui_rect_make(x, y, game->card_width, game->card_height);
 
     gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_8,
-        COLOR_WHITE, COLOR_WINDOW_DARKER);
+        COLOR_CARD_BACK_BG_1, COLOR_CARD_BACK_BG_2);
     gui_surface_draw_border(game->surface, r, COLOR_BORDER);
 }
 
@@ -202,7 +202,7 @@ card_back_stub_draw(card_game_st *game, int x, int y, int height)
     rect_st r = gui_rect_make(x, y, game->card_width, height);
 
     gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_8,
-        COLOR_WINDOW_DARKER, COLOR_WHITE);
+        COLOR_CARD_BACK_BG_1, COLOR_CARD_BACK_BG_2);
     gui_surface_draw_h_seg(game->surface, x, y, game->card_width, COLOR_BORDER);
     gui_surface_draw_v_seg(game->surface, x, y, height, COLOR_BORDER);
     gui_surface_draw_v_seg(game->surface, x + game->card_width - 1, y, height, COLOR_BORDER);
@@ -222,7 +222,7 @@ card_pile_draw(card_game_st *game, card_pile_st *p)
     card_pile_update_step(game, p);
     top_y = card_pile_top_y(p);
 
-    gui_surface_draw_rect(game->surface, rect, COLOR_WINDOW);
+    gui_surface_draw_rect(game->surface, rect, COLOR_WIDGET_BG);
 
     if (p->is_cascade && p->count > 1) {
         step = p->step;

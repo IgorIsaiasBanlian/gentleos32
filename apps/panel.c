@@ -40,7 +40,7 @@ set_page(int page)
 
     rect_st area = { .x = 1, .y = 0, .width = WINDOW_WIDTH - 1,
         .height = WINDOW_HEIGHT - STATUS_HEIGHT };
-    gui_surface_draw_rect(window.surface, area, COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, area, COLOR_WIDGET_BG);
 
     for (size_t i = 0; i < APP_BUTTONS_COUNT; i++) {
         size_t app_idx = current_page * APP_BUTTONS_COUNT + i;
@@ -109,7 +109,7 @@ init_window(void)
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.visible = 1;
 
-    gui_surface_draw_rect(window.surface, gui_window_area(&window), COLOR_WINDOW);
+    gui_surface_draw_rect(window.surface, gui_window_area(&window), COLOR_WIDGET_BG);
     gui_surface_draw_v_seg(window.surface, 0, 0, WINDOW_HEIGHT - STATUS_HEIGHT + 1,
         COLOR_BORDER);
 }

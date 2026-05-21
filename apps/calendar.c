@@ -95,7 +95,7 @@ draw_month_label(void)
 
     gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
     gui_surface_draw_str_centered(window.surface, rect, font_8x16, buf,
-        COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     gui_wm_render_window_region(&window, rect);
 }
 
@@ -111,15 +111,15 @@ draw_day_button(widget_st *widget)
     int is_pressed = (widget == widget->window->pressed_widget) || widget->active;
 
     if (!is_in_month) {
-        gui_surface_draw_rect(widget->window->surface, widget->rect, COLOR_WINDOW);
+        gui_surface_draw_rect(widget->window->surface, widget->rect, COLOR_WIDGET_BG);
         gui_wm_render_window_region(widget->window, widget->rect);
         return;
     }
 
-    int fg = is_pressed ? COLOR_WINDOW : COLOR_TEXT_ACTIVE;
+    int fg = is_pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG;
     int bg = is_pressed
-        ? COLOR_BUTTON_PRESSED
-        : (is_current ? COLOR_TITLE_BAR_ACTIVE : COLOR_WINDOW);
+        ? COLOR_WIDGET_A_BG
+        : (is_current ? COLOR_TITLE_A_BG : COLOR_WIDGET_BG);
 
     gui_surface_draw_rect(widget->window->surface, widget->rect, bg);
 
@@ -165,7 +165,7 @@ draw_week_bar(void)
 
         gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
         gui_surface_draw_str_centered(window.surface, rect, font_8x16,
-            day_names[y], COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+            day_names[y], COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     }
 }
 
@@ -215,7 +215,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Calendar";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
 

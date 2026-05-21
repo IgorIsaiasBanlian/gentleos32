@@ -162,17 +162,15 @@ static void
 draw_cell(cell_st *key, int pressed)
 {
     rect_st rect;
-    uint8_t fg = pressed ? COLOR_WINDOW : COLOR_TEXT_ACTIVE;
-    uint8_t bg = pressed ? COLOR_TEXT_ACTIVE : COLOR_WINDOW;
+    uint8_t fg = pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG;
+    uint8_t bg = pressed ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG;
 
     rect = gui_rect_make(KEYS_X + key->x, KEYS_Y + key->y, key->width + 1, CELL_H + 1);
+
     gui_surface_draw_rect(window.surface, rect, bg);
-
-    if (!pressed) {
-        gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
-    }
-
+    gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
     gui_surface_draw_str_centered(window.surface, rect, font_8x8, key->label, fg, bg);
+
     gui_wm_render_window_region(&window, rect);
 }
 
@@ -251,7 +249,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Keys";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_key_down = on_key_down;

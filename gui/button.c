@@ -41,7 +41,7 @@ gui_button_draw(widget_st *widget)
     gui_surface_draw_rect(
         widget->window->surface,
         rect,
-        is_pressed ? COLOR_BUTTON_PRESSED : COLOR_WINDOW
+        is_pressed ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG
     );
 
     if (widget->bitmap) {
@@ -49,7 +49,7 @@ gui_button_draw(widget_st *widget)
             widget->window->surface,
             rect,
             widget->bitmap,
-            is_pressed ? COLOR_WINDOW : COLOR_TEXT_ACTIVE
+            is_pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG
         );
     } else if (widget->label) {
         gui_surface_draw_str_centered(
@@ -57,8 +57,8 @@ gui_button_draw(widget_st *widget)
             rect,
             widget->font ? widget->font : font_8x16,
             widget->label,
-            is_pressed ? COLOR_WINDOW : COLOR_TEXT_ACTIVE,
-            is_pressed ? COLOR_BUTTON_PRESSED : COLOR_WINDOW
+            is_pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG,
+            is_pressed ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG
         );
     }
 

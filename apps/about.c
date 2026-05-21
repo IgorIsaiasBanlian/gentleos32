@@ -53,7 +53,7 @@ draw_text_sm(int col, int row, const char *text)
 
     rect_st r = gui_grid_cell_rect(&grid, col, row);
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
-        text, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        text, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 }
 
 static void
@@ -64,7 +64,7 @@ draw_cpu_usage(void)
 
     rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 3);
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
-        buf, COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        buf, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     r.width = (sizeof(buf) - 1) * 8;
     gui_wm_render_window_region(&window, r);
@@ -81,7 +81,7 @@ draw_top_bar(void)
     r = gui_rect_shrink(r, 1);
 
     gui_surface_draw_str_centered(window.surface, r, font_8x16, text,
-        COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 }
 
 static void
@@ -95,13 +95,13 @@ draw_bottom_bar(void)
     r = gui_rect_shrink(r, 1);
 
     gui_surface_draw_str_centered(window.surface, r, font_8x8, text,
-        COLOR_TEXT_ACTIVE, COLOR_WINDOW);
+        COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     r.x = (r.width - strlen(text) * 8) / 2;
     r.width = icon_github.size.width;
 
     gui_surface_draw_bitmap_centered(window.surface, r, &icon_github,
-        COLOR_TEXT_ACTIVE);
+        COLOR_WIDGET_FG);
 }
 
 static void
@@ -179,7 +179,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "About";
-    window.bg_color = COLOR_WINDOW;
+    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_tick = on_tick;

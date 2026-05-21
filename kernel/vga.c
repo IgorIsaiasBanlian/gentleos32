@@ -131,6 +131,9 @@ krn_vga_init(void)
     krn_vga_set_bit_mask(0xFF);
 #endif
 
+    krn_vga_set_color(0x01, 0x002041);
+    krn_vga_set_color(0x05, 0x710071);
     krn_vga_set_color(0x09, 0x3366aa);
+    krn_vga_set_color(0x0d, 0xff00ff);
     krn_vga_set_color(0x0e, 0xffcc00);
 }

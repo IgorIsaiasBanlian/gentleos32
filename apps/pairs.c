@@ -108,13 +108,13 @@ draw_button(widget_st *widget)
     int pressed = widget->window->pressed_widget == widget && !waiting;
 
     if (state == BUTTON_STATE_HIDDEN && !pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
     } else if (state == BUTTON_STATE_HIDDEN && pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_BUTTON_PRESSED);
+        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_A_BG);
     } else {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WINDOW);
+        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
         gui_surface_draw_bitmap_centered(window.surface, rect, icons[button_icons[idx]],
-            COLOR_TEXT_ACTIVE);
+            COLOR_WIDGET_FG);
     }
 
     gui_wm_render_window_region(&window, rect);
