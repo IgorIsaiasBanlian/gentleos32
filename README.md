@@ -9,8 +9,8 @@ Its goal is to support building user-facing apps with minimal infrastructure.
 GentleOS/32 is a sibling of [GentleOS/16](https://github.com/luke8086/gentleos),
 a 16-bit OS that targets even older hardware.
 
-<img src="doc/qemu-01.png" width="320"> <img src="doc/qemu-02.png" width="320">
-<img src="doc/qemu-03.png" width="320"> <img src="doc/qemu-04.png" width="320">
+<img src="doc/qemu-01.png" width="400"> <img src="doc/qemu-02.png" width="400">
+<img src="doc/qemu-03.png" width="400"> <img src="doc/qemu-04.png" width="400">
 
 ## Building
 
