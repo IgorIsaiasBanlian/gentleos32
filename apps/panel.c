@@ -158,21 +158,21 @@ init_nav_buttons(void)
 }
 
 static void
-show_panel(void)
+init_app(void)
 {
-    static int initialized = 0;
+    init_window();
+    init_app_buttons();
+    init_nav_buttons();
+    set_page(0);
+}
 
-    if (!initialized) {
-        init_window();
-        init_app_buttons();
-        init_nav_buttons();
-        set_page(0);
-        initialized = 1;
-    }
-
+static void
+show_app(void)
+{
     gui_wm_set_panel_window(&window);
 }
 
 global app_st app_panel = {
-    .show = show_panel,
+    .init = init_app,
+    .show = show_app,
 };

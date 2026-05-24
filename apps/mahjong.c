@@ -589,20 +589,21 @@ init_window(void)
 }
 
 static void
+init_app(void)
+{
+    init_window();
+
+    restart_game();
+}
+
+static void
 show_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        restart_game();
-        initialized = 1;
-    }
-
     (void)gui_wm_add_window(&window);
 }
 
 global app_st app_mahjong = {
     .icon = &glyph_mn_central_icon,
+    .init = init_app,
     .show = show_app,
 };

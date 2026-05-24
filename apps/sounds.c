@@ -171,20 +171,20 @@ init_keys(void)
 }
 
 static void
+init_app(void)
+{
+    init_window();
+    init_keys();
+}
+
+static void
 show_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        init_keys();
-        initialized = 1;
-    }
-
-    gui_wm_add_window(&window);
+    (void)gui_wm_add_window(&window);
 }
 
 global app_st app_sounds = {
     .icon = &icon_sounds,
+    .init = init_app,
     .show = show_app,
 };

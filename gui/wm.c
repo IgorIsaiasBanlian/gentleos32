@@ -110,6 +110,8 @@ gui_wm_remove_window(struct window *w)
 
     if (gui_wm_windows[0]) {
         gui_wm_toggle_window_active(gui_wm_windows[0], 1);
+    } else {
+        gui_status_set("");
     }
 
     gui_wm_render_desktop_region(w->rect, NULL);
@@ -259,5 +261,5 @@ gui_wm_init(void)
 
     gui_status_init();
 
-    app_panel.show();
+    gui_run_app(&app_panel);
 }

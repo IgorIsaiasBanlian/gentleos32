@@ -251,25 +251,25 @@ select_active_buttons(void)
 }
 
 static void
+init_app(void)
+{
+    init_window();
+    select_active_buttons();
+    init_pattern_buttons();
+    init_color_buttons(&color1_grid, color1_buttons, COLOR1_GRID_X, COLOR1_GRID_Y,
+        on_color1_button_press);
+    init_color_buttons(&color2_grid, color2_buttons, COLOR2_GRID_X, COLOR2_GRID_Y,
+        on_color2_button_press);
+}
+
+static void
 show_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        select_active_buttons();
-        init_pattern_buttons();
-        init_color_buttons(&color1_grid, color1_buttons, COLOR1_GRID_X, COLOR1_GRID_Y,
-            on_color1_button_press);
-        init_color_buttons(&color2_grid, color2_buttons, COLOR2_GRID_X, COLOR2_GRID_Y,
-            on_color2_button_press);
-        initialized = 1;
-    }
-
-    gui_wm_add_window(&window);
+    (void)gui_wm_add_window(&window);
 }
 
 global app_st app_patterns = {
     .icon = &icon_patterns,
+    .init = init_app,
     .show = show_app,
 };

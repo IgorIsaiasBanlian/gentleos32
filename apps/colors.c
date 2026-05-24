@@ -135,20 +135,20 @@ init_color_buttons(void)
 }
 
 static void
+init_app(void)
+{
+    init_window();
+    init_color_buttons();
+}
+
+static void
 show_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        init_color_buttons();
-        initialized = 1;
-    }
-
-    gui_wm_add_window(&window);
+    (void)gui_wm_add_window(&window);
 }
 
 global app_st app_colors = {
     .icon = &icon_colors,
+    .init = init_app,
     .show = show_app,
 };

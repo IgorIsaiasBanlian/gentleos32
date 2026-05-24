@@ -286,27 +286,25 @@ init_current_date(void)
 }
 
 static void
+init_app(void)
+{
+    init_window();
+    init_buttons();
+    init_day_buttons();
+    init_current_date();
+
+    draw_week_bar();
+    draw_selected_month();
+}
+
+static void
 show_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        init_buttons();
-        init_day_buttons();
-        init_current_date();
-
-        draw_week_bar();
-        draw_selected_month();
-
-        initialized = 1;
-    }
-
     (void)gui_wm_add_window(&window);
 }
 
-
 global app_st app_calendar = {
     .icon = &icon_calendar,
+    .init = init_app,
     .show = show_app,
 };

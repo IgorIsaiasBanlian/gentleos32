@@ -32,6 +32,11 @@ global unsigned gui_apps_count = (sizeof(gui_apps) / sizeof(gui_apps[0]));
 global void
 gui_run_app(app_st *app)
 {
+    if (app->init) {
+        app->init();
+        app->init = NULL;
+    }
+
     app->show();
 }
 

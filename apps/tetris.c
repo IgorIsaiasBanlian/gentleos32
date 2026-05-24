@@ -368,22 +368,22 @@ init_grid(void)
 }
 
 static void
-show_app(void)
+init_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        init_grid();
-        initialized = 1;
-    }
+    init_window();
+    init_grid();
 
     restart_game();
+}
 
+static void
+show_app(void)
+{
     (void)gui_wm_add_window(&window);
 }
 
 global app_st app_tetris = {
     .icon = &icon_tetris,
+    .init = init_app,
     .show = show_app,
 };

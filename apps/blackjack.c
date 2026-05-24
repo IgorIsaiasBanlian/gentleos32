@@ -361,18 +361,17 @@ init_buttons(void)
 }
 
 static void
-show_app(void)
+init_app(void)
 {
-    static int initialized = 0;
-
-    if (!initialized) {
-        init_window();
-        init_buttons();
-        initialized = 1;
-    }
+    init_window();
+    init_buttons();
 
     restart_game();
+}
 
+static void
+show_app(void)
+{
     (void)gui_wm_add_window(&window);
 
     update_status();
@@ -380,5 +379,6 @@ show_app(void)
 
 global app_st app_blackjack = {
     .icon = &icon_blackjack,
+    .init = init_app,
     .show = show_app,
 };
