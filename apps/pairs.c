@@ -267,7 +267,7 @@ init_grid(void)
         int col = i % GRID_COLS;
         int row = i / GRID_COLS;
 
-        buttons[i].type = WIDGET_TYPE_BUTTON;
+        gui_button_init(&buttons[i]);
         buttons[i].rect = gui_grid_cell_rect(&grid, col, row);
         buttons[i].tag1 = i;
         buttons[i].draw = draw_button;

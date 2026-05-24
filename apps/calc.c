@@ -239,7 +239,7 @@ init_buttons(void)
             int idx = row * BUTTON_COLS + col;
             widget_st *button = &button_widgets[idx];
 
-            button->type = WIDGET_TYPE_BUTTON;
+            gui_button_init(button);
             button->rect = gui_grid_cell_rect(&grid, col, row);
             button->hide_border = 1;
             button->window = &window;

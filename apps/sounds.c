@@ -138,7 +138,6 @@ init_keys(void)
         int octave_ofs = i % 5;
         int key_w_idx = (octave_no * 7) + octave_ofs + 1 + (octave_ofs > 1 ? 1 : 0);
 
-        keys_b[i].type = WIDGET_TYPE_BUTTON;
         keys_b[i].rect.x = (key_w_idx * KEY_W_WIDTH) - key_w_idx - (KEY_B_WIDTH / 2);
         keys_b[i].rect.y = TITLE_BAR_HEIGHT;
         keys_b[i].rect.width = KEY_B_WIDTH;
@@ -154,7 +153,6 @@ init_keys(void)
     }
 
     for (int i = 0; i < KEY_W_COUNT; i++) {
-        keys_w[i].type = WIDGET_TYPE_BUTTON;
         keys_w[i].rect.x = (i * KEY_W_WIDTH) - i;
         keys_w[i].rect.y = TITLE_BAR_HEIGHT - 1;
         keys_w[i].rect.width = KEY_W_WIDTH;

@@ -175,7 +175,7 @@ init_window(void)
 static void
 init_buttons(void)
 {
-    prev_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&prev_button);
     prev_button.rect.x = 0;
     prev_button.rect.y = TOOL_BAR_Y;
     prev_button.rect.width = TOOL_BAR_HEIGHT;
@@ -183,7 +183,7 @@ init_buttons(void)
     prev_button.label = "<";
     prev_button.on_pointer_up = on_prev_button;
 
-    next_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&next_button);
     next_button.rect.x = WINDOW_WIDTH - TOOL_BAR_HEIGHT;
     next_button.rect.y = TOOL_BAR_Y;
     next_button.rect.width = TOOL_BAR_HEIGHT;
@@ -211,7 +211,7 @@ init_char_buttons(void)
         int col = i % grid.cols;
         int row = i / grid.cols;
 
-        char_buttons[i].type = WIDGET_TYPE_BUTTON;
+        gui_button_init(&char_buttons[i]);
         char_buttons[i].rect = gui_grid_cell_rect(&grid, col, row);
         char_buttons[i].tag2 = i;
         char_buttons[i].window = &window;

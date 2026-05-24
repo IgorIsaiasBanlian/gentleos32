@@ -225,7 +225,7 @@ init_window(void)
 static void
 init_buttons(void)
 {
-    prev_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&prev_button);
     prev_button.rect.x = 0;
     prev_button.rect.y = TOOL_BAR_Y;
     prev_button.rect.width = TOOL_BAR_HEIGHT;
@@ -233,7 +233,7 @@ init_buttons(void)
     prev_button.label = "<";
     prev_button.on_pointer_up = on_prev_button;
 
-    next_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&next_button);
     next_button.rect.x = WINDOW_WIDTH - TOOL_BAR_HEIGHT;
     next_button.rect.y = TOOL_BAR_Y;
     next_button.rect.width = TOOL_BAR_HEIGHT;
@@ -261,7 +261,7 @@ init_day_buttons(void)
         int col = i % GRID_COLS;
         int row = i / GRID_COLS;
 
-        day_buttons[i].type = WIDGET_TYPE_BUTTON;
+        gui_button_init(&day_buttons[i]);
         day_buttons[i].rect = gui_grid_cell_rect(&grid, col, row);
         day_buttons[i].draw = draw_day_button;
         day_buttons[i].font = font_8x16;

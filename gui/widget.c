@@ -16,7 +16,5 @@ gui_widget_draw(widget_st *widget)
 
     if (widget->draw) {
         widget->draw(widget);
-    } else if (widget->type == WIDGET_TYPE_BUTTON) {
-        gui_button_draw(widget);
     }
 }

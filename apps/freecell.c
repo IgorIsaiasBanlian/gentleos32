@@ -559,7 +559,6 @@ init_game(void)
     game.card_step = COLUMN_STEP_MAX;
 
     for (i = 0; i < PILE_COUNT; ++i) {
-        pile_widgets[i].type = WIDGET_TYPE_CUSTOM;
         pile_widgets[i].draw = pile_widget_draw;
         pile_widgets[i].on_pointer_up = on_pile_pointer_up;
         pile_widgets[i].on_pointer_alt = on_pile_pointer_alt;

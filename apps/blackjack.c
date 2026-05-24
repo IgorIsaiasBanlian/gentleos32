@@ -338,20 +338,20 @@ init_window(void)
 static void
 init_buttons(void)
 {
-    hit_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&hit_button);
     hit_button.rect = gui_rect_make(BUTTON_HIT_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
     hit_button.label = "Hit";
     hit_button.on_pointer_up = on_hit_button;
     gui_window_add_widget(&window, &hit_button);
 
-    stand_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&stand_button);
     stand_button.rect = gui_rect_make(BUTTON_STAND_X, BUTTONS_Y, BUTTON_WIDTH,
         BUTTON_HEIGHT);
     stand_button.label = "Stand";
     stand_button.on_pointer_up = on_stand_button;
     gui_window_add_widget(&window, &stand_button);
 
-    deal_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&deal_button);
     deal_button.rect = gui_rect_make(BUTTON_DEAL_X, BUTTONS_Y, BUTTON_WIDTH,
         BUTTON_HEIGHT);
     deal_button.label = "Deal";

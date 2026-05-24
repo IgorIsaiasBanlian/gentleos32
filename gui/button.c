@@ -8,6 +8,15 @@
 #include <gui.h>
 
 global void
+gui_button_init(widget_st *widget)
+{
+    widget->on_pointer_down = gui_button_on_pointer_down;
+    widget->on_pointer_up = gui_button_on_pointer_up;
+    widget->on_pointer_out = gui_button_on_pointer_out;
+    widget->draw = gui_button_draw;
+}
+
+global void
 gui_button_on_pointer_down(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
     gui_widget_draw(widget);

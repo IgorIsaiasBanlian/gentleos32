@@ -84,8 +84,6 @@ gui_window_on_pointer_out(window_st *window, event_st event, point_st pos)
 
         if (pressed_widget->on_pointer_out) {
             pressed_widget->on_pointer_out(pressed_widget, event, pos);
-        } else if (pressed_widget->type == WIDGET_TYPE_BUTTON) {
-            gui_button_on_pointer_out(pressed_widget, event, pos);
         }
     }
 }
@@ -108,8 +106,6 @@ gui_window_on_pointer_down(window_st *window, event_st event)
 
         if (pointed_widget->on_pointer_down) {
             pointed_widget->on_pointer_down(pointed_widget, event, pos);
-        } else if (pointed_widget->type == WIDGET_TYPE_BUTTON) {
-            gui_button_on_pointer_down(pointed_widget, event, pos);
         }
     }
 }
@@ -147,8 +143,6 @@ gui_window_on_pointer_move(window_st *window, event_st event)
 
         if (pointed_widget->on_pointer_down) {
             pointed_widget->on_pointer_down(pointed_widget, event, pos);
-        } else if (pointed_widget->type == WIDGET_TYPE_BUTTON) {
-            gui_button_on_pointer_down(pointed_widget, event, pos);
         }
     }
 }
@@ -169,8 +163,6 @@ gui_window_on_pointer_up(window_st *window, event_st event)
 
         if (pressed_widget->on_pointer_up) {
             pressed_widget->on_pointer_up(pressed_widget, event, pos);
-        } else if (pressed_widget->type == WIDGET_TYPE_BUTTON) {
-            gui_button_on_pointer_up(pressed_widget, event, pos);
         }
     }
 }

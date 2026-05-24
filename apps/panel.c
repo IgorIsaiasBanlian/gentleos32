@@ -118,7 +118,7 @@ static void
 init_app_buttons(void)
 {
     for (size_t i = 0; i < APP_BUTTONS_COUNT; i++) {
-        app_buttons[i].type = WIDGET_TYPE_BUTTON;
+        gui_button_init(&app_buttons[i]);
         app_buttons[i].rect.x = APP_BUTTON_MARGIN;
         app_buttons[i].rect.y = APP_BUTTON_MARGIN + (i * APP_BUTTON_STRIDE);
         app_buttons[i].rect.width = APP_BUTTON_SIZE;
@@ -134,7 +134,7 @@ init_app_buttons(void)
 static void
 init_nav_buttons(void)
 {
-    prev_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&prev_button);
     prev_button.rect.x = 1;
     prev_button.rect.y = WINDOW_HEIGHT - NAV_HEIGHT;
     prev_button.rect.width = NAV_WIDTH - 1;
@@ -145,7 +145,7 @@ init_nav_buttons(void)
     prev_button.on_pointer_up = on_prev_pointer_up;
     gui_window_add_widget(&window, &prev_button);
 
-    next_button.type = WIDGET_TYPE_BUTTON;
+    gui_button_init(&next_button);
     next_button.rect.x = NAV_WIDTH;
     next_button.rect.y = WINDOW_HEIGHT - NAV_HEIGHT;
     next_button.rect.width = NAV_WIDTH;

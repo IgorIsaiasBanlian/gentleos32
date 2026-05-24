@@ -1,4 +1,5 @@
 /* gui/button.c */
+extern void gui_button_init(widget_st *widget);
 extern void gui_button_on_pointer_down(widget_st *widget, event_st event, point_st pos);
 extern void gui_button_on_pointer_up(widget_st *widget, event_st event, point_st pos);
 extern void gui_button_on_pointer_out(widget_st *widget, event_st event, point_st pos);

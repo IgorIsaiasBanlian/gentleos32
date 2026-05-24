@@ -582,7 +582,6 @@ init_window(void)
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 
-    board_widget.type = WIDGET_TYPE_CUSTOM,
     board_widget.rect = gui_rect_make(BOARD_X, BOARD_Y, BOARD_W, BOARD_H);
     board_widget.on_pointer_up = on_board_pointer_up;
     gui_window_add_widget(&window, &board_widget);

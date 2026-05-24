@@ -66,12 +66,6 @@ typedef struct {
     uint8_t *pixels;
 } surface_st;
 
-enum {
-    WIDGET_TYPE_UNKNOWN = 0,
-    WIDGET_TYPE_BUTTON = 1,
-    WIDGET_TYPE_CUSTOM = 2,
-};
-
 struct window;
 typedef struct window window_st;
 
@@ -82,7 +76,6 @@ struct widget {
     window_st *window;
     rect_st rect;
 
-    int type;
     int tag1;
     int tag2;
 
