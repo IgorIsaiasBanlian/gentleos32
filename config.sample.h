@@ -10,5 +10,10 @@
 // - GUI_THEME_NEON
 #define GUI_THEME GUI_THEME_DEFAULT
 
+// To set a wallpaper, save an image using GIMP as an ASCII-formatted PPM.
+// It exactly match screen resolution and only use colors from misc/vga-256.gpl palette
+// The wallpaper is only supported when VGA_MODE_12H is not set
+// #define WALLPAPER_PATH "tmp/wall.ppm"
+
 // Enable to print keyboard debug information
 #define DEBUG_KEYBOARD 0
