@@ -55,6 +55,25 @@ gui_fb_draw_rect(rect_st rect, uint8_t color)
 }
 
 global void
+gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
+{
+#if VGA_MODE_12H
+    (void)rect;
+    (void)bitmap;
+#else
+    ASSERT(bitmap->size.width == GUI_WIDTH && bitmap->size.height == GUI_HEIGHT);
+
+    for (uint16_t i = 0; i < rect.height; ++i) {
+        size_t fb_off = (rect.y + i) * gui_fb_surface.pitch + rect.x;
+        size_t bm_off = (rect.y + i) * bitmap->pitch + rect.x;
+        memcpy(&gui_fb_surface.pixels[fb_off], &bitmap->pixels[bm_off], rect.width);
+    }
+
+    gui_fb_mark_dirty(rect);
+#endif
+}
+
+global void
 gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
 #if VGA_MODE_12H
