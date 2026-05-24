@@ -27,6 +27,13 @@ my @FONTS = (
 
 my $FONT_MAX_CHARS = 256;
 
+sub asset_name {
+    my ($p) = @_;
+    $p =~ s{.*[/\\]}{};
+    $p =~ s{\.[^.]*$}{};
+    return $p;
+}
+
 sub clean_pbm {
     my ($path) = @_;
 
@@ -83,19 +90,12 @@ sub load_pbm {
     return (\@pixels, $width, $height);
 }
 
-sub bitmap_name {
-    my ($p) = @_;
-    $p =~ s{.*[/\\]}{};
-    $p =~ s{\.[^.]*$}{};
-    return $p;
-}
-
-sub process_bitmap {
+sub process_pbm {
     my ($path) = @_;
 
     clean_pbm($path);
 
-    my $name = bitmap_name($path);
+    my $name = asset_name($path);
     my $dirname = dirname($path);
 
     my ($pixels, $width, $height) = load_pbm($path);
@@ -143,14 +143,14 @@ sub process_bitmap {
 }
 
 sub process_bitmaps {
-    my @bitmap_files = sort((
+    my @pbm_files = sort((
         glob("assets/*/*.pbm"),
         glob("vendor/icons8/*.pbm"),
         glob("vendor/mona/*.pbm"),
     ));
 
-    foreach my $f (@bitmap_files) {
-        push @lines, process_bitmap($f);
+    foreach my $f (@pbm_files) {
+        push @lines, process_pbm($f);
     }
 
     return join("\n", @lines);
