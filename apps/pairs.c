@@ -110,7 +110,7 @@ draw_button(widget_st *widget)
     if (state == BUTTON_STATE_HIDDEN && !pressed) {
         gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
     } else if (state == BUTTON_STATE_HIDDEN && pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_A_BG);
+        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_SEL_BG);
     } else {
         gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
         gui_surface_draw_bitmap_centered(window.surface, rect, icons[button_icons[idx]],

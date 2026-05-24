@@ -62,7 +62,7 @@ draw_char_button(widget_st *widget)
     rect_st rect = widget->rect;
 
     gui_surface_draw_rect(window.surface, rect,
-        is_active ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG);
+        is_active ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG);
 
     --rect.height;
 
@@ -71,8 +71,8 @@ draw_char_button(widget_st *widget)
         rect,
         &fonts[current_font],
         (const char *)str,
-        is_active ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG,
-        is_active ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG
+        is_active ? COLOR_WIDGET_SEL_FG : COLOR_WIDGET_FG,
+        is_active ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG
     );
 
     gui_wm_render_window_region(widget->window, widget->rect);

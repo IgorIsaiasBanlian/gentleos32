@@ -113,7 +113,7 @@ draw_cell(widget_st *widget)
     char num_str[2] = { 0, 0 };
 
     gui_surface_draw_rect(window.surface, rect,
-        activated ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG);
+        activated ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG);
 
     if (state == CELL_STATE_FLAGGED) {
         gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_flag,

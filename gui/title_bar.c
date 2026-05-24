@@ -33,12 +33,12 @@ gui_title_bar_draw(widget_st *widget)
     snprintf(title, sizeof(title), "   %s", widget->window->title);
 
     window_st *win = widget->window;
-    int bg_color = win->active ? COLOR_TITLE_A_BG : COLOR_WIDGET_BG;
+    int bg_color = win->active ? COLOR_TITLE_ACT_BG : COLOR_WIDGET_BG;
 
     gui_surface_draw_border(win->surface, widget->rect, COLOR_BORDER);
     gui_surface_draw_rect(win->surface, gui_rect_shrink(widget->rect, 1), bg_color);
     gui_surface_draw_str_centered(win->surface, widget->rect,
-        font_8x16, title, COLOR_TITLE_A_FG, bg_color);
+        font_8x16, title, COLOR_TITLE_ACT_FG, bg_color);
 
     gui_wm_render_window_region(widget->window, widget->rect);
 }

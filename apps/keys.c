@@ -162,8 +162,8 @@ static void
 draw_cell(cell_st *key, int pressed)
 {
     rect_st rect;
-    uint8_t fg = pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG;
-    uint8_t bg = pressed ? COLOR_WIDGET_A_BG : COLOR_WIDGET_BG;
+    uint8_t fg = pressed ? COLOR_WIDGET_SEL_FG : COLOR_WIDGET_FG;
+    uint8_t bg = pressed ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG;
 
     rect = gui_rect_make(KEYS_X + key->x, KEYS_Y + key->y, key->width + 1, CELL_H + 1);
 

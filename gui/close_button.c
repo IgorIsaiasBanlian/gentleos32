@@ -11,11 +11,19 @@ static void
 gui_close_button_draw(widget_st *widget)
 {
     window_st *win = widget->window;
-
     int is_pressed = (widget == widget->window->pressed_widget) || widget->active;
-    int bg_col_normal = win->active ? COLOR_TITLE_A_BG : COLOR_WIDGET_BG;
-    int bg_col = is_pressed ? COLOR_WIDGET_A_BG : bg_col_normal;
-    int fg_col = is_pressed ? COLOR_WIDGET_A_FG : COLOR_WIDGET_FG;
+    int bg_col, fg_col;
+
+    if (is_pressed) {
+        bg_col = COLOR_TITLE_SEL_BG;
+        fg_col = COLOR_TITLE_SEL_FG;
+    } else if (win->active) {
+        bg_col = COLOR_TITLE_ACT_BG;
+        fg_col = COLOR_TITLE_ACT_FG;
+    } else {
+        bg_col = COLOR_WIDGET_BG;
+        fg_col = COLOR_WIDGET_FG;
+    }
 
     rect_st bar_rect = gui_rect_center((rect_st) {
         .width = TITLE_BAR_HEIGHT - 14,
