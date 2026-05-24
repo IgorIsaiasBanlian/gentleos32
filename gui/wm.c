@@ -249,6 +249,10 @@ gui_wm_init(void)
     gui_wm_desktop_color = COLOR_DESKTOP;
     gui_wm_desktop_alt_color = COLOR_DESKTOP_ALT;
 
+#if GUI_THEME == GUI_THEME_NEON
+    gui_wm_bg_pattern = &bitmap_pattern_4;
+#endif
+
     gui_wm_container.width = GUI_WIDTH - PANEL_WIDTH;
     gui_wm_container.height = GUI_HEIGHT - STATUS_HEIGHT;
     gui_wm_render_wallpaper(gui_wm_container);
