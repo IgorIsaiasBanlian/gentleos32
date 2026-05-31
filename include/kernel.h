@@ -55,6 +55,18 @@ typedef struct {
     uint8_t fb_bpp;
 } __attribute__ ((packed)) mboot_info_st;
 
+enum {
+    UART_COM1 = 0x3F8,
+    UART_RBR  = 0, // Receiver Buffer (read, DLAB=0)
+    UART_DLL  = 0, // Divisor Latch LSB (DLAB=1)
+    UART_IER  = 1, // Interrupt Enable (DLAB=0)
+    UART_DLM  = 1, // Divisor Latch MSB (DLAB=1)
+    UART_FCR  = 2, // FIFO Control (write)
+    UART_LCR  = 3, // Line Control
+    UART_MCR  = 4, // Modem Control
+    UART_LSR  = 5, // Line Status
+};
+
 typedef struct {
     uint8_t second;
     uint8_t minute;
