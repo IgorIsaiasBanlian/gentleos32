@@ -102,7 +102,7 @@ krn_mouse_handle_ps2_intr(isr_stack_st *isr_stack _unsd)
     static uint8_t p[3];
     int dx, dy, btn_left, btn_right;
 
-    uint8_t mouse_data = krn_ps2_read_data();
+    uint8_t mouse_data = krn_ps2_read_data(0);
 
     // Synchronize incoming data
     if (cycle == 0 && (mouse_data & 8) == 0) {

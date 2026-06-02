@@ -25,7 +25,7 @@ extern void krn_main(void);
 /* kernel/mouse.c */
 extern void krn_mouse_init(void);
 /* kernel/ps2.c */
-extern uint8_t krn_ps2_read_data(void);
+extern uint8_t krn_ps2_read_data(int wait);
 extern void krn_ps2_reboot(void);
 extern void krn_ps2_init(void);
 /* kernel/rtc.c */

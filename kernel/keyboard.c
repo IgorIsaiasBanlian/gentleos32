@@ -71,7 +71,7 @@ static void
 krn_keyboard_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
 {
     uint8_t ctrl;
-    uint8_t scan = krn_ps2_read_data();
+    uint8_t scan = krn_ps2_read_data(0);
 
     krn_keyboard_handle_scancode(scan);
 
