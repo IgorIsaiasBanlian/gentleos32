@@ -67,6 +67,8 @@ krn_timer_init(void)
 {
     uint32_t div = 1193180 / TICK_FREQUENCY;
 
+    krn_debug_printf("Initializing timer... ");
+
     // Set Counter 0, write both LSB and MSB, use mode 3, binary counter
     outb(0x36, PIT_CWR);
 
@@ -75,4 +77,6 @@ krn_timer_init(void)
     outb((uint8_t)((div >> 8) & 0xFF), PIT_CR0);
 
     krn_interrupt_set_handler(0x20, krn_timer_handle_intr);
+
+    krn_debug_printf("ok\n");
 }

@@ -72,7 +72,7 @@ krn_debug_dump_multiboot_mmap(unsigned long long len, unsigned long long paddr)
     mmap_start  = (mboot_mmap_entry_st*)paddr;
     mmap_end = (mboot_mmap_entry_st*)(paddr + len);
 
-    krn_debug_printf("bios memory map:\n");
+    krn_debug_printf("BIOS memory map:\n");
 
     for (e = mmap_start; e < mmap_end; ++e) {
         addr1 = e->addr;
@@ -92,12 +92,12 @@ krn_debug_dump_multiboot_info(void)
     mboot_info_st *m = krn_core_mboot_info;
 
     if (m->flags & 0x04) {
-        krn_debug_printf("bootloader: %s\n", m->boot_loader_name);
+        krn_debug_printf("Bootloader: %s\n", m->boot_loader_name);
     }
 
-    if (m->flags & 0x800) {
+    if (m->flags & 0x800 && !VGA_MODE_12H) {
         krn_debug_printf(
-            "video: %08x %dx%dx%d\n",
+            "Video: %08x %dx%dx%d\n",
             (uint32_t)m->fb_addr,
             m->fb_width, m->fb_height, m->fb_bpp
         );
@@ -115,5 +115,5 @@ krn_debug_dump_kernel_location(void)
     uint32_t end = (uint32_t) &krn_link_end;
     uint32_t size = (end - start) >> 10;
 
-    krn_debug_printf("kernel location: %08x - %08x (%dKB)\n", start, end, size);
+    krn_debug_printf("Kernel location: %08x - %08x (%dKB)\n", start, end, size);
 }

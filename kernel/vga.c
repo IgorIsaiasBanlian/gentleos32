@@ -132,6 +132,8 @@ krn_vga_set_color(int index, uint32_t rgb)
 global void
 krn_vga_init(void)
 {
+    krn_debug_printf("Initializing video... ");
+
 #if VGA_MODE_12H
     krn_vga_set_mode(krn_vga_regs_12h);
     krn_vga_set_write_mode(0);
@@ -144,4 +146,6 @@ krn_vga_init(void)
     krn_vga_set_color(0x09, 0x3366aa);
     krn_vga_set_color(0x0d, 0xff00ff);
     krn_vga_set_color(0x0e, 0xffcc00);
+
+    krn_debug_printf("ok\n");
 }

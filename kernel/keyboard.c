@@ -85,5 +85,9 @@ krn_keyboard_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
 global void
 krn_keyboard_init(void)
 {
+    krn_debug_printf("Initializing keyboard... ");
+
     krn_interrupt_set_handler(0x21, krn_keyboard_handle_intr);
+
+    krn_debug_printf("ok\n");
 }

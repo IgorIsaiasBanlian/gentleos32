@@ -12,6 +12,8 @@ global void
 krn_main(void)
 {
     krn_uart_init();
+    krn_debug_printf("Starting GentleOS/32\n");
+
     krn_vga_init();
     krn_timer_init();
     krn_keyboard_init();

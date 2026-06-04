@@ -125,6 +125,8 @@ krn_ps2_init(void)
 {
     uint8_t config;
 
+    krn_debug_printf("Initializing PS2... ");
+
     krn_ps2_outb(PS2_CMD_DISABLE_KBD, PS2_PORT_CMD);
     krn_ps2_outb(PS2_CMD_ENABLE_MOUSE, PS2_PORT_CMD);
     krn_ps2_flush_data();
@@ -147,4 +149,6 @@ krn_ps2_init(void)
 
     krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
     krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);
+
+    krn_debug_printf("ok\n");
 }
