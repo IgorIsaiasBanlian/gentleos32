@@ -273,7 +273,7 @@ typedef struct {
 
 
 #define CARD_RANK(c)  ((c) % CARD_RANK_COUNT)
-#define CARD_SUIT(c)  ((c) / CARD_RANK_COUNT)
+#define CARD_SUIT(c)  (((c) / CARD_RANK_COUNT) % CARD_SUIT_COUNT)
 #define CARD_COLOR(c) (CARD_SUIT(c) <= CARD_SUIT_DIAMONDS)
 #define CARD_PILE_TOP(p) ((p)->count > 0 ? (p)->cards[(p)->count - 1] : CARD_EMPTY)
 #define CARD_PILE_IS_SELECTED(game, pile) ((game)->cur_move.src == (pile))

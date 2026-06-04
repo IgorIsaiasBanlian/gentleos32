@@ -69,8 +69,8 @@ krn_debug_dump_multiboot_mmap(unsigned long long len, unsigned long long paddr)
     mboot_mmap_entry_st *mmap_start, *mmap_end, *e;
     unsigned long long addr1, addr2;
 
-    mmap_start  = (mboot_mmap_entry_st*)paddr;
-    mmap_end = (mboot_mmap_entry_st*)(paddr + len);
+    mmap_start = (mboot_mmap_entry_st*)(uint32_t)paddr;
+    mmap_end = (mboot_mmap_entry_st*)(uint32_t)(paddr + len);
 
     krn_debug_printf("BIOS memory map:\n");
 
@@ -104,7 +104,7 @@ krn_debug_dump_multiboot_info(void)
     }
 
     if (m->flags & 0x40) {
-        krn_debug_dump_multiboot_mmap(m->mmap_length, (unsigned long long) m->mmap_addr);
+        krn_debug_dump_multiboot_mmap(m->mmap_length, (unsigned long long)(uint32_t)m->mmap_addr);
     }
 }
 

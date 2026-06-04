@@ -1,2 +1,4 @@
+-m32
+-march=32
 -I
 include

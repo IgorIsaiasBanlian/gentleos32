@@ -7,12 +7,6 @@
 
 #include <lib.h>
 
-#ifdef __SIZE_TYPE__
-typedef __SIZE_TYPE__ size_t;
-#else
-typedef unsigned long size_t;
-#endif
-
 enum {
     PF_STATE_DEFAULT,
     PF_STATE_FLAGS,
@@ -454,7 +448,11 @@ pf_vasnprintf(char *buf, size_t nbyte, const char *fmt,
 
     // The return value is the amount of characters which would
     // be emitted, given enough space, or -1 on error
-    return c->error ? -1 : (p->i - 1);
+    if (!c->error && (p->i - 1) <= __INT_MAX__) {
+        return (int)(p->i - 1);
+    }
+
+    return -1;
 }
 
 global int

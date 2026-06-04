@@ -8,7 +8,7 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include <stdarg.h>
+#include <stdarg.h> // IWYU pragma: keep
 #include <stdint.h>
 
 #include "../config.h"
