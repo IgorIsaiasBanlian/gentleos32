@@ -23,8 +23,8 @@ extern void krn_keyboard_init(void);
 /* kernel/main.c */
 extern void krn_main(void);
 /* kernel/mouse.c */
+extern void krn_mouse_handle_uart_data(uint8_t data);
 extern void krn_mouse_handle_ps2_data(uint8_t data);
-extern void krn_mouse_init(void);
 /* kernel/ps2.c */
 extern uint8_t krn_ps2_read_data(int wait);
 extern void krn_ps2_reboot(void);
@@ -45,6 +45,8 @@ extern volatile uint8_t krn_timer_is_cpu_idle;
 extern uint32_t krn_timer_get_msecs(void);
 extern uint8_t krn_timer_get_cpu_usage(void);
 extern void krn_timer_init(void);
+/* kernel/uart.c */
+extern void krn_uart_init(void);
 /* kernel/vga.c */
 extern void krn_vga_set_color(int index, uint32_t rgb);
 extern void krn_vga_init(void);

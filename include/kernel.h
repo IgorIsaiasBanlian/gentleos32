@@ -57,6 +57,8 @@ typedef struct {
 
 enum {
     UART_COM1 = 0x3F8,
+    UART_BASE = UART_COM1,
+
     UART_RBR  = 0, // Receiver Buffer (read, DLAB=0)
     UART_DLL  = 0, // Divisor Latch LSB (DLAB=1)
     UART_IER  = 1, // Interrupt Enable (DLAB=0)
@@ -65,6 +67,9 @@ enum {
     UART_LCR  = 3, // Line Control
     UART_MCR  = 4, // Modem Control
     UART_LSR  = 5, // Line Status
+
+    UART_MODE_NONE  = 0,
+    UART_MODE_MOUSE = 1,
 };
 
 typedef struct {

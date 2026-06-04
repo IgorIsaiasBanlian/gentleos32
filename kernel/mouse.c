@@ -12,9 +12,12 @@ static struct {
     int16_t y;
     uint16_t btn_left;
     uint16_t btn_right;
-} mouse_state;
-
-static uint16_t mouse_uart_base;
+} mouse_state = {
+    .x = GUI_WIDTH / 2,
+    .y = GUI_HEIGHT / 2,
+    .btn_left = 0,
+    .btn_right = 0,
+};
 
 static void
 krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
@@ -57,8 +60,8 @@ krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
     (void)krn_event_ipush(event);
 }
 
-static void
-krn_mouse_handle_ms_data(uint8_t data)
+global void
+krn_mouse_handle_uart_data(uint8_t data)
 {
     static uint8_t cycle = 0;
     static uint8_t p[3];
@@ -84,15 +87,6 @@ krn_mouse_handle_ms_data(uint8_t data)
     uint8_t btn_right = p[0] & 0x10 ? 1 : 0;
 
     krn_mouse_handle_packet(dx, dy, btn_left, btn_right);
-}
-
-static void
-krn_mouse_handle_ms_intr(isr_stack_st *isr_stack _unsd)
-{
-    while (inb(mouse_uart_base + UART_LSR) & 0x01) {
-        uint8_t data = inb(mouse_uart_base + UART_RBR);
-        krn_mouse_handle_ms_data(data);
-    }
 }
 
 global void
@@ -126,46 +120,4 @@ krn_mouse_handle_ps2_data(uint8_t data)
     btn_right = p[0] & 0x02 ? 1 : 0;
 
     krn_mouse_handle_packet(dx, dy, btn_left, btn_right);
-}
-
-static void
-krn_mouse_ms_init(uint16_t uart_base)
-{
-    mouse_uart_base = uart_base;
-
-    // Disable interrupts
-    outb(0x00, mouse_uart_base + UART_IER);
-
-    // Set baud rate divisor to 96 (1200 baud)
-    outb(0x80, mouse_uart_base + UART_LCR);
-    outb(96, mouse_uart_base + UART_DLL);
-    outb(0, mouse_uart_base + UART_DLM);
-
-    // Set 7 data bits, no parity, 1 stop bit, clear DLAB
-    outb(0x02, mouse_uart_base + UART_LCR);
-
-    // Disable FIFO
-    outb(0x00, mouse_uart_base + UART_FCR);
-
-    // Set DTR + RTS + OUT2 (power the mouse, route IRQs)
-    outb(0x0B, mouse_uart_base + UART_MCR);
-
-    // Drain any pending data
-    while (inb(mouse_uart_base + UART_LSR) & 0x01) {
-        (void)inb(mouse_uart_base + UART_RBR);
-    }
-
-    // Enable interrupts
-    outb(0x01, mouse_uart_base + UART_IER);
-
-    krn_interrupt_set_handler(0x24, krn_mouse_handle_ms_intr);
-}
-
-global void
-krn_mouse_init(void)
-{
-    mouse_state.x = GUI_WIDTH / 2;
-    mouse_state.y = GUI_HEIGHT / 2;
-
-    krn_mouse_ms_init(UART_COM1);
 }

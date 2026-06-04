@@ -15,5 +15,10 @@
 // The wallpaper is only supported when VGA_MODE_12H is not set
 // #define WALLPAPER_PATH "tmp/wall.ppm"
 
+// Available modes:
+// - UART_MODE_NONE
+// - UART_MODE_MOUSE
+#define UART_MODE UART_MODE_NONE
+
 // Enable to print keyboard debug information
 #define DEBUG_KEYBOARD 0
