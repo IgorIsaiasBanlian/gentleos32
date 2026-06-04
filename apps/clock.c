@@ -8,7 +8,7 @@
 #include <gui.h>
 
 enum {
-    GRID_PAD = 8,
+    GRID_PAD = 2,
     GRID_CELL_WIDTH = 9,
     GRID_CELL_HEIGHT = 9,
     GRID_COLS = 29,
