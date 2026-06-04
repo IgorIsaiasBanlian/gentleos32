@@ -219,8 +219,8 @@ draw_tile(int layer, int col, int row)
     }
 
     is_selected = (col == sel_col && row == sel_row && layer == sel_layer);
-    face_color = is_selected ? COLOR_MJ_FACE_A_BG : COLOR_MJ_FACE_BG;
-    glyph_color = is_selected ? COLOR_MJ_EDGE : COLOR_MJ_EDGE;
+    face_color = is_selected ? COLOR_MJ_FACE_SEL_BG : COLOR_MJ_FACE_BG;
+    glyph_color = is_selected ? COLOR_MJ_FACE_SEL_FG : COLOR_MJ_FACE_FG;
 
     has_right = (col < BOARD_COLS - 1 && board[layer][row][col + 1] != TILE_EMPTY);
     has_bottom = (row < BOARD_ROWS - 1 && board[layer][row + 1][col] != TILE_EMPTY);

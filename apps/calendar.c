@@ -109,6 +109,7 @@ draw_day_button(widget_st *widget)
     int is_current = (day == current_day - 1 && selected_month == current_month
         && selected_year == current_year);
     int is_pressed = (widget == widget->window->pressed_widget) || widget->active;
+    int fg, bg;
 
     if (!is_in_month) {
         gui_surface_draw_rect(widget->window->surface, widget->rect, COLOR_WIDGET_BG);
@@ -116,10 +117,16 @@ draw_day_button(widget_st *widget)
         return;
     }
 
-    int fg = is_pressed ? COLOR_WIDGET_SEL_FG : COLOR_WIDGET_FG;
-    int bg = is_pressed
-        ? COLOR_WIDGET_SEL_BG
-        : (is_current ? COLOR_TITLE_ACT_BG : COLOR_WIDGET_BG);
+    if (is_pressed) {
+        fg = COLOR_WIDGET_SEL_FG;
+        bg = COLOR_WIDGET_SEL_BG;
+    } else if (is_current) {
+        fg = COLOR_TITLE_ACT_FG;
+        bg = COLOR_TITLE_ACT_BG;
+    } else {
+        fg = COLOR_WIDGET_FG;
+        bg = COLOR_WIDGET_BG;
+    }
 
     gui_surface_draw_rect(widget->window->surface, widget->rect, bg);
 

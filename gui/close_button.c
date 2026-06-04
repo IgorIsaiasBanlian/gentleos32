@@ -11,6 +11,7 @@ static void
 gui_close_button_draw(widget_st *widget)
 {
     window_st *win = widget->window;
+    rect_st rect = widget->rect;
     int is_pressed = (widget == widget->window->pressed_widget) || widget->active;
     int bg_col, fg_col;
 
@@ -30,8 +31,16 @@ gui_close_button_draw(widget_st *widget)
         .height = 2,
     }, widget->rect);
 
-    gui_surface_draw_border(widget->window->surface, widget->rect, COLOR_BORDER);
-    gui_surface_draw_rect(win->surface, gui_rect_shrink(widget->rect, 1), bg_col);
+    gui_surface_draw_border(win->surface, rect, COLOR_BORDER);
+
+    if (win->active && !is_pressed) {
+        rect = gui_rect_shrink(rect, 1);
+        gui_surface_draw_border(win->surface, rect, COLOR_TITLE_ACT_INNER_BORDER);
+    }
+
+    rect = gui_rect_shrink(rect, 1);
+    gui_surface_draw_rect(win->surface, rect, bg_col);
+
     gui_surface_draw_rect(win->surface, bar_rect, fg_col);
 
     gui_wm_render_window_region(widget->window, widget->rect);

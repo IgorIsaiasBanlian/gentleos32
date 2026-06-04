@@ -7,6 +7,7 @@
 
 // Available themes:
 // - GUI_THEME_DEFAULT
+// - GUI_THEME_MONO
 // - GUI_THEME_NEON
 #define GUI_THEME GUI_THEME_DEFAULT
 
