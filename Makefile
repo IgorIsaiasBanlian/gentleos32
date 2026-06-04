@@ -5,7 +5,7 @@ NASM 	:= nasm
 BASEDIR 	:= .
 BUILDDIR 	:= $(BASEDIR)/build
 
-EMPTY_DISK_IMAGE	:= $(BASEDIR)/misc/empty-disk.img
+FLOPPY_IMAGE 		:= $(BUILDDIR)/floppy.img
 DISK_IMAGE 			:= $(BUILDDIR)/disk.img
 DISK_FS_OFFSET 		:= 1048576
 
@@ -60,9 +60,13 @@ kernel: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/kernel.elf
 
 disk: kernel
-	zcat $(EMPTY_DISK_IMAGE) > $(DISK_IMAGE)
+	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/kernel.elf ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub
+
+	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/kernel.elf ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot
 
 print:
 	@echo "SUBDIRS=$(SUBDIRS)"

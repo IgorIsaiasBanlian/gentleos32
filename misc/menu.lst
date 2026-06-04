@@ -1,0 +1,7 @@
+# Config for GRUB Legacy
+
+set timeout=1
+set default=0
+
+title GentleOS/32
+kernel /kernel.elf
