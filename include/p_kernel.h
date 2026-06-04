@@ -23,6 +23,7 @@ extern void krn_keyboard_init(void);
 /* kernel/main.c */
 extern void krn_main(void);
 /* kernel/mouse.c */
+extern void krn_mouse_handle_ps2_data(uint8_t data);
 extern void krn_mouse_init(void);
 /* kernel/ps2.c */
 extern uint8_t krn_ps2_read_data(int wait);

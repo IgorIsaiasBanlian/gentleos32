@@ -112,6 +112,14 @@ krn_ps2_send_mouse(uint8_t cmd)
     krn_ps2_outb(cmd, PS2_PORT_DATA);
 }
 
+static void
+krn_ps2_handle_intr(isr_stack_st *isr_stack _unsd)
+{
+    uint8_t data = krn_ps2_read_data(0);
+
+    krn_mouse_handle_ps2_data(data);
+}
+
 global void
 krn_ps2_init(void)
 {
@@ -134,6 +142,8 @@ krn_ps2_init(void)
     config &= ~PS2_CFG_DISABLE_KBD;
     config &= ~PS2_CFG_DISABLE_MOUSE;
     krn_ps2_write_config(config);
+
+    krn_interrupt_set_handler(0x2c, krn_ps2_handle_intr);
 
     krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
     krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);

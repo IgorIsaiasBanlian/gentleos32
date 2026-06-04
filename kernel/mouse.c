@@ -95,21 +95,19 @@ krn_mouse_handle_ms_intr(isr_stack_st *isr_stack _unsd)
     }
 }
 
-static void
-krn_mouse_handle_ps2_intr(isr_stack_st *isr_stack _unsd)
+global void
+krn_mouse_handle_ps2_data(uint8_t data)
 {
     static uint8_t cycle = 0;
     static uint8_t p[3];
     int dx, dy, btn_left, btn_right;
 
-    uint8_t mouse_data = krn_ps2_read_data(0);
-
     // Synchronize incoming data
-    if (cycle == 0 && (mouse_data & 8) == 0) {
+    if (cycle == 0 && (data & 8) == 0) {
         return;
     }
 
-    p[cycle++] = mouse_data;
+    p[cycle++] = data;
 
     if (cycle < 3) {
         return;
@@ -170,6 +168,4 @@ krn_mouse_init(void)
     mouse_state.y = GUI_HEIGHT / 2;
 
     krn_mouse_ms_init(UART_COM1);
-
-    krn_interrupt_set_handler(0x2c, krn_mouse_handle_ps2_intr);
 }
