@@ -105,7 +105,14 @@ krn_vga_set_mode(const uint8_t *regs)
     outb(0x20, VGA_AC_INDEX);
 }
 
-#endif
+static void
+krn_vga_clear_screen_12h(void)
+{
+    uint8_t *pixels = (uint8_t *)0xA0000;
+    memset(pixels, 0x00, 640 * 480 / 8);
+}
+
+#endif // VGA_MODE_12H
 
 global void
 krn_vga_set_color(int index, uint32_t rgb)
@@ -129,6 +136,7 @@ krn_vga_init(void)
     krn_vga_set_mode(krn_vga_regs_12h);
     krn_vga_set_write_mode(0);
     krn_vga_set_bit_mask(0xFF);
+    krn_vga_clear_screen_12h();
 #endif
 
     krn_vga_set_color(0x01, 0x002041);
