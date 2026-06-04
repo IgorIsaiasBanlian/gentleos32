@@ -10,6 +10,8 @@
 enum {
     RTC_PORT_ADDR = 0x70,
     RTC_PORT_DATA = 0x71,
+    RTC_MAX_GET_ATTEMPTS = 100,
+    RTC_MAX_UIP_ATTEMPTS = 100,
 };
 
 static uint16_t
@@ -32,15 +34,24 @@ krn_rtc_get_reg(uint8_t reg)
 }
 
 static uint8_t
-krn_rtc_is_update_in_progress(void)
+krn_rtc_is_updating(void)
 {
     return krn_rtc_get_reg(0x0a) & (0x80);
 }
 
 static void
+krn_rtc_wait_while_updating(void)
+{
+    size_t attempt = 0;
+
+    while (krn_rtc_is_updating() && attempt < RTC_MAX_UIP_ATTEMPTS) {
+        ++attempt;
+    };
+}
+
+static void
 krn_rtc_read_raw_time(time_st *t)
 {
-
     t->second = krn_rtc_get_reg(0x00);
     t->minute = krn_rtc_get_reg(0x02);
     t->hour = krn_rtc_get_reg(0x04);
@@ -66,17 +77,26 @@ krn_rtc_get_time(time_st *t)
     time_st t1, t2;
     uint8_t reg_b;
     int is_bcd, is_12h, is_pm;
+    size_t attempt = 0;
 
     // Keep reading raw time until we obtain two identical values twice
     // in a row. This prevents getting an inconsistent state in case
     // we try to read it during RTC update
     do {
-        while (krn_rtc_is_update_in_progress()) { };
+        krn_rtc_wait_while_updating();
         krn_rtc_read_raw_time(&t1);
 
-        while (krn_rtc_is_update_in_progress()) { };
+        krn_rtc_wait_while_updating();
         krn_rtc_read_raw_time(&t2);
-    } while (!krn_rtc_are_times_equal(&t1, &t2));
+
+        ++attempt;
+    } while (!krn_rtc_are_times_equal(&t1, &t2) && attempt < RTC_MAX_GET_ATTEMPTS);
+
+    if (attempt == RTC_MAX_GET_ATTEMPTS) {
+        krn_debug_printf("RTC: Failed to read current time\n");
+        memset(t, 0, sizeof(time_st));
+        return;
+    }
 
     // Check status flags
     reg_b = krn_rtc_get_reg(0x0b);
