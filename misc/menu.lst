@@ -4,4 +4,4 @@ set timeout=1
 set default=0
 
 title GentleOS/32
-kernel /kernel.elf
+kernel /gentleos.elf

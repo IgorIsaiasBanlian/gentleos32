@@ -57,15 +57,15 @@ $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(ASFLAGS) -f elf32 $< -o $@
 
 kernel: $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/kernel.elf
+	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/gentleos.elf
 
 disk: kernel
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/kernel.elf ::
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/gentleos.elf ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub
 
 	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/kernel.elf ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/gentleos.elf ::
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot
 
 print:

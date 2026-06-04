@@ -49,7 +49,7 @@ dd if=build/disk.img of=<TARGET DISK> bs=1M conv=fsync status=progress
 ```
 
 Alternatively, if you already have GRUB installed on the target machine,
-you can have it boot `kernel.elf` directly
+you can have it boot `gentleos.elf` directly
 (see [misc/grub.cfg](misc/grub.cfg) for a sample config).
 
 ## Attributions
