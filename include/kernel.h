@@ -27,25 +27,16 @@ typedef struct {
 typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 
 typedef struct {
-    uint32_t size;
-    unsigned long long addr;
-    unsigned long long len;
-    uint32_t type;
-} __attribute__((packed)) mboot_mmap_entry_st;
-
-typedef struct {
     uint32_t flags;
 
-    uint32_t unused_1[10];
+    uint32_t mem_lower;     // KB of lower memory (flag 0x01)
+    uint32_t mem_upper;     // KB of upper memory above 1 MB (flag 0x01)
 
-    uint32_t mmap_length;
-    mboot_mmap_entry_st *mmap_addr;
-
-    uint32_t unused_2[3];
+    uint32_t unused_1[13];
 
     const char *boot_loader_name;
 
-    uint32_t unused_3[5];
+    uint32_t unused_2[5];
 
     uint8_t *fb_addr;
     uint32_t unused_4;

@@ -63,29 +63,6 @@ krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
     }
 }
 
-static void
-krn_debug_dump_multiboot_mmap(unsigned long long len, unsigned long long paddr)
-{
-    mboot_mmap_entry_st *mmap_start, *mmap_end, *e;
-    unsigned long long addr1, addr2;
-
-    mmap_start = (mboot_mmap_entry_st*)(uint32_t)paddr;
-    mmap_end = (mboot_mmap_entry_st*)(uint32_t)(paddr + len);
-
-    krn_debug_printf("BIOS memory map:\n");
-
-    for (e = mmap_start; e < mmap_end; ++e) {
-        addr1 = e->addr;
-        addr2 = e->addr + e->len - 1;
-        krn_debug_printf(
-            "  %01x - %08x%08x - %08x%08x\n",
-            (uint32_t)e->type,
-            (uint32_t)(addr1 >> 32), (uint32_t)addr1,
-            (uint32_t)(addr2 >> 32), (uint32_t)addr2
-        );
-    }
-}
-
 global void
 krn_debug_dump_multiboot_info(void)
 {
@@ -103,8 +80,8 @@ krn_debug_dump_multiboot_info(void)
         );
     }
 
-    if (m->flags & 0x40) {
-        krn_debug_dump_multiboot_mmap(m->mmap_length, (unsigned long long)(uint32_t)m->mmap_addr);
+    if (m->flags & 0x01) {
+        krn_debug_printf("Mem: lower %u KB, upper %u KB\n", m->mem_lower, m->mem_upper);
     }
 }
 
