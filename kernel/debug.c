@@ -10,6 +10,16 @@
 global void (*krn_debug_status_cb)(const char *, ...) = (void (*)(const char *, ...))NULL;
 
 global void
+krn_debug_putc(char c)
+{
+    if (UART_MODE == UART_MODE_DEBUG) {
+        krn_uart_write_data(c);
+    } else {
+        outb(c, 0xe9); // QEMU debug port
+    }
+}
+
+global void
 krn_debug_printf(const char *fmt, ...)
 {
     int count;
@@ -22,7 +32,7 @@ krn_debug_printf(const char *fmt, ...)
     va_end(args);
 
     for (int i = 0; i < count; i++) {
-        outb(buf[i], 0xe9);
+        krn_debug_putc(buf[i]);
     }
 }
 

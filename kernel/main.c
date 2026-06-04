@@ -11,10 +11,10 @@
 global void
 krn_main(void)
 {
+    krn_uart_init();
     krn_vga_init();
     krn_timer_init();
     krn_keyboard_init();
-    krn_uart_init();
     krn_ps2_init();
 
     krn_debug_dump_multiboot_info();

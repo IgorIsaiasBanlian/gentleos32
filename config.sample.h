@@ -15,9 +15,10 @@
 // The wallpaper is only supported when VGA_MODE_12H is not set
 // #define WALLPAPER_PATH "tmp/wall.ppm"
 
-// Available modes:
-// - UART_MODE_NONE
-// - UART_MODE_MOUSE
+// Available modes for COM1 serial port:
+// - UART_MODE_NONE  - Unused
+// - UART_MODE_MOUSE - MS mouse driver
+// - UART_MODE_DEBUG - Debug output (8N1/9600)
 #define UART_MODE UART_MODE_NONE
 
 // Enable to print keyboard debug information

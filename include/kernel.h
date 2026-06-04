@@ -59,7 +59,8 @@ enum {
     UART_COM1 = 0x3F8,
     UART_BASE = UART_COM1,
 
-    UART_RBR  = 0, // Receiver Buffer (read, DLAB=0)
+    UART_RBR  = 0, // Receiver Buffer Register (read, DLAB=0)
+    UART_THR  = 0, // Transmitter Holding Register (write, DLAB=0)
     UART_DLL  = 0, // Divisor Latch LSB (DLAB=1)
     UART_IER  = 1, // Interrupt Enable (DLAB=0)
     UART_DLM  = 1, // Divisor Latch MSB (DLAB=1)
@@ -70,6 +71,7 @@ enum {
 
     UART_MODE_NONE  = 0,
     UART_MODE_MOUSE = 1,
+    UART_MODE_DEBUG = 2,
 };
 
 typedef struct {

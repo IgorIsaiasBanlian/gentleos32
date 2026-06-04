@@ -5,6 +5,7 @@ extern void krn_core_c_main(void);
 extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */
 extern void (*krn_debug_status_cb)(const char *, ...);
+extern void krn_debug_putc(char c);
 extern void krn_debug_printf(const char *fmt, ...);
 extern void krn_debug_assert(int expr, const char *file, unsigned line);
 extern void krn_debug_beep(unsigned hz, unsigned msecs, unsigned count);
@@ -46,6 +47,7 @@ extern uint32_t krn_timer_get_msecs(void);
 extern uint8_t krn_timer_get_cpu_usage(void);
 extern void krn_timer_init(void);
 /* kernel/uart.c */
+extern void krn_uart_write_data(uint8_t data);
 extern void krn_uart_init(void);
 /* kernel/vga.c */
 extern void krn_vga_set_color(int index, uint32_t rgb);

@@ -47,6 +47,23 @@ krn_uart_handle_data(uint8_t data)
     }
 }
 
+static uint8_t
+krn_uart_can_write_data(void)
+{
+    return krn_uart_inb(UART_LSR) & 0x20;
+}
+
+global void
+krn_uart_write_data(uint8_t data)
+{
+    for (volatile int i = 0; i < 1000000; ++i) {
+        if (krn_uart_can_write_data()) {
+            krn_uart_outb(data, UART_THR);
+            break;
+        }
+    }
+}
+
 static void
 krn_uart_handle_intr(isr_stack_st *isr_stack _unsd)
 {
@@ -58,30 +75,36 @@ krn_uart_handle_intr(isr_stack_st *isr_stack _unsd)
     }
 }
 
+static void
+krn_uart_set_baud_rate(uint32_t rate)
+{
+    uint16_t div = 115200 / rate;
+    uint8_t lcr = krn_uart_inb(UART_LCR);
+
+    krn_uart_outb(lcr | 0x80, UART_LCR);
+    krn_uart_outb(div & 0xFF, UART_DLL);
+    krn_uart_outb((div >> 8) & 0xFF, UART_DLM);
+    krn_uart_outb(lcr & 0x7F, UART_LCR);
+}
+
 global void
 krn_uart_init(void)
 {
-    // Disable interrupts and set handler
     krn_uart_outb(0x00, UART_IER);
     krn_interrupt_set_handler(0x24, krn_uart_handle_intr);
 
+    krn_uart_outb(0x00, UART_FCR);
+
     if (UART_MODE == UART_MODE_MOUSE) {
-        // Set baud rate divisor to 96 (1200 baud)
-        krn_uart_outb(0x80, UART_LCR);
-        krn_uart_outb(96, UART_DLL);
-        krn_uart_outb(0, UART_DLM);
-
-        // Set 7 data bits, no parity, 1 stop bit, clear DLAB
-        krn_uart_outb(0x02, UART_LCR);
-
-        // Disable FIFO
-        krn_uart_outb(0x00, UART_FCR);
-
-        // Set DTR + RTS + OUT2 (power the mouse, route IRQs)
-        krn_uart_outb(0x0B, UART_MCR);
+        krn_uart_set_baud_rate(1200);
+        krn_uart_outb(0x02, UART_LCR); // 7N1
+        krn_uart_outb(0x0B, UART_MCR); // DTR + RTS + OUT2
+    } else if (UART_MODE == UART_MODE_DEBUG) {
+        krn_uart_set_baud_rate(9600);
+        krn_uart_outb(0x03, UART_LCR); // 8N1
+        krn_uart_outb(0x08, UART_MCR); // OUT2
     }
 
-    // Flush any remaining data and enable interrupts
     krn_uart_flush_data();
     krn_uart_outb(0x01, UART_IER);
 }
