@@ -9,7 +9,7 @@ EMPTY_DISK_IMAGE	:= $(BASEDIR)/misc/empty-disk.img
 DISK_IMAGE 			:= $(BUILDDIR)/disk.img
 DISK_FS_OFFSET 		:= 1048576
 
-CFLAGS 	:=  -std=c11 -m32 -march=i486 -O2 \
+CFLAGS 	:=  -std=c11 -m32 -march=i386 -O2 \
 			-ffreestanding -fno-stack-protector \
 			-Wall -Wextra -pedantic \
 			-I$(BASEDIR)/include

@@ -1,6 +1,6 @@
 # GentleOS/32
 
-A hobby operating system for vintage 32-bit PCs (i486+).
+A hobby operating system for vintage 32-bit PCs (i386+).
 
 It's designed as a platform for tinkering with retro hardware, so it
 doesn't have most of the features of general-purpose operating systems.
