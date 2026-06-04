@@ -31,7 +31,16 @@ OBJS    := $(patsubst %.c,$(BUILDDIR)/%.o,$(C_SRCS)) \
 DEPS    := $(OBJS:.o=.d)
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 
-all: disk
+all: $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/gentleos.elf
+
+	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/gentleos.elf ::
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub
+
+	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/gentleos.elf ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot
 
 clean:
 	rm -rf $(BUILDDIR)
@@ -56,24 +65,12 @@ $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(ASFLAGS) -f elf32 $< -o $@
 
-kernel: $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/gentleos.elf
-
-disk: kernel
-	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/gentleos.elf ::
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub
-
-	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/gentleos.elf ::
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot
-
 print:
 	@echo "SUBDIRS=$(SUBDIRS)"
 	@echo "SRCS=$(SRCS)"
 	@echo "OBJS=$(OBJS)"
 
-.PHONY: all clean kernel disk print
+.PHONY: all clean kernel print
 
 # Include auto-generated dependency files if they exist
 -include $(DEPS)
