@@ -13,8 +13,8 @@ enum {
 
     GRID_CELL_WIDTH = 7,
     GRID_CELL_HEIGHT = 15,
-    GRID_ROWS = 7,
-    GRID_COLS = 33,
+    GRID_ROWS = 6,
+    GRID_COLS = 27,
     GRID_CELLS_COUNT = (GRID_ROWS * GRID_COLS),
     GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
     GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS) + 7,
@@ -62,7 +62,7 @@ draw_cpu_usage(void)
     static char buf[8];
     snprintf(buf, sizeof(buf), "%u%%   ", krn_timer_get_cpu_usage());
 
-    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 3);
+    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 2);
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
         buf, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
@@ -108,17 +108,10 @@ static void
 draw_info(void)
 {
     rect_st r = gui_grid_rect(&grid);
-    mboot_info_st *m = krn_core_mboot_info;
     static char buf[VALUE_LEN + 1];
     int line = 0;
 
     gui_surface_draw_rect(window.surface, r, window.bg_color);
-
-    if (m->flags & 0x04) {
-        snprintf(buf, sizeof(buf), "%s", m->boot_loader_name);
-        draw_text_sm(LABEL_COL, line, "Boot:");
-        draw_text_sm(VALUE_COL, line++, buf);
-    }
 
     snprintf(buf, sizeof(buf), "%dx%dx%d", GUI_WIDTH, GUI_HEIGHT, 1 << gui_fb_bpp);
 
