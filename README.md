@@ -2,55 +2,21 @@
 
 A hobby operating system for vintage 32-bit PCs (i386+).
 
-It's designed as a platform for tinkering with retro hardware, so it
-doesn't have most of the features of general-purpose operating systems.
-Its goal is to support building user-facing apps with minimal infrastructure.
+Its goal is to provide a simple platform for tinkering with retro
+hardware and running graphical interactive apps on bare metal.
 
 GentleOS/32 is a sibling of [GentleOS/16](https://github.com/luke8086/gentleos),
 a 16-bit OS that targets even older hardware.
 
-<img src="doc/qemu-01.png" width="400"> <img src="doc/qemu-02.png" width="400">
-<img src="doc/qemu-03.png" width="400"> <img src="doc/qemu-04.png" width="400">
+For details on building and running, see [USAGE.md](USAGE.md).
 
-## Building
+<img src="doc/machimg/t1900c.webp" width="400">
 
-- Make sure to have Docker & Docker Compose installed
-- Copy `config.sample.h` to `config.h` and optionally adjust any settings
-- Run `docker compose run --rm dev make -j4`
-- To clean up docker artifacts, run: `docker compose down --rmi all`
+## Gallery
 
-## Running in QEMU
-
-Run:
-
-```bash
-qemu-system-i386 -drive format=raw,file=build/disk.img -m 8 -debugcon stdio
-```
-
-For audio support on Macs, also add:
-
-```bash
--audiodev coreaudio,id=snd0 -machine pcspk-audiodev=snd0
-```
-
-## Running on real devices
-
-> [!WARNING]
-> The author takes no responsibility for any lost data
-> or damaged hardware. Proceed at your own risk, and only if you
-> fully understand what you're doing.
-
-To prepare a bootable HDD/pendrive, run the following command.
-Note it'll **permanently destroy** data on the target disk, and there
-will be no confirmation prompt.
-
-```bash
-dd if=build/disk.img of=<TARGET DISK> bs=1M conv=fsync status=progress
-```
-
-Alternatively, if you already have GRUB installed on the target machine,
-you can have it boot `gentleos.elf` directly
-(see [misc/grub.cfg](misc/grub.cfg) for a sample config).
+<img src="doc/appimg/qemu-01.png" width="400"> <img src="doc/appimg/qemu-02.png" width="400">
+<img src="doc/appimg/qemu-03.png" width="400"> <img src="doc/appimg/qemu-04.png" width="400">
+<img src="doc/appimg/qemu-05.png" width="400">
 
 ## Attributions
 
