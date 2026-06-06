@@ -1,5 +1,10 @@
 # GentleOS/32 - Usage and development
 
+## Pre-built images
+
+For a quick test, you can find pre-built images of GentleOS in
+[Releases](https://github.com/luke8086/gentleos32/releases).
+
 ## Building
 
 The only prerequisite is Docker & Docker Compose, supporting linux/amd64 platform.
