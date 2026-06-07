@@ -145,7 +145,7 @@ update_status(void)
     if (state == STATE_WON) {
         gui_status_set("You won! Press R to restart");
     } else {
-        gui_status_set("Remaining: %d  \xb3  R: restart", remaining);
+        gui_status_set("Remaining: %d  \xb3  R: Restart", remaining);
     }
 }
 
