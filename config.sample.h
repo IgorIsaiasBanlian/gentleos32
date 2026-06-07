@@ -12,8 +12,9 @@
 #define GUI_THEME GUI_THEME_DEFAULT
 
 // To set a wallpaper, save an image using GIMP as an ASCII-formatted PPM.
-// It exactly match screen resolution and only use colors from misc/vga-256.gpl palette
-// The wallpaper is only supported when VGA_MODE_12H is not set
+// It must exactly match the screen resolution and only use colors
+// from misc/vga-256.gpl palette.
+// The wallpaper is only supported when VGA_MODE_12H is not set.
 // #define WALLPAPER_PATH "tmp/wall.ppm"
 
 // Available modes for COM1 serial port:
