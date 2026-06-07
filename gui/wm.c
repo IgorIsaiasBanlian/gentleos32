@@ -8,7 +8,7 @@
 #include <gui.h>
 
 enum {
-    WINDOWS_COUNT_MAX = 6,
+    WINDOWS_COUNT_MAX = 10,
 };
 
 global rect_st gui_wm_container = { 0 };
