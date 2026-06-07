@@ -13,10 +13,9 @@ For details on building and running, see [USAGE.md](USAGE.md).
 <img src="doc/machimg/t1900c.webp" width="400">
 
 ## Gallery
+<img src="doc/machimg/380z.webp" width="400"> <img src="doc/machimg/t1800.webp" width="400">
+<img src="doc/machimg/libr20.webp" width="400"> <img src="doc/machimg/380z-2.webp" width="400">
 
-<img src="doc/appimg/qemu-01.png" width="400"> <img src="doc/appimg/qemu-02.png" width="400">
-<img src="doc/appimg/qemu-03.png" width="400"> <img src="doc/appimg/qemu-04.png" width="400">
-<img src="doc/appimg/qemu-05.png" width="400">
 
 ## Attributions
 
