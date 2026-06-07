@@ -141,7 +141,7 @@ update_status(void)
         return;
     }
 
-    gui_status_set("Remaining: %d  \xb3  R: restart", remaining_cards());
+    gui_status_set("Remaining: %d  \xb3  R: Restart", remaining_cards());
 }
 
 static void
