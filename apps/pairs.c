@@ -9,8 +9,8 @@
 #include <gui.h>
 
 enum {
-    GRID_CELL_WIDTH = 40,
-    GRID_CELL_HEIGHT = 40,
+    GRID_CELL_WIDTH = 36,
+    GRID_CELL_HEIGHT = 36,
     GRID_ROWS = 6,
     GRID_COLS = 7,
     GRID_CELL_COUNT = GRID_ROWS * GRID_COLS,
