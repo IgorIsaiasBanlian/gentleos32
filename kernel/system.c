@@ -7,25 +7,6 @@
 
 #include <kernel.h>
 
-global const char *
-krn_system_get_cpu_vendor(void)
-{
-    static char buf[13];
-
-    if (!cpu_has_cpuid()) {
-        return "Unknown";
-    }
-
-    uint32_t ebx, ecx, edx;
-    cpu_cpuid(0, &ebx, &ecx, &edx);
-    *(uint32_t *)(buf + 0) = ebx;
-    *(uint32_t *)(buf + 4) = edx;
-    *(uint32_t *)(buf + 8) = ecx;
-    buf[12] = '\0';
-
-    return buf;
-}
-
 global uint32_t
 krn_system_get_total_mem(void)
 {

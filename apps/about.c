@@ -13,7 +13,7 @@ enum {
 
     GRID_CELL_WIDTH = 7,
     GRID_CELL_HEIGHT = 15,
-    GRID_ROWS = 6,
+    GRID_ROWS = 5,
     GRID_COLS = 27,
     GRID_CELLS_COUNT = (GRID_ROWS * GRID_COLS),
     GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
@@ -30,6 +30,7 @@ enum {
     LABEL_COL = 2,
     VALUE_COL = 11,
     VALUE_LEN = GRID_COLS - VALUE_COL - 2,
+    CPU_USAGE_ROW = 1,
 
     REFRESH_TICKS = TICK_FREQUENCY, // 1s
 };
@@ -62,7 +63,7 @@ draw_cpu_usage(void)
     static char buf[8];
     snprintf(buf, sizeof(buf), "%u%%   ", krn_timer_get_cpu_usage());
 
-    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, 2);
+    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, CPU_USAGE_ROW);
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
         buf, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
@@ -118,11 +119,7 @@ draw_info(void)
     draw_text_sm(LABEL_COL, line, "Display:");
     draw_text_sm(VALUE_COL, line++, buf);
 
-    snprintf(buf, sizeof(buf), "%s", krn_system_get_cpu_vendor());
-    draw_text_sm(LABEL_COL, line, "CPU:");
-    draw_text_sm(VALUE_COL, line++, buf);
-
-    draw_text_sm(LABEL_COL, line++, "Busy:");
+    draw_text_sm(LABEL_COL, line++, "CPU:");
     draw_cpu_usage();
 
     snprintf(buf, sizeof(buf), "%u KB", krn_system_get_total_mem() >> 10);
