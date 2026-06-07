@@ -1,12 +1,21 @@
 # GentleOS/32
 
-A hobby operating system for vintage 32-bit PCs (i386+).
+A hobby operating system for vintage 32-bit PCs.
 
 Its goal is to provide a simple platform for tinkering with retro
 hardware and running graphical interactive apps on bare metal.
 
-GentleOS/32 is a sibling of [GentleOS/16](https://github.com/luke8086/gentleos),
-a 16-bit OS that targets even older hardware.
+At minimum, it only requires an i386 CPU, 4MB of RAM, and a VGA display
+capable of 640x480x16 mode.
+
+By design it's entirely monolithic, mostly configured at compile time,
+and only supports standard PC devices: VGA/SVGA, keyboard, PS/2 mouse,
+serial mouse, PC speaker. The only future plans are bugfixes,
+optimizations, and adding more apps.
+
+GentleOS/32 has a pure 16-bit spin-off called
+[GentleOS/16](https://github.com/luke8086/gentleos),
+which targets devices as old as 80186.
 
 For details on building and running, see [USAGE.md](USAGE.md).
 
@@ -15,7 +24,6 @@ For details on building and running, see [USAGE.md](USAGE.md).
 ## Gallery
 <img src="doc/machimg/380z.webp" width="400"> <img src="doc/machimg/t1800.webp" width="400">
 <img src="doc/machimg/libr20.webp" width="400"> <img src="doc/machimg/380z-2.webp" width="400">
-
 
 ## Attributions
 
