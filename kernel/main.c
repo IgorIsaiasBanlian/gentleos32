@@ -26,5 +26,6 @@ krn_main(void)
 
     gui_main();
 
+    /* NOTREACHED */
     halt();
 }
