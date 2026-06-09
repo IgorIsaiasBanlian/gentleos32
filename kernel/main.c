@@ -23,7 +23,8 @@ krn_main(void)
     krn_debug_dump_kernel_location();
 
     rand_init();
+
     gui_main();
 
-    while (1);
+    halt();
 }
