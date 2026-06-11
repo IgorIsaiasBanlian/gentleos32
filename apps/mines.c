@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: mines.c - Minesweeper game
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: mines.c - Minesweeper game
+ */
 
 #include <gui.h>
 

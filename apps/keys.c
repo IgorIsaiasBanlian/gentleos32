@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: keys.c - Keyboard map
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: keys.c - Keyboard map
+ */
 
 #include <gui.h>
 

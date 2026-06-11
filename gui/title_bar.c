@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: title_bar.c - Window title bar
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: title_bar.c - Window title bar
+ */
 
 #include <gui.h>
 

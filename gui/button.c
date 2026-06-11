@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: button.c - Button widget
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: button.c - Button widget
+ */
 
 #include <gui.h>
 

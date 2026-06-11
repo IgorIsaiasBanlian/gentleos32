@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: kernel.h - Kernel API
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: kernel.h - Kernel API
+ */
 
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
@@ -29,8 +29,8 @@ typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 typedef struct {
     uint32_t flags;
 
-    uint32_t mem_lower;     // KB of lower memory (flag 0x01)
-    uint32_t mem_upper;     // KB of upper memory above 1 MB (flag 0x01)
+    uint32_t mem_lower; /* KB of lower memory (flag 0x01) */
+    uint32_t mem_upper; /* KB of upper memory above 1 MB (flag 0x01) */
 
     uint32_t unused_1[13];
 
@@ -50,15 +50,15 @@ enum {
     UART_COM1 = 0x3F8,
     UART_BASE = UART_COM1,
 
-    UART_RBR  = 0, // Receiver Buffer Register (read, DLAB=0)
-    UART_THR  = 0, // Transmitter Holding Register (write, DLAB=0)
-    UART_DLL  = 0, // Divisor Latch LSB (DLAB=1)
-    UART_IER  = 1, // Interrupt Enable (DLAB=0)
-    UART_DLM  = 1, // Divisor Latch MSB (DLAB=1)
-    UART_FCR  = 2, // FIFO Control (write)
-    UART_LCR  = 3, // Line Control
-    UART_MCR  = 4, // Modem Control
-    UART_LSR  = 5, // Line Status
+    UART_RBR  = 0, /* Receiver Buffer Register (read, DLAB=0) */
+    UART_THR  = 0, /* Transmitter Holding Register (write, DLAB=0) */
+    UART_DLL  = 0, /* Divisor Latch LSB (DLAB=1) */
+    UART_IER  = 1, /* Interrupt Enable (DLAB=0) */
+    UART_DLM  = 1, /* Divisor Latch MSB (DLAB=1) */
+    UART_FCR  = 2, /* FIFO Control (write) */
+    UART_LCR  = 3, /* Line Control */
+    UART_MCR  = 4, /* Modem Control */
+    UART_LSR  = 5, /* Line Status */
 
     UART_MODE_NONE  = 0,
     UART_MODE_MOUSE = 1,
@@ -138,4 +138,4 @@ krn_vga_latch_write(volatile uint8_t *addr, uint8_t val)
 
 #include "p_kernel.h"
 
-#endif // _KERNEL_H_
+#endif /* _KERNEL_H_ */

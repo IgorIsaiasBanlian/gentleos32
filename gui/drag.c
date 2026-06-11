@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: drag.c - Routines for dragging windows
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: drag.c - Routines for dragging windows
+ */
 
 #include <gui.h>
 

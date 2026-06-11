@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: fb.c - Framebuffer routines
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: fb.c - Framebuffer routines
+ */
 
 #include <gui.h>
 

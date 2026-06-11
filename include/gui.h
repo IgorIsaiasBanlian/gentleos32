@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: gui.h - GUI API
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: gui.h - GUI API
+ */
 
 #ifndef _GUI_H_
 #define _GUI_H_
@@ -282,4 +282,4 @@ typedef struct {
 #include "p_build.h"
 #include "p_apps.h"
 
-#endif // _GUI_H_
+#endif /* _GUI_H_ */

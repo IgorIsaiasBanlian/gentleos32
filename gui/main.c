@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: gui.c - GUI main function
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: gui.c - GUI main function
+ */
 
 #include <gui.h>
 

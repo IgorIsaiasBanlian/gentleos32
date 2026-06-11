@@ -1,9 +1,9 @@
-; ---------------------------------------------------------------------------------------
+;
 ; Copyright (c) 2014-2026 luke8086
 ; Distributed under the terms of GPL-2 License
-; ---------------------------------------------------------------------------------------
+;
 ; File: core_a.s - Main entry point, setup of the core structures
-; ---------------------------------------------------------------------------------------
+;
 
 extern krn_core_c_main
 extern krn_core_c_isr_handle
@@ -12,9 +12,9 @@ extern krn_core_mboot_info
 [bits 32]
 [cpu 386]
 
-; ---------------------------------------------------------------------------------------
-; Main entry point for the bootloader
-; ---------------------------------------------------------------------------------------
+;;
+;; Main entry point for the bootloader
+;;
 
 [section .text]
 
@@ -58,9 +58,9 @@ global krn_core_stack_end:data
 krn_core_stack_end:
 
 
-; ---------------------------------------------------------------------------------------
-; Global Descriptor Table
-; ---------------------------------------------------------------------------------------
+;;
+;; Global Descriptor Table
+;;
 
 [section .text]
 
@@ -122,9 +122,9 @@ krn_core_gdt_pointer:
     dd krn_core_gdt_descriptors  ; base (pointer to the GDT)
 
 
-; ---------------------------------------------------------------------------------------
-; Programmable Interrupt Controller
-; ---------------------------------------------------------------------------------------
+;;
+;; Programmable Interrupt Controller
+;;
 
 %define PIC1_CMD  0x20
 %define PIC1_DATA 0x21
@@ -172,9 +172,9 @@ krn_core_pic_init:
     ret
 
 
-; ---------------------------------------------------------------------------------------
-; Interrupt Descriptor Table
-; ---------------------------------------------------------------------------------------
+;;
+;; Interrupt Descriptor Table
+;;
 
 ; 32 exceptions, 16 hw interrupts, 16 system interrupts
 %define INTR_COUNT 64
@@ -254,9 +254,9 @@ krn_core_idt:
     resq INTR_COUNT
 
 
-; ---------------------------------------------------------------------------------------
-; Interrupt Service Routines
-; ---------------------------------------------------------------------------------------
+;;
+;; Interrupt Service Routines
+;;
 
 [section .text]
 

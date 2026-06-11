@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: rect.c - Operations on rectangles
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: rect.c - Operations on rectangles
+ */
 
 #include <gui.h>
 
@@ -148,14 +148,14 @@ gui_rect_clip(rect_st r, rect_st clipper)
     return r;
 }
 
-//
-// Calculate the difference between two rectangles which
-// only differ in position. The result is two rectangles,
-// one for the horizontal difference and one for the vertical difference
-//
-// This function is used to select a part of the screen that needs
-// to be redrawn after a window is moved
-//
+/*
+ * Calculate the difference between two rectangles which
+ * only differ in position. The result is two rectangles,
+ * one for the horizontal difference and one for the vertical difference
+ *
+ * This function is used to select a part of the screen that needs
+ * to be redrawn after a window is moved
+ */
 global void
 gui_rect_translate_diff(rect_st r1, rect_st r2, rect_st *hdiff, rect_st *vdiff)
 {

@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: surface.c - Surface drawing routines
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: surface.c - Surface drawing routines
+ */
 
 #include <gui.h>
 
@@ -195,7 +195,7 @@ gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *b
     gui_surface_draw_bitmap(surface, x, y, bitmap, fill);
 }
 
-// Draw pattern in specified region relative to surface origin
+/* Draw pattern in specified region relative to surface origin */
 global void
 gui_surface_draw_pattern_abs(surface_st *surface, rect_st reg,
     bitmap_st *b, uint8_t col1, uint8_t col2)
@@ -214,7 +214,7 @@ gui_surface_draw_pattern_abs(surface_st *surface, rect_st reg,
     }
 }
 
-// Draw pattern in specified region relative to this region
+/* Draw pattern in specified region relative to this region */
 global void
 gui_surface_draw_pattern_rel(surface_st *surface, rect_st reg,
     bitmap_st *b, uint8_t col1, uint8_t col2)

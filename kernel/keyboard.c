@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: keyboard.c - Driver for PS/2 keyboard
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: keyboard.c - Driver for PS/2 keyboard
+ */
 
 #include <kernel.h>
 

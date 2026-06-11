@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: tetris.c - Tetris game
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: tetris.c - Tetris game
+ */
 
 #include <gui.h>
 
@@ -20,7 +20,7 @@ enum {
     WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 
-    DROP_TICKS = TICK_FREQUENCY * 3 / 10, // 0.3s
+    DROP_TICKS = TICK_FREQUENCY * 3 / 10, /* 0.3s */
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
@@ -34,13 +34,13 @@ static widget_st *widgets[2];
 static grid_st grid;
 
 static uint16_t pieces[7][4] = {
-    { 0x4444, 0x0f00, 0x4444, 0x0f00 }, // I
-    { 0x44c0, 0x8e00, 0x6440, 0x0e20 }, // J
-    { 0x4460, 0x0e80, 0xc440, 0x2e00 }, // L
-    { 0x0cc0, 0x0cc0, 0x0cc0, 0x0cc0 }, // O
-    { 0x06c0, 0x4620, 0x06c0, 0x4620 }, // S
-    { 0x4e00, 0x4640, 0x0e40, 0x4c40 }, // T
-    { 0x0c60, 0x2640, 0x0c60, 0x2640 }, // Z
+    { 0x4444, 0x0f00, 0x4444, 0x0f00 }, /* I */
+    { 0x44c0, 0x8e00, 0x6440, 0x0e20 }, /* J */
+    { 0x4460, 0x0e80, 0xc440, 0x2e00 }, /* L */
+    { 0x0cc0, 0x0cc0, 0x0cc0, 0x0cc0 }, /* O */
+    { 0x06c0, 0x4620, 0x06c0, 0x4620 }, /* S */
+    { 0x4e00, 0x4640, 0x0e40, 0x4c40 }, /* T */
+    { 0x0c60, 0x2640, 0x0c60, 0x2640 }, /* Z */
 };
 
 static uint8_t board[GRID_ROWS][GRID_COLS];
@@ -321,7 +321,7 @@ on_keyboard(window_st *w _unsd, event_st event)
         move_current_piece(0, 0, 1);
     } else if (event.key_code == KEY_SPACE) {
         while (move_current_piece(1, 0, 0)) {
-            // drop
+            /* drop */
         };
     }
 }

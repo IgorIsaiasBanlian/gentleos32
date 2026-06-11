@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: snake.c - Snake game
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: snake.c - Snake game
+ */
 
 #include <gui.h>
 
@@ -27,7 +27,7 @@ enum {
     WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 
-    MOVE_TICKS = TICK_FREQUENCY * 12 / 100, // 0.12s
+    MOVE_TICKS = TICK_FREQUENCY * 12 / 100, /* 0.12s */
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];

@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: mouse.c - Driver for PS/2 and MS serial mouse
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: mouse.c - Driver for PS/2 and MS serial mouse
+ */
 
 #include <kernel.h>
 
@@ -66,7 +66,7 @@ krn_mouse_handle_uart_data(uint8_t data)
     static uint8_t cycle = 0;
     static uint8_t p[3];
 
-    // Synchronize incoming data
+    /* Synchronize incoming data */
     if (data & 0x40) {
         cycle = 0;
     } else if (cycle == 0) {
@@ -96,7 +96,7 @@ krn_mouse_handle_ps2_data(uint8_t data)
     static uint8_t p[3];
     int dx, dy, btn_left, btn_right;
 
-    // Synchronize incoming data
+    /* Synchronize incoming data */
     if (cycle == 0 && (data & 8) == 0) {
         return;
     }
@@ -109,7 +109,7 @@ krn_mouse_handle_ps2_data(uint8_t data)
 
     cycle = 0;
 
-    // Ignore packet if overflow bits are set
+    /* Ignore packet if overflow bits are set */
     if (p[0] & 0xc0) {
         return;
     }

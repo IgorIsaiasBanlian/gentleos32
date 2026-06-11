@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: planar.c - Support for VGA planar mode
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: planar.c - Support for VGA planar mode
+ */
 
 #include <gui.h>
 
@@ -303,7 +303,7 @@ gui_planar_draw_pointer(int dst_x, int dst_y)
     }
 }
 
-// This must be only be called from gui_planar_xor_corners()
+/* This must be only be called from gui_planar_xor_corners() */
 static void
 gui_planar_xor_h_seg(uint8_t *vram, int x, int y, int w)
 {
@@ -341,7 +341,7 @@ gui_planar_xor_h_seg(uint8_t *vram, int x, int y, int w)
     krn_vga_latch_write(&row[r_byte], 0xFF);
 }
 
-// This must be only be called from gui_planar_xor_corners()
+/* This must be only be called from gui_planar_xor_corners() */
 static void
 gui_planar_xor_v_seg(uint8_t *vram, int x, int y, int h)
 {
@@ -373,19 +373,19 @@ gui_planar_xor_corners(rect_st rect)
     krn_vga_set_write_planes(0x0F);
     krn_vga_set_logic_op(0x18);
 
-    // Top-left
+    /* Top-left */
     gui_planar_xor_h_seg(vram, l_x, t_y, arm);
     gui_planar_xor_v_seg(vram, l_x, t_y + 1, arm - 1);
 
-    // Top-right
+    /* Top-right */
     gui_planar_xor_h_seg(vram, r_x - arm + 1, t_y, arm);
     gui_planar_xor_v_seg(vram, r_x, t_y + 1, arm - 1);
 
-    // Bottom-left
+    /* Bottom-left */
     gui_planar_xor_h_seg(vram, l_x, b_y, arm);
     gui_planar_xor_v_seg(vram, l_x, b_y - arm + 1, arm - 1);
 
-    // Bottom-right
+    /* Bottom-right */
     gui_planar_xor_h_seg(vram, r_x - arm + 1, b_y, arm);
     gui_planar_xor_v_seg(vram, r_x, b_y - arm + 1, arm - 1);
 

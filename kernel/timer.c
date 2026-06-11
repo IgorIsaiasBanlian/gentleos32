@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: timer.c - Driver for PIT 8254
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: timer.c - Driver for PIT 8254
+ */
 
 #include <kernel.h>
 
@@ -69,10 +69,10 @@ krn_timer_init(void)
 
     krn_debug_printf("Initializing timer... ");
 
-    // Set Counter 0, write both LSB and MSB, use mode 3, binary counter
+    /* Set Counter 0, write both LSB and MSB, use mode 3, binary counter */
     outb(0x36, PIT_CWR);
 
-    // Write LSB and MSB for counter 0
+    /* Write LSB and MSB for counter 0 */
     outb((uint8_t)((div >> 0) & 0xFF), PIT_CR0);
     outb((uint8_t)((div >> 8) & 0xFF), PIT_CR0);
 

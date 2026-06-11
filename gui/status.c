@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: status.c - Status bar routines
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: status.c - Status bar routines
+ */
 
 #include <gui.h>
 
@@ -58,7 +58,7 @@ gui_status_set_text(const char *text, uint8_t color)
     gui_surface_draw_str(window.surface, TEXT_X, TEXT_Y, font, text, color,
         status_bg_color);
 
-    // If the new text is shorter than previous, clear the remaining space
+    /* If the new text is shorter than previous, clear the remaining space */
     if (len < status_text_len) {
         rect_st clear_rect = {
             .x = TEXT_X + len * font->size.width,
@@ -112,7 +112,7 @@ gui_status_set_alert(const char *fmt, ...)
     gui_status_set_bg_color(COLOR_WIDGET_BG);
     gui_status_set_text(buf, COLOR_ALERT_FG);
 
-    // Flush immediately on alerts
+    /* Flush immediately on alerts */
     gui_fb_flush();
 }
 

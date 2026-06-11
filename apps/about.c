@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: about.c - System info app
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: about.c - System info app
+ */
 
 #include <gui.h>
 
@@ -32,7 +32,7 @@ enum {
     VALUE_LEN = GRID_COLS - VALUE_COL - 2,
     CPU_USAGE_ROW = 1,
 
-    REFRESH_TICKS = TICK_FREQUENCY, // 1s
+    REFRESH_TICKS = TICK_FREQUENCY, /* 1s */
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];

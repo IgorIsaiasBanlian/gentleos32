@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: window.c - Window routines
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: window.c - Window routines
+ */
 
 #include <gui.h>
 
@@ -96,7 +96,7 @@ gui_window_on_pointer_down(window_st *window, event_st event)
         .y = event.pointer_y - window->rect.y,
     };
 
-    // Just in case, deactivate previously pressed widget
+    /* Just in case, deactivate previously pressed widget */
     gui_window_on_pointer_out(window, event, pos);
 
     widget_st *pointed_widget = gui_window_find_widget_at(window, pos);
@@ -135,7 +135,7 @@ gui_window_on_pointer_move(window_st *window, event_st event)
         return;
     }
 
-    // If a non-sticky widget is pressed, deactivate it
+    /* If a non-sticky widget is pressed, deactivate it */
     gui_window_on_pointer_out(window, event, pos);
 
     if (pointed_widget && pointed_widget->press_on_move_in) {
@@ -157,7 +157,7 @@ gui_window_on_pointer_up(window_st *window, event_st event)
 
     widget_st *pressed_widget = window->pressed_widget;
 
-    // If widget was pressed, deactivate it and handle pointer up
+    /* If widget was pressed, deactivate it and handle pointer up */
     if (pressed_widget) {
         window->pressed_widget = NULL;
 

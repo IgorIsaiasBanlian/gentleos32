@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: pairs.c - Pair matching / Memory game
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: pairs.c - Pair matching / Memory game
+ */
 
 #include "lib.h"
 #include <gui.h>
@@ -24,7 +24,7 @@ enum {
 
     PAIR_COUNT = GRID_CELL_COUNT / 2,
 
-    MISMATCH_TICKS = TICK_FREQUENCY * 8 / 10, // 0.8s
+    MISMATCH_TICKS = TICK_FREQUENCY * 8 / 10, /* 0.8s */
 };
 
 static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];

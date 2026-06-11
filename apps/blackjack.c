@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: blackjack.c - Blackjack game
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: blackjack.c - Blackjack game
+ */
 
 #include <gui.h>
 
@@ -33,7 +33,7 @@ enum {
 
     WINDOW_HEIGHT = BUTTONS_Y + BUTTON_HEIGHT + SPACING,
 
-    HAND_SIZE_MAX = 11, // 4*A + 4*2 + 3*3
+    HAND_SIZE_MAX = 11, /* 4*A + 4*2 + 3*3 */
 };
 
 enum {

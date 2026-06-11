@@ -1,14 +1,14 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: lib.h - Basic standard library
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: lib.h - Basic standard library
+ */
 
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include <stdarg.h> // IWYU pragma: keep
+#include <stdarg.h> /* IWYU pragma: keep */
 #include <stdint.h>
 
 #include "../config.h"
@@ -142,7 +142,7 @@ enum {
     KEY_MOD_ALT     = 1 << 3,
 };
 
-// lib/cpu.s
+/* lib/cpu.s */
 uint32_t cpu_get_eflags(void);
 void cpu_set_eflags(uint32_t eflags);
 void cpu_cli(void);
@@ -155,4 +155,4 @@ void cpu_cpuid(uint32_t eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
 
 #include "p_lib.h"
 
-#endif // _LIB_H_
+#endif /* _LIB_H_ */

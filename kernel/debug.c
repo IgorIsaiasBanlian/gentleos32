@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2014-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: debug.c - Debug routines
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2014-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: debug.c - Debug routines
+ */
 
 #include <kernel.h>
 
@@ -15,7 +15,7 @@ krn_debug_putc(char c)
     if (UART_MODE == UART_MODE_DEBUG) {
         krn_uart_write_data(c);
     } else {
-        outb(c, 0xe9); // QEMU debug port
+        outb(c, 0xe9); /* QEMU debug port */
     }
 }
 

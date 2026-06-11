@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2025-2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: wm.c - Window manager
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2025-2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: wm.c - Window manager
+ */
 
 #include <gui.h>
 
@@ -146,9 +146,11 @@ gui_wm_render_window_surface(window_st *window, rect_st desktop_reg)
     gui_fb_draw_end();
 }
 
-// Re-render a specified region of the desktop to the screen,
-// by rendering that region in all windows from the bottom up,
-// starting from a specified bottom window
+/*
+ * Re-render a specified region of the desktop to the screen,
+ * by rendering that region in all windows from the bottom up,
+ * starting from a specified bottom window
+ */
 global void
 gui_wm_render_desktop_region(rect_st rect, window_st *bottom_window)
 {

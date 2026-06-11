@@ -1,9 +1,9 @@
-// --------------------------------------------------------------------------------------
-// Copyright (c) 2026 luke8086
-// Distributed under the terms of GPL-2 License
-// --------------------------------------------------------------------------------------
-// File: uart.c - Driver for UART 8250
-// --------------------------------------------------------------------------------------
+/*
+ * Copyright (c) 2026 luke8086
+ * Distributed under the terms of GPL-2 License
+ *
+ * File: uart.c - Driver for UART 8250
+ */
 
 #include <kernel.h>
 
@@ -97,12 +97,12 @@ krn_uart_init(void)
 
     if (UART_MODE == UART_MODE_MOUSE) {
         krn_uart_set_baud_rate(1200);
-        krn_uart_outb(0x02, UART_LCR); // 7N1
-        krn_uart_outb(0x0B, UART_MCR); // DTR + RTS + OUT2
+        krn_uart_outb(0x02, UART_LCR); /* 7N1 */
+        krn_uart_outb(0x0B, UART_MCR); /* DTR + RTS + OUT2 */
     } else if (UART_MODE == UART_MODE_DEBUG) {
         krn_uart_set_baud_rate(9600);
-        krn_uart_outb(0x03, UART_LCR); // 8N1
-        krn_uart_outb(0x08, UART_MCR); // OUT2
+        krn_uart_outb(0x03, UART_LCR); /* 8N1 */
+        krn_uart_outb(0x08, UART_MCR); /* OUT2 */
     }
 
     krn_uart_flush_data();
