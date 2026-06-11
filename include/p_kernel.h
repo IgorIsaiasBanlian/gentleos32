@@ -17,6 +17,7 @@ extern uint16_t krn_event_count(void);
 /* kernel/intr.c */
 extern void krn_intr_handle(isr_stack_st *isr_stack);
 extern void krn_intr_set_handler(uint8_t int_no, isr_handler_fn handler);
+extern void krn_intr_init(void);
 /* kernel/keyboard.c */
 extern void krn_keyboard_init(void);
 /* kernel/main.c */

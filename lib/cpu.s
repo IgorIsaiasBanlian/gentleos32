@@ -7,6 +7,12 @@
 
 [cpu 386]
 
+global cpu_lidt:function
+cpu_lidt:
+    mov eax, [esp + 4]
+    lidt [eax]
+    ret
+
 global cpu_get_eflags:function
 cpu_get_eflags:
     pushfd

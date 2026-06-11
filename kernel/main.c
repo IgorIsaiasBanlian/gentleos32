@@ -13,6 +13,7 @@ global system_info_st krn_system_info = { 0 };
 global void
 krn_main(void)
 {
+    krn_intr_init();
     krn_pic_init();
     krn_uart_init();
     krn_debug_printf("Starting GentleOS/32\n");

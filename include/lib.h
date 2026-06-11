@@ -156,6 +156,7 @@ enum {
 };
 
 /* lib/cpu.s */
+void cpu_lidt(void *ptr);
 uint32_t cpu_get_eflags(void);
 void cpu_set_eflags(uint32_t eflags);
 void cpu_cli(void);

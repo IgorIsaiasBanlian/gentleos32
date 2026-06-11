@@ -33,10 +33,6 @@ krn_core_entry:
     ; Load GDT
     call krn_core_gdt_load
 
-    ; Build and load IDT
-    call krn_core_idt_build
-    lidt [krn_core_idt_pointer]
-
     ; Jump to C code (stack pointer is already aligned)
     jmp krn_core_c_main
 
@@ -115,76 +111,13 @@ krn_core_gdt_pointer:
     dw (3 * 8 - 1)      ; limit (3 descriptors * 8 bytes - 1)
     dd krn_core_gdt_descriptors  ; base (pointer to the GDT)
 
+
 ;;
 ;; Interrupt Descriptor Table
 ;;
 
 ; 32 exceptions, 16 hw interrupts, 16 system interrupts
 %define INTR_COUNT 64
-
-[section .text]
-
-;
-; Generate Interrupt Descriptor Table
-;
-; Iterate over all IDT descriptors and fill them out with flags and pointers
-; to the corresponding ISRs
-;
-; For every entry we use:
-; - Code segment selector = 0x08 (see the GDT)
-; - D   = 1 (32-bit gate)
-; - P   = 1 (present)
-; - DPL = 0 (kernel mode)
-;
-krn_core_idt_build:
-    pusha
-
-    ; Set loop counter to 0
-    mov ecx, 0
-
-    ; Set destination index to the contents of the IDT
-    mov edi, krn_core_idt
-
-.idt_build_loop:
-    ; Write lower 16 bits of the pointer to the current ISR
-    mov eax, [krn_core_isr_pointers + ecx * 4]
-    stosw
-
-    ; Write code segment selector
-    mov eax, 0x0008
-    stosw
-
-    ; Write 0 byte
-    xor al, al
-    stosb
-
-    ; Write flags byte
-    mov al, 0b10001110
-    stosb
-
-    ; Write upper 16 bits of the pointer to the current ISR
-    mov eax, [krn_core_isr_pointers + ecx * 4]
-    shr eax, 16
-    stosw
-
-    ; Incr loop counter and continue if not equal to INTR_COUNT
-    inc ecx
-    cmp ecx, INTR_COUNT
-    jnz .idt_build_loop
-
-    popa
-    ret
-
-
-[section .rodata]
-
-;
-; Pointer to the IDT
-;
-global krn_core_idt_pointer:data
-krn_core_idt_pointer:
-  dw (INTR_COUNT * 8 - 1)   ; limit (INTR_COUNT descriptors * 8 bytes - 1)
-  dd krn_core_idt               ; base (pointer to the IDT)
 
 [section .bss]
 
@@ -195,6 +128,16 @@ align 16
 global krn_core_idt:data
 krn_core_idt:
     resq INTR_COUNT
+
+[section .rodata]
+
+;
+; Pointer to the IDT
+;
+global krn_core_idt_pointer:data
+krn_core_idt_pointer:
+  dw (INTR_COUNT * 8 - 1)   ; limit (INTR_COUNT descriptors * 8 bytes - 1)
+  dd krn_core_idt           ; base (pointer to the IDT)
 
 
 ;;
