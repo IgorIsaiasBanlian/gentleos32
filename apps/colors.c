@@ -22,7 +22,6 @@ enum {
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 };
 
-static uint8_t window_surface_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 
@@ -97,7 +96,7 @@ init_window(void)
     window_surface.size.width = WINDOW_WIDTH;
     window_surface.size.height = WINDOW_HEIGHT;
     window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = window_surface_pixels;
+    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Colors pixels", 1);
 
     window.surface = &window_surface;
     window.title = "Colors";

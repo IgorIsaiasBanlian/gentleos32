@@ -25,7 +25,6 @@ enum {
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + GRID_PAD + 1,
 };
 
-static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 
@@ -109,7 +108,7 @@ init_window(void)
     window_surface.size.width = WINDOW_WIDTH;
     window_surface.size.height = WINDOW_HEIGHT;
     window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = window_pixels;
+    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Clock pixels", 1);
 
     window.surface = &window_surface;
     window.title = "Clock";

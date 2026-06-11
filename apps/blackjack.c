@@ -41,7 +41,6 @@ enum {
     STATE_OVER = 1,
 };
 
-static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 static card_game_st game;
@@ -317,7 +316,7 @@ init_window(void)
     window_surface.size.width = WINDOW_WIDTH;
     window_surface.size.height = WINDOW_HEIGHT;
     window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = window_pixels;
+    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Blackjack pixels", 1);
 
     window.surface = &window_surface;
     window.title = "Blackjack";

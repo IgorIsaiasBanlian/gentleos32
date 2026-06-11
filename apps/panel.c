@@ -24,7 +24,6 @@ enum {
 
 static int current_page = 0;
 
-static uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 
@@ -98,7 +97,7 @@ init_window(void)
     window_surface.size.width = WINDOW_WIDTH;
     window_surface.size.height = WINDOW_HEIGHT;
     window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = window_pixels;
+    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Panel pixels", 1);
 
     window.rect.x = GUI_WIDTH - WINDOW_WIDTH;
     window.rect.y = 0;
