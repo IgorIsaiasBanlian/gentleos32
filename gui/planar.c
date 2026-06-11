@@ -12,11 +12,7 @@ enum {
     FB_PLANE_SIZE = GUI_HEIGHT * FB_PITCH,
 };
 
-#if VGA_MODE_12H
-static uint8_t gui_planar_pixels[4][FB_PLANE_SIZE] __attribute__((aligned(16)));
-#else
-static uint8_t **gui_planar_pixels;
-#endif
+static uint8_t (*gui_planar_pixels)[FB_PLANE_SIZE];
 
 global void
 gui_planar_flush(rect_st rect)
@@ -391,4 +387,13 @@ gui_planar_xor_corners(rect_st rect)
 
     krn_vga_set_logic_op(0x00);
     krn_vga_set_bit_mask(0xFF);
+}
+
+global void
+gui_planar_init(void)
+{
+#if VGA_MODE_12H
+    gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar buffer", 1);
+    memset(gui_planar_pixels, 0, 4 * FB_PLANE_SIZE);
+#endif
 }

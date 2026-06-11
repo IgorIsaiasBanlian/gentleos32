@@ -58,6 +58,7 @@ extern void gui_planar_draw_pattern_abs(rect_st dst_rect, bitmap_st *pattern, ui
 extern void gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect);
 extern void gui_planar_draw_pointer(int dst_x, int dst_y);
 extern void gui_planar_xor_corners(rect_st rect);
+extern void gui_planar_init(void);
 /* gui/pointer.c */
 extern bitmap_st bitmap_pointer;
 extern void gui_pointer_draw(void);
