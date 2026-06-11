@@ -145,7 +145,7 @@ krn_ps2_init(void)
     config &= ~PS2_CFG_DISABLE_MOUSE;
     krn_ps2_write_config(config);
 
-    krn_interrupt_set_handler(0x2c, krn_ps2_handle_intr);
+    krn_intr_set_handler(0x2c, krn_ps2_handle_intr);
 
     krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
     krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);

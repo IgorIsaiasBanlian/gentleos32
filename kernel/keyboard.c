@@ -87,7 +87,7 @@ krn_keyboard_init(void)
 {
     krn_debug_printf("Initializing keyboard... ");
 
-    krn_interrupt_set_handler(0x21, krn_keyboard_handle_intr);
+    krn_intr_set_handler(0x21, krn_keyboard_handle_intr);
 
     krn_debug_printf("ok\n");
 }

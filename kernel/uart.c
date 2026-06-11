@@ -91,7 +91,7 @@ global void
 krn_uart_init(void)
 {
     krn_uart_outb(0x00, UART_IER);
-    krn_interrupt_set_handler(0x24, krn_uart_handle_intr);
+    krn_intr_set_handler(0x24, krn_uart_handle_intr);
 
     krn_uart_outb(0x00, UART_FCR);
 

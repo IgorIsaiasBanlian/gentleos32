@@ -76,7 +76,7 @@ krn_timer_init(void)
     outb((uint8_t)((div >> 0) & 0xFF), PIT_CR0);
     outb((uint8_t)((div >> 8) & 0xFF), PIT_CR0);
 
-    krn_interrupt_set_handler(0x20, krn_timer_handle_intr);
+    krn_intr_set_handler(0x20, krn_timer_handle_intr);
 
     krn_debug_printf("ok\n");
 }

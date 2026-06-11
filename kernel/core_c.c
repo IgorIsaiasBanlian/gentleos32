@@ -40,6 +40,6 @@ krn_core_c_main(void)
 global __attribute__((force_align_arg_pointer)) void
 krn_core_c_isr_handle(isr_stack_st *isr_stack)
 {
-    krn_interrupt_handle(isr_stack);
+    krn_intr_handle(isr_stack);
 }
 
