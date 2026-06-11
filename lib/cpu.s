@@ -25,6 +25,11 @@ cpu_cli:
     cli
     ret
 
+global cpu_sti:function
+cpu_sti:
+    sti
+    ret
+
 global cpu_hlt:function
 cpu_hlt:
     hlt

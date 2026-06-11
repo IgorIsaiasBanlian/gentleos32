@@ -33,15 +33,9 @@ krn_core_entry:
     ; Load GDT
     call krn_core_gdt_load
 
-    ; Initialize PIC
-    call krn_core_pic_init
-
     ; Build and load IDT
     call krn_core_idt_build
     lidt [krn_core_idt_pointer]
-
-    ; Enable interrupts
-    sti
 
     ; Jump to C code (stack pointer is already aligned)
     jmp krn_core_c_main
@@ -120,57 +114,6 @@ global krn_core_gdt_pointer:data
 krn_core_gdt_pointer:
     dw (3 * 8 - 1)      ; limit (3 descriptors * 8 bytes - 1)
     dd krn_core_gdt_descriptors  ; base (pointer to the GDT)
-
-
-;;
-;; Programmable Interrupt Controller
-;;
-
-%define PIC1_CMD  0x20
-%define PIC1_DATA 0x21
-%define PIC2_CMD  0xA0
-%define PIC2_DATA 0xA1
-
-
-[section .text]
-
-;
-; Initialize Programmable Interrupt Controller
-;
-krn_core_pic_init:
-    ; Send "init & require ICW4" to both PICs
-    mov al, 0x11
-    out PIC1_CMD, al
-    out PIC2_CMD, al
-
-    ; Send "PIC1 offset" to PIC1
-    mov al, 0x20
-    out PIC1_DATA, al
-
-    ; Send "PIC2 offset" to PIC2
-    mov al, 0x28
-    out PIC2_DATA, al
-
-    ; Send "master PIC has slave on irq 2" to PIC1
-    mov al, 0x04
-    out PIC1_DATA, al
-
-    ; Send "slave PIC id is 2" to PIC2
-    mov al, 0x02
-    out PIC2_DATA, al
-
-    ; Send "8086 mode" to both PICs
-    mov al, 0x01
-    out PIC1_DATA, al
-    out PIC2_DATA, al
-
-    ; Unmask all interrupts in both PICs
-    mov al, 0x00
-    out PIC1_DATA, al
-    out PIC2_DATA, al
-
-    ret
-
 
 ;;
 ;; Interrupt Descriptor Table

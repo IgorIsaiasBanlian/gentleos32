@@ -159,6 +159,7 @@ enum {
 uint32_t cpu_get_eflags(void);
 void cpu_set_eflags(uint32_t eflags);
 void cpu_cli(void);
+void cpu_sti(void);
 void cpu_hlt(void);
 uint8_t inb(uint16_t port);
 void outb(uint8_t value, uint16_t port);
