@@ -44,6 +44,19 @@
 typedef uint32_t size_t;
 typedef int32_t ssize_t;
 
+typedef struct {
+    int mem_fields_valid;
+    uint32_t mem_lower;
+    uint32_t mem_upper;
+
+    int fb_fields_valid;
+    uint8_t *fb_addr;
+    uint32_t fb_pitch;
+    uint32_t fb_width;
+    uint32_t fb_height;
+    uint8_t  fb_bpp;
+} system_info_st;
+
 enum {
     KEY_UP = 0x48,
     KEY_DOWN = 0x50,

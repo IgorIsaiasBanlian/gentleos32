@@ -64,28 +64,6 @@ krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
 }
 
 global void
-krn_debug_dump_multiboot_info(void)
-{
-    mboot_info_st *m = krn_core_mboot_info;
-
-    if (m->flags & 0x04) {
-        krn_debug_printf("Bootloader: %s\n", m->boot_loader_name);
-    }
-
-    if (m->flags & 0x800 && !VGA_MODE_12H) {
-        krn_debug_printf(
-            "Video: %08x %dx%dx%d\n",
-            (uint32_t)m->fb_addr,
-            m->fb_width, m->fb_height, m->fb_bpp
-        );
-    }
-
-    if (m->flags & 0x01) {
-        krn_debug_printf("Mem: lower %u KB, upper %u KB\n", m->mem_lower, m->mem_upper);
-    }
-}
-
-global void
 krn_debug_dump_kernel_location(void)
 {
     uint32_t start = (uint32_t) &krn_link_start;

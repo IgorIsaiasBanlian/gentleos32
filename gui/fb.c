@@ -132,16 +132,18 @@ gui_fb_flush(void)
 global void
 gui_fb_init(void)
 {
+    system_info_st *si = &krn_system_info;
+
     gui_fb_vram_surface->size.width = GUI_WIDTH;
     gui_fb_vram_surface->size.height = GUI_HEIGHT;
 
-#if VGA_MODE_12H
-    gui_fb_vram_surface->pitch = GUI_WIDTH / 8;
-    gui_fb_vram_surface->pixels = (uint8_t *)0xA0000;
-    gui_fb_bpp = 4;
-#else
-    gui_fb_vram_surface->pitch = krn_core_mboot_info->fb_pitch;
-    gui_fb_vram_surface->pixels = krn_core_mboot_info->fb_addr;
-    gui_fb_bpp = krn_core_mboot_info->fb_bpp;
-#endif
+    if (VGA_MODE_12H) {
+        gui_fb_vram_surface->pitch = GUI_WIDTH / 8;
+        gui_fb_vram_surface->pixels = (uint8_t *)0xA0000;
+        gui_fb_bpp = 4;
+    } else {
+        gui_fb_vram_surface->pitch = si->fb_pitch;
+        gui_fb_vram_surface->pixels = si->fb_addr;
+        gui_fb_bpp = si->fb_bpp;
+    }
 }

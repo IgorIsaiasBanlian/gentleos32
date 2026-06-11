@@ -1,6 +1,5 @@
 /* kernel/core_c.c */
 extern uint32_t krn_core_mboot_header[];
-extern mboot_info_st *krn_core_mboot_info;
 extern void krn_core_c_main(void);
 extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */
@@ -9,7 +8,6 @@ extern void krn_debug_putc(char c);
 extern void krn_debug_printf(const char *fmt, ...);
 extern void krn_debug_assert(int expr, const char *file, unsigned line);
 extern void krn_debug_beep(unsigned hz, unsigned msecs, unsigned count);
-extern void krn_debug_dump_multiboot_info(void);
 extern void krn_debug_dump_kernel_location(void);
 /* kernel/event.c */
 extern int krn_event_ipush(event_st event);
@@ -22,7 +20,11 @@ extern void krn_interrupt_set_handler(uint8_t int_no, isr_handler_fn handler);
 /* kernel/keyboard.c */
 extern void krn_keyboard_init(void);
 /* kernel/main.c */
+extern system_info_st krn_system_info;
 extern void krn_main(void);
+/* kernel/mboot.c */
+extern mboot_info_st *krn_core_mboot_info;
+extern void krn_mboot_init(void);
 /* kernel/mouse.c */
 extern void krn_mouse_handle_uart_data(uint8_t data);
 extern void krn_mouse_handle_ps2_data(uint8_t data);
@@ -37,7 +39,6 @@ extern void krn_rtc_get_time(time_st *t);
 extern void krn_speaker_stop(void);
 extern void krn_speaker_play(unsigned hz);
 /* kernel/system.c */
-extern const char *krn_system_get_cpu_vendor(void);
 extern uint32_t krn_system_get_total_mem(void);
 extern uint32_t krn_system_get_used_mem(void);
 extern uint32_t krn_system_get_avail_mem(void);

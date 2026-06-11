@@ -29,8 +29,6 @@ global uint32_t krn_core_mboot_header[] = {
     8,
 };
 
-global mboot_info_st *krn_core_mboot_info;
-
 global void
 krn_core_c_main(void)
 {
