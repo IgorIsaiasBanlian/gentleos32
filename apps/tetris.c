@@ -266,6 +266,20 @@ restart_game(void)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+
+    for (int row = 0; row < GRID_ROWS; ++row) {
+        for (int col = 0; col < GRID_COLS; ++col) {
+            draw_cell(row, col, board[row][col]);
+        }
+    }
+
+    draw_current_piece(1);
+}
+
+static void
 on_tick(window_st *window)
 {
     static unsigned count = 0;
@@ -345,9 +359,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Tetris";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_key_down = on_keyboard;
     window.on_active_change = on_active_change;
     window.on_tick = on_tick;

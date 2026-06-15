@@ -84,6 +84,13 @@ draw_time(void)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    draw_time();
+}
+
+static void
 on_tick(window_st *window _unsd)
 {
     static unsigned count = 0;
@@ -112,9 +119,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Clock";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
@@ -136,7 +143,6 @@ init_app(void)
 {
     init_window();
     init_grid();
-    draw_time();
 }
 
 static void

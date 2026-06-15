@@ -92,6 +92,19 @@ on_next_pointer_up(widget_st *widget, event_st event, point_st pos)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_surface_draw_rect(window->surface, gui_window_area(window), COLOR_WIDGET_BG);
+    gui_surface_draw_v_seg(window->surface, 0, 0, WINDOW_HEIGHT - STATUS_HEIGHT + 1,
+        COLOR_BORDER);
+
+    gui_widget_draw(&prev_button);
+    gui_widget_draw(&next_button);
+
+    set_page(current_page);
+}
+
+static void
 init_window(void)
 {
     window_surface.size.width = WINDOW_WIDTH;
@@ -107,10 +120,7 @@ init_window(void)
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.visible = 1;
-
-    gui_surface_draw_rect(window.surface, gui_window_area(&window), COLOR_WIDGET_BG);
-    gui_surface_draw_v_seg(window.surface, 0, 0, WINDOW_HEIGHT - STATUS_HEIGHT + 1,
-        COLOR_BORDER);
+    window.draw = draw_window;
 }
 
 static void
@@ -162,7 +172,6 @@ init_app(void)
     init_window();
     init_app_buttons();
     init_nav_buttons();
-    set_page(0);
 }
 
 static void

@@ -105,7 +105,6 @@ struct window {
     int active;
 
     const char *title;
-    uint8_t bg_color;
 
     widget_st **widgets;
     size_t widgets_count;
@@ -113,6 +112,7 @@ struct window {
     widget_st *pressed_widget;
 
     void (*render_region)(window_st *, rect_st reg);
+    void (*draw)(window_st *);
     void (*on_pointer)(window_st *, event_st event);
     void (*on_key_down)(window_st *, event_st event);
     void (*on_key_up)(window_st *, event_st event);

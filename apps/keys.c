@@ -217,6 +217,13 @@ update_cell(uint16_t code, int escaped, int pressed)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    draw_keyboard();
+}
+
+static void
 on_key_down(window_st *w _unsd, event_st event)
 {
     int escaped = !!(event.key_mods & KEY_MOD_ESC);
@@ -248,9 +255,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Keys";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_key_down = on_key_down;
     window.on_key_up = on_key_up;
 
@@ -267,8 +274,6 @@ init_app(void)
 static void
 show_app(void)
 {
-    draw_keyboard();
-
     (void)gui_wm_add_window(&window);
 }
 

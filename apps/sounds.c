@@ -113,6 +113,12 @@ on_key_pointer_out(widget_st *widget, event_st event, point_st pos)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_BORDER);
+}
+
+static void
 init_window(void)
 {
     window_surface.size.width = WINDOW_WIDTH;
@@ -122,7 +128,7 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Sounds";
-    window.bg_color = COLOR_BORDER;
+    window.draw = draw_window;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
 

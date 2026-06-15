@@ -83,6 +83,12 @@ draw_color_button(widget_st *widget)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_BORDER);
+}
+
+static void
 on_active_change(window_st *window)
 {
     if (window->active) {
@@ -100,9 +106,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Colors";
-    window.bg_color = COLOR_BORDER;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_active_change = on_active_change;
 
     gui_window_init_frame(&window, &title_bar, &close_button);

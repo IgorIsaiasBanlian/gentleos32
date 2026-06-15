@@ -322,6 +322,12 @@ on_cell_pointer_alt(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_BORDER);
+}
+
+static void
 on_active_change(window_st *window)
 {
     if (window->active) {
@@ -339,9 +345,9 @@ window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Mines pixe
 
     window.surface = &window_surface;
     window.title = "Mines";
-    window.bg_color = COLOR_BORDER;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_active_change = on_active_change;
 
     gui_window_init_frame(&window, &title_bar, &close_button);

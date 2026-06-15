@@ -149,6 +149,13 @@ update_display(void)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_BORDER);
+    update_display();
+}
+
+static void
 on_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
     gui_button_on_pointer_up(widget, event, pos);
@@ -214,9 +221,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Calculator";
-    window.bg_color = COLOR_BORDER;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }
@@ -230,8 +237,6 @@ init_buttons(void)
     grid.rows = BUTTON_ROWS;
     grid.x = GRID_X;
     grid.y = GRID_Y;
-
-    gui_grid_draw_background(&grid, &window, COLOR_BORDER);
 
     for (int row = 0; row < BUTTON_ROWS; ++row) {
         for (int col = 0; col < BUTTON_COLS; ++col) {
@@ -261,8 +266,6 @@ init_app(void)
 static void
 show_app(void)
 {
-    update_display();
-
     (void)gui_wm_add_window(&window);
 }
 
@@ -271,4 +274,3 @@ global app_st app_calc = {
     .init = init_app,
     .show = show_app,
 };
-

@@ -26,6 +26,8 @@ static uint8_t window_pixels[STATUS_WIDTH * STATUS_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 
+static char status_text[TEXT_MAX_LEN + 1] = "";
+static uint8_t status_text_color = 0;
 static size_t status_text_len = 0;
 static uint8_t status_bg_color = 0;
 
@@ -54,6 +56,10 @@ gui_status_set_text(const char *text, uint8_t color)
 {
     size_t len = strlen(text);
     font_st *font = font_8x16;
+
+    strncpy(status_text, text, sizeof(status_text) - 1);
+    status_text[sizeof(status_text) - 1] = 0;
+    status_text_color = color;
 
     gui_surface_draw_str(window.surface, TEXT_X, TEXT_Y, font, text, color,
         status_bg_color);
@@ -116,6 +122,19 @@ gui_status_set_alert(const char *fmt, ...)
     gui_fb_flush();
 }
 
+static void
+draw_window(window_st *window)
+{
+    gui_surface_draw_h_seg(window->surface, 0, 0, STATUS_WIDTH, COLOR_BORDER);
+
+    rect_st bg = { .x = 0, .y = 1, .width = STATUS_WIDTH, .height = STATUS_HEIGHT - 1 };
+    status_bg_color = COLOR_WIDGET_BG;
+    gui_surface_draw_rect(window->surface, bg, status_bg_color);
+
+    status_text_len = 0;
+    gui_status_set_text(status_text, status_text_color);
+}
+
 global void
 gui_status_init(void)
 {
@@ -130,10 +149,7 @@ gui_status_init(void)
     window.rect.height = STATUS_HEIGHT;
     window.surface = &window_surface;
     window.visible = 1;
-
-    gui_surface_draw_h_seg(window.surface, 0, 0, STATUS_WIDTH, COLOR_BORDER);
-
-    gui_status_set("", COLOR_WIDGET_FG);
+    window.draw = draw_window;
 
     gui_wm_set_status_window(&window);
 }

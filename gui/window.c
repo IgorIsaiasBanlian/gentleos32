@@ -29,6 +29,18 @@ gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_
     };
     window->rect = gui_rect_center(window->rect, gui_wm_container);
 
+    // gui_window_draw_frame(window);
+
+    gui_title_bar_init(title_bar, window);
+    gui_window_add_widget(window, title_bar);
+
+    gui_close_button_init(close_button, window);
+    gui_window_add_widget(window, close_button);
+}
+
+global void
+gui_window_draw_frame(window_st *window, uint8_t bg_color)
+{
     gui_surface_draw_border(window->surface, gui_window_area(window), COLOR_BORDER);
 
     rect_st content_area = {
@@ -37,13 +49,17 @@ gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_
         .width = window->surface->size.width - 2,
         .height = window->surface->size.height - TITLE_BAR_HEIGHT - 1,
     };
-    gui_surface_draw_rect(window->surface, content_area, window->bg_color);
+    gui_surface_draw_rect(window->surface, content_area, bg_color);
+}
 
-    gui_title_bar_init(title_bar, window);
-    gui_window_add_widget(window, title_bar);
+global void
+gui_window_draw_widgets(window_st *window)
+{
+    size_t i;
 
-    gui_close_button_init(close_button, window);
-    gui_window_add_widget(window, close_button);
+    for (i = 0; i < window->widgets_count; ++i) {
+        gui_widget_draw(window->widgets[i]);
+    }
 }
 
 global int
@@ -56,9 +72,16 @@ gui_window_add_widget(window_st *window, widget_st *widget)
     widget->window = window;
     window->widgets[window->widgets_count++] = widget;
 
-    gui_widget_draw(widget);
+    //gui_widget_draw(widget);
 
     return 0;
+}
+
+global void
+gui_window_draw(window_st *window, uint8_t bg_color)
+{
+    gui_window_draw_frame(window, bg_color);
+    gui_window_draw_widgets(window);
 }
 
 global widget_st *

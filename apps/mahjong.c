@@ -539,6 +539,13 @@ on_board_pointer_up(widget_st *widget _unsd, event_st event _unsd, point_st pos)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    redraw_board();
+}
+
+static void
 on_key_down(window_st *w _unsd, event_st event)
 {
     if (event.key_code == KEY_R) {
@@ -573,9 +580,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Mahjong";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_key_down = on_key_down;
     window.on_active_change = on_active_change;
 

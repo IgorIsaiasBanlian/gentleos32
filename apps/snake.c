@@ -83,29 +83,38 @@ resume_game(void)
 }
 
 static void
-draw_cell(int x, int y, uint8_t val)
+set_region(int x, int y, int w, int h, uint8_t val)
 {
-    cells[x][y] = val;
+    for (int j = 0; j < h; ++j) {
+        for (int i = 0; i < w; ++i) {
+            cells[x + i][y + j] = val;
+        }
+    }
+}
 
+static void
+clear_board(void)
+{
+    set_region(0, 0, GRID_COLS, GRID_ROWS, CELL_TYPE_FLOOR);
+}
+
+static void
+draw_cell(int x, int y)
+{
+    uint8_t val = cells[x][y];
     rect_st r = gui_grid_cell_rect(&grid, x, y);
     gui_surface_draw_rect(window.surface, r, cell_colors[val]);
     gui_wm_render_window_region(&window, r);
 }
 
 static void
-draw_region(int x, int y, int w, int h, uint8_t val)
-{
-    for (int j = 0; j < h; ++j) {
-        for (int i = 0; i < w; ++i) {
-            draw_cell(x + i, y + j, val);
-        }
-    }
-}
-
-static void
 draw_board(void)
 {
-    draw_region(0, 0, GRID_COLS, GRID_ROWS, CELL_TYPE_FLOOR);
+    for (int j = 0; j < GRID_ROWS; ++j) {
+        for (int i = 0; i < GRID_COLS; ++i) {
+            draw_cell(i, j);
+        }
+    }
 }
 
 static void
@@ -117,7 +126,8 @@ add_fruit(void) {
         c.y = rand() % GRID_ROWS;
     } while (cells[c.x][c.y] != CELL_TYPE_FLOOR);
 
-    draw_cell(c.x, c.y, CELL_TYPE_FRUIT);
+    cells[c.x][c.y] = CELL_TYPE_FRUIT;
+    draw_cell(c.x, c.y);
 }
 
 static coords_st
@@ -141,7 +151,8 @@ move_snake(coords_st next_head)
         --body.grow;
         update_status();
     } else {
-        draw_cell(body.tail->x, body.tail->y, CELL_TYPE_FLOOR);
+        cells[body.tail->x][body.tail->y] = CELL_TYPE_FLOOR;
+        draw_cell(body.tail->x, body.tail->y);
     }
 
     for (coords_st *c = body.tail; c != body.head; --c) {
@@ -150,7 +161,8 @@ move_snake(coords_st next_head)
 
     *(body.head) = next_head;
 
-    draw_cell(next_head.x, next_head.y, CELL_TYPE_SNAKE);
+    cells[next_head.x][next_head.y] = CELL_TYPE_SNAKE;
+    draw_cell(next_head.x, next_head.y);
 }
 
 static void
@@ -170,10 +182,18 @@ restart_game(void)
     prev_dir = DIR_RIGHT;
     next_dir = DIR_RIGHT;
 
-    draw_board();
+    clear_board();
     add_fruit();
+    draw_board();
     update_status();
     resume_game();
+}
+
+static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    draw_board();
 }
 
 static void
@@ -272,9 +292,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Snake";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_key_down = on_keyboard;
     window.on_active_change = on_active_change;
     window.on_tick = on_tick;

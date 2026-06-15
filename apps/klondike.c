@@ -81,6 +81,13 @@ draw_all_piles(void)
     }
 }
 
+static void
+draw_window(window_st * window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    draw_all_piles();
+}
+
 static int
 remaining_cards(void)
 {
@@ -589,9 +596,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "Klondike";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_active_change = on_active_change;
     window.on_key_down = on_key_down;
     window.on_tick = on_tick;

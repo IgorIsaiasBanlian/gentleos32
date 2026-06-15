@@ -104,6 +104,13 @@ draw_font_label(void)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_BORDER);
+    draw_font_label();
+}
+
+static void
 on_prev_button(widget_st *widget _unsd, event_st event, point_st pos)
 {
     gui_button_on_pointer_up(widget, event, pos);
@@ -163,10 +170,10 @@ window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Fonts pixe
 
     window.surface = &window_surface;
     window.title = "Fonts";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
     window.on_active_change = on_active_change;
+    window.draw = draw_window;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
 }
@@ -204,8 +211,6 @@ init_char_buttons(void)
     grid.x = GRID_X;
     grid.y = GRID_Y;
 
-    gui_grid_draw_background(&grid, &window, COLOR_BORDER);
-
     for (size_t i = 0; i < GRID_CELLS_COUNT; ++i) {
         int col = i % grid.cols;
         int row = i / grid.cols;
@@ -228,7 +233,6 @@ init_app(void)
     init_window();
     init_buttons();
     init_char_buttons();
-    draw_font_label();
 }
 
 static void

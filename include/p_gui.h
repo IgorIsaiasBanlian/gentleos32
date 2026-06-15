@@ -65,6 +65,7 @@ extern void gui_pointer_draw(void);
 extern void gui_pointer_move(uint16_t x, uint16_t y);
 extern void gui_pointer_init(void);
 /* gui/rect.c */
+extern const rect_st GUI_RECT_SCREEN;
 extern int gui_rect_is_empty(rect_st r);
 extern rect_st gui_rect_make(int x, int y, int width, int height);
 extern rect_st gui_rect_translate(rect_st r, point_st v);
@@ -105,7 +106,10 @@ extern void gui_widget_draw(widget_st *widget);
 /* gui/window.c */
 extern rect_st gui_window_area(window_st *window);
 extern void gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_button);
+extern void gui_window_draw_frame(window_st *window, uint8_t bg_color);
+extern void gui_window_draw_widgets(window_st *window);
 extern int gui_window_add_widget(window_st *window, widget_st *widget);
+extern void gui_window_draw(window_st *window, uint8_t bg_color);
 extern widget_st *gui_window_find_widget_at(window_st *window, point_st pos);
 extern void gui_window_on_pointer_out(window_st *window, event_st event, point_st pos);
 extern void gui_window_on_pointer_down(window_st *window, event_st event);

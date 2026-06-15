@@ -111,8 +111,6 @@ draw_info(void)
     static char buf[VALUE_LEN + 1];
     int line = 0;
 
-    gui_surface_draw_rect(window.surface, r, window.bg_color);
-
     snprintf(buf, sizeof(buf), "%dx%dx%d", GUI_WIDTH, GUI_HEIGHT, 1 << gui_fb_bpp);
 
     draw_text_sm(LABEL_COL, line, "Display:");
@@ -159,6 +157,13 @@ on_tick(window_st *window)
 }
 
 static void
+draw_window(window_st *window)
+{
+    gui_window_draw(window, COLOR_WIDGET_BG);
+    draw_info();
+}
+
+static void
 init_window(void)
 {
     window_surface.size.width = WINDOW_WIDTH;
@@ -168,9 +173,9 @@ init_window(void)
 
     window.surface = &window_surface;
     window.title = "About";
-    window.bg_color = COLOR_WIDGET_BG;
     window.widgets = widgets;
     window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.draw = draw_window;
     window.on_tick = on_tick;
 
     gui_window_init_frame(&window, &title_bar, &close_button);
@@ -197,8 +202,6 @@ init_app(void)
 static void
 show_app(void)
 {
-    draw_info();
-
     (void)gui_wm_add_window(&window);
 }
 

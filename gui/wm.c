@@ -68,6 +68,8 @@ gui_wm_add_window(struct window *w)
 {
     unsigned i;
 
+    w->draw(w);
+
     for (i = 0; i < WINDOWS_COUNT_MAX; ++i) {
         if (gui_wm_windows[i] == w) {
             gui_wm_raise_window(w);
@@ -238,6 +240,7 @@ gui_wm_on_tick(void)
 global void
 gui_wm_set_panel_window(window_st *w)
 {
+    w->draw(w);
     gui_wm_panel_window = w;
     gui_wm_render_window_region(w, gui_window_area(w));
 }
@@ -245,6 +248,7 @@ gui_wm_set_panel_window(window_st *w)
 global void
 gui_wm_set_status_window(window_st *w)
 {
+    w->draw(w);
     gui_wm_status_window = w;
     gui_wm_render_window_region(w, gui_window_area(w));
 }
