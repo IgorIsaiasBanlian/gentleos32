@@ -95,6 +95,9 @@ extern void gui_surface_draw_bitmap(surface_st *surface, int dst_x, int dst_y, b
 extern void gui_surface_draw_bitmap_centered(surface_st *surface, rect_st rect, bitmap_st *bitmap, uint8_t fill);
 extern void gui_surface_draw_pattern_abs(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
 extern void gui_surface_draw_pattern_rel(surface_st *surface, rect_st reg, bitmap_st *b, uint8_t col1, uint8_t col2);
+/* gui/theme.c */
+extern gui_theme_st gui_theme;
+extern void gui_theme_set(int theme);
 /* gui/title_bar.c */
 extern void gui_title_bar_init(widget_st *bar, window_st *window);
 /* gui/widget.c */
@@ -113,9 +116,6 @@ extern void gui_window_on_active_change(window_st *window);
 /* gui/wm.c */
 extern rect_st gui_wm_container;
 extern bitmap_st *gui_wm_bg_bitmap;
-extern bitmap_st *gui_wm_bg_pattern;
-extern uint8_t gui_wm_desktop_color;
-extern uint8_t gui_wm_desktop_alt_color;
 extern void gui_wm_toggle_window_active(window_st *w, int active);
 extern void gui_wm_raise_window(struct window *w);
 extern int gui_wm_add_window(struct window *w);

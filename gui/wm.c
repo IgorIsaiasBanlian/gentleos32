@@ -18,9 +18,6 @@ static window_st *gui_wm_status_window = NULL;
 static window_st *gui_wm_windows[WINDOWS_COUNT_MAX];
 
 global bitmap_st *gui_wm_bg_bitmap = NULL;
-global bitmap_st *gui_wm_bg_pattern = NULL;
-global uint8_t gui_wm_desktop_color;
-global uint8_t gui_wm_desktop_alt_color;
 
 global void
 gui_wm_toggle_window_active(window_st *w, int active)
@@ -123,13 +120,13 @@ gui_wm_render_wallpaper(rect_st rect)
 {
     gui_fb_draw_start();
 
-    if (gui_wm_bg_pattern) {
-        gui_fb_draw_pattern(rect, gui_wm_bg_pattern, gui_wm_desktop_color,
-            gui_wm_desktop_alt_color);
+    if (gui_theme.desktop_pattern) {
+        gui_fb_draw_pattern(rect, gui_theme.desktop_pattern, COLOR_DESKTOP,
+            COLOR_DESKTOP_ALT);
     } else if (gui_wm_bg_bitmap) {
         gui_fb_draw_bitmap(rect, gui_wm_bg_bitmap);
     } else {
-        gui_fb_draw_rect(rect, gui_wm_desktop_color);
+        gui_fb_draw_rect(rect, COLOR_DESKTOP);
     }
 
     gui_fb_draw_end();
@@ -255,13 +252,8 @@ gui_wm_set_status_window(window_st *w)
 global void
 gui_wm_init(void)
 {
-    gui_wm_desktop_color = COLOR_DESKTOP;
-    gui_wm_desktop_alt_color = COLOR_DESKTOP_ALT;
-
 #if defined(WALLPAPER_PATH) && !VGA_MODE_12H
     gui_wm_bg_bitmap = &bitmap_wallpaper;
-#elif GUI_THEME == GUI_THEME_NEON
-    gui_wm_bg_pattern = &bitmap_pattern_4;
 #endif
 
     gui_wm_container.width = GUI_WIDTH - PANEL_WIDTH;

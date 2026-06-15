@@ -135,88 +135,86 @@ typedef struct {
     void (*show)(void);
 } app_st;
 
-#define GUI_THEME_DEFAULT 0
-#define GUI_THEME_MONO 1
-#define GUI_THEME_NEON 2
+typedef struct {
+    /* base */
+    uint8_t widget_bg;
+    uint8_t widget_fg;
+    uint8_t widget_sel_bg;
+    uint8_t widget_sel_fg;
+    uint8_t title_act_bg;
+    uint8_t title_act_fg;
+    uint8_t title_act_inner_border;
+    uint8_t title_sel_bg;
+    uint8_t title_sel_fg;
+    uint8_t alert_fg;
+    uint8_t border;
+    uint8_t desktop;
+    uint8_t desktop_alt;
+    bitmap_st *desktop_pattern;
+    uint8_t card_front_bg;
 
-#if GUI_THEME == GUI_THEME_MONO
-enum {
-    COLOR_WIDGET_BG = 0x0f,
-    COLOR_WIDGET_FG = 0x00,
-    COLOR_WIDGET_SEL_BG = COLOR_WIDGET_FG,
-    COLOR_WIDGET_SEL_FG = COLOR_WIDGET_BG,
-    COLOR_TITLE_ACT_BG = COLOR_WIDGET_FG,
-    COLOR_TITLE_ACT_FG = COLOR_WIDGET_BG,
-    COLOR_TITLE_ACT_INNER_BORDER = COLOR_TITLE_ACT_FG,
-    COLOR_TITLE_SEL_BG = COLOR_WIDGET_BG,
-    COLOR_TITLE_SEL_FG = COLOR_WIDGET_FG,
-    COLOR_ALERT_FG = COLOR_WIDGET_SEL_BG,
-    COLOR_BORDER = 0x00,
-    COLOR_DESKTOP = 0x0f,
-    COLOR_DESKTOP_ALT = 0x00,
-    COLOR_CARD_FRONT_BG = COLOR_WIDGET_BG,
-};
-#elif GUI_THEME == GUI_THEME_NEON
-enum {
-    COLOR_WIDGET_BG = 0x01,
-    COLOR_WIDGET_FG = 0x0b,
-    COLOR_WIDGET_SEL_BG = 0x05,
-    COLOR_WIDGET_SEL_FG = COLOR_WIDGET_FG,
-    COLOR_TITLE_ACT_BG = COLOR_WIDGET_SEL_BG,
-    COLOR_TITLE_ACT_FG = COLOR_WIDGET_FG,
-    COLOR_TITLE_ACT_INNER_BORDER = COLOR_TITLE_ACT_BG,
-    COLOR_TITLE_SEL_BG = 0x00,
-    COLOR_TITLE_SEL_FG = COLOR_TITLE_ACT_FG,
-    COLOR_ALERT_FG = 0x0d,
-    COLOR_BORDER = COLOR_WIDGET_FG,
-    COLOR_DESKTOP = COLOR_WIDGET_SEL_BG,
-    COLOR_DESKTOP_ALT = 0,
-    COLOR_CARD_FRONT_BG = COLOR_WIDGET_BG,
-};
-#else
-enum {
-    COLOR_WIDGET_BG = 0x07,
-    COLOR_WIDGET_FG = 0x00,
-    COLOR_WIDGET_SEL_BG = 0x08,
-    COLOR_WIDGET_SEL_FG = COLOR_WIDGET_FG,
-    COLOR_TITLE_ACT_BG = 0x0e,
-    COLOR_TITLE_ACT_FG = COLOR_WIDGET_FG,
-    COLOR_TITLE_ACT_INNER_BORDER = COLOR_TITLE_ACT_BG,
-    COLOR_TITLE_SEL_BG = COLOR_WIDGET_SEL_BG,
-    COLOR_TITLE_SEL_FG = COLOR_WIDGET_SEL_FG,
-    COLOR_ALERT_FG = 0x04,
-    COLOR_BORDER = COLOR_WIDGET_FG,
-    COLOR_DESKTOP = 0x03,
-    COLOR_DESKTOP_ALT = 0x01,
-    COLOR_CARD_FRONT_BG = 0x0f,
-};
-#endif
+    /* derived */
+    uint8_t card_back_bg_1;
+    uint8_t card_back_bg_2;
+    uint8_t card_red_fg;
+    uint8_t card_black_fg;
+    uint8_t card_sel_bg;
+    uint8_t card_sel_fg;
+    uint8_t mj_face_bg;
+    uint8_t mj_face_fg;
+    uint8_t mj_face_sel_bg;
+    uint8_t mj_face_sel_fg;
+    uint8_t mj_edge;
+    uint8_t snake_floor;
+    uint8_t snake_wall;
+    uint8_t snake_snake;
+    uint8_t snake_fruit;
+    uint8_t tetris_block;
+    uint8_t piano_key_black;
+    uint8_t piano_key_white;
+    uint8_t piano_key_sel;
+} gui_theme_st;
 
 enum {
-    COLOR_CARD_BACK_BG_1 = COLOR_WIDGET_BG,
-    COLOR_CARD_BACK_BG_2 = COLOR_WIDGET_SEL_BG,
-    COLOR_CARD_RED_FG = COLOR_ALERT_FG,
-    COLOR_CARD_BLACK_FG = COLOR_WIDGET_FG,
-    COLOR_CARD_SEL_BG = COLOR_WIDGET_SEL_BG,
-    COLOR_CARD_SEL_FG = COLOR_WIDGET_SEL_FG,
-
-    COLOR_MJ_FACE_BG = COLOR_CARD_FRONT_BG,
-    COLOR_MJ_FACE_FG = COLOR_CARD_BLACK_FG,
-    COLOR_MJ_FACE_SEL_BG = COLOR_CARD_SEL_BG,
-    COLOR_MJ_FACE_SEL_FG = COLOR_CARD_SEL_FG,
-    COLOR_MJ_EDGE = COLOR_BORDER,
-
-    COLOR_SNAKE_FLOOR = COLOR_WIDGET_BG,
-    COLOR_SNAKE_WALL = COLOR_BORDER,
-    COLOR_SNAKE_SNAKE = COLOR_WIDGET_FG,
-    COLOR_SNAKE_FRUIT = COLOR_TITLE_ACT_BG,
-
-    COLOR_TETRIS_BLOCK = COLOR_WIDGET_FG,
-
-    COLOR_PIANO_KEY_BLACK = COLOR_WIDGET_FG,
-    COLOR_PIANO_KEY_WHITE = COLOR_WIDGET_BG,
-    COLOR_PIANO_KEY_SEL = COLOR_TITLE_ACT_BG,
+    GUI_THEME_DEFAULT = 0,
+    GUI_THEME_MONO = 1,
+    GUI_THEME_NEON = 2,
 };
+
+#define COLOR_WIDGET_BG         gui_theme.widget_bg
+#define COLOR_WIDGET_FG         gui_theme.widget_fg
+#define COLOR_WIDGET_SEL_BG     gui_theme.widget_sel_bg
+#define COLOR_WIDGET_SEL_FG     gui_theme.widget_sel_fg
+#define COLOR_TITLE_ACT_BG      gui_theme.title_act_bg
+#define COLOR_TITLE_ACT_FG      gui_theme.title_act_fg
+#define COLOR_TITLE_ACT_INNER_BORDER gui_theme.title_act_inner_border
+#define COLOR_TITLE_SEL_BG      gui_theme.title_sel_bg
+#define COLOR_TITLE_SEL_FG      gui_theme.title_sel_fg
+#define COLOR_ALERT_FG          gui_theme.alert_fg
+#define COLOR_BORDER            gui_theme.border
+#define COLOR_DESKTOP           gui_theme.desktop
+#define COLOR_DESKTOP_ALT       gui_theme.desktop_alt
+#define COLOR_CARD_FRONT_BG     gui_theme.card_front_bg
+
+#define COLOR_CARD_BACK_BG_1    gui_theme.card_back_bg_1
+#define COLOR_CARD_BACK_BG_2    gui_theme.card_back_bg_2
+#define COLOR_CARD_RED_FG       gui_theme.card_red_fg
+#define COLOR_CARD_BLACK_FG     gui_theme.card_black_fg
+#define COLOR_CARD_SEL_BG       gui_theme.card_sel_bg
+#define COLOR_CARD_SEL_FG       gui_theme.card_sel_fg
+#define COLOR_MJ_FACE_BG        gui_theme.mj_face_bg
+#define COLOR_MJ_FACE_FG        gui_theme.mj_face_fg
+#define COLOR_MJ_FACE_SEL_BG    gui_theme.mj_face_sel_bg
+#define COLOR_MJ_FACE_SEL_FG    gui_theme.mj_face_sel_fg
+#define COLOR_MJ_EDGE           gui_theme.mj_edge
+#define COLOR_SNAKE_FLOOR       gui_theme.snake_floor
+#define COLOR_SNAKE_WALL        gui_theme.snake_wall
+#define COLOR_SNAKE_SNAKE       gui_theme.snake_snake
+#define COLOR_SNAKE_FRUIT       gui_theme.snake_fruit
+#define COLOR_TETRIS_BLOCK      gui_theme.tetris_block
+#define COLOR_PIANO_KEY_BLACK   gui_theme.piano_key_black
+#define COLOR_PIANO_KEY_WHITE   gui_theme.piano_key_white
+#define COLOR_PIANO_KEY_SEL     gui_theme.piano_key_sel
 
 enum {
     TITLE_BAR_HEIGHT = 24,

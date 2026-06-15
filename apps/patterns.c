@@ -99,7 +99,7 @@ on_pattern_button_press(widget_st *widget, event_st event _unsd, point_st pos _u
     widget_st *prev = active_pattern_button;
     active_pattern_button = widget;
 
-    gui_wm_bg_pattern = patterns[widget->tag1];
+    gui_theme.desktop_pattern = patterns[widget->tag1];
 
     if (prev && prev != widget) {
         gui_widget_draw(prev);
@@ -132,7 +132,7 @@ on_color1_button_press(widget_st *widget, event_st event _unsd, point_st pos _un
     widget_st *prev = active_color1_button;
     active_color1_button = widget;
 
-    gui_wm_desktop_color = widget->tag2;
+    gui_theme.desktop = widget->tag2;
 
     if (prev && prev != widget) {
         gui_widget_draw(prev);
@@ -149,7 +149,7 @@ on_color2_button_press(widget_st *widget, event_st event _unsd, point_st pos _un
     widget_st *prev = active_color2_button;
     active_color2_button = widget;
 
-    gui_wm_desktop_alt_color = widget->tag2;
+    gui_theme.desktop_alt = widget->tag2;
 
     if (prev && prev != widget) {
         gui_widget_draw(prev);
@@ -232,18 +232,18 @@ static void
 select_active_buttons(void)
 {
     for (int i = 0; i < PATTERN_COUNT; i++) {
-        if (gui_wm_bg_pattern == patterns[i]) {
+        if (gui_theme.desktop_pattern == patterns[i]) {
             active_pattern_button = &pattern_buttons[i];
             break;
         }
     }
 
     for (int i = 0; i < COLOR_COUNT; i++) {
-        if (gui_wm_desktop_color == i) {
+        if (gui_theme.desktop == i) {
             active_color1_button = &color1_buttons[i];
         }
 
-        if (gui_wm_desktop_alt_color == i) {
+        if (gui_theme.desktop_alt == i) {
             active_color2_button = &color2_buttons[i];
         }
     }
