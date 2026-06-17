@@ -10,18 +10,7 @@
 static surface_st _gui_fb_vram_surface = { 0 };
 global surface_st *gui_fb_vram_surface = &_gui_fb_vram_surface;
 global uint8_t gui_fb_bpp;
-
-#if !VGA_MODE_12H
-static uint8_t gui_fb_pixels[GUI_WIDTH * GUI_HEIGHT] __attribute__((aligned(16)));
-static surface_st gui_fb_surface = {
-    .size = {
-        .width = GUI_WIDTH,
-        .height = GUI_HEIGHT,
-    },
-    .pitch = GUI_WIDTH,
-    .pixels = gui_fb_pixels,
-};
-#endif
+static surface_st gui_fb_surface;
 
 static rect_st dirty_rect = { 0 };
 
@@ -145,5 +134,12 @@ gui_fb_init(void)
         gui_fb_vram_surface->pitch = si->fb_pitch;
         gui_fb_vram_surface->pixels = si->fb_addr;
         gui_fb_bpp = si->fb_bpp;
+    }
+
+    if (!VGA_MODE_12H) {
+        gui_fb_surface.size.width = GUI_WIDTH;
+        gui_fb_surface.size.height = GUI_HEIGHT;
+        gui_fb_surface.pitch = GUI_WIDTH;
+        gui_fb_surface.pixels = krn_heap_alloc(GUI_WIDTH * GUI_HEIGHT, "linear pixels", 1);
     }
 }

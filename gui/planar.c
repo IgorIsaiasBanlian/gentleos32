@@ -393,7 +393,7 @@ global void
 gui_planar_init(void)
 {
 #if VGA_MODE_12H
-    gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar buffer", 1);
+    gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
     memset(gui_planar_pixels, 0, 4 * FB_PLANE_SIZE);
 #endif
 }
