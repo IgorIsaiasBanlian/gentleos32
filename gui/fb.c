@@ -34,11 +34,11 @@ gui_fb_mark_dirty(rect_st rect)
 global void
 gui_fb_draw_rect(rect_st rect, uint8_t color)
 {
-#if VGA_MODE_12H
-    gui_planar_draw_rect(rect, color);
-#else
-    gui_surface_draw_rect(&gui_fb_surface, rect, color);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_draw_rect(rect, color);
+    } else {
+        gui_surface_draw_rect(&gui_fb_surface, rect, color);
+    }
 
     gui_fb_mark_dirty(rect);
 }
@@ -46,10 +46,11 @@ gui_fb_draw_rect(rect_st rect, uint8_t color)
 global void
 gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
 {
-#if VGA_MODE_12H
-    (void)rect;
-    (void)bitmap;
-#else
+    if (VGA_MODE_12H) {
+        /* Unsupported */
+        return;
+    }
+
     ASSERT(bitmap->size.width == GUI_WIDTH && bitmap->size.height == GUI_HEIGHT);
 
     for (uint16_t i = 0; i < rect.height; ++i) {
@@ -59,17 +60,16 @@ gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
     }
 
     gui_fb_mark_dirty(rect);
-#endif
 }
 
 global void
 gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
-#if VGA_MODE_12H
-    gui_planar_draw_pattern_abs(rect, pattern, c1, c2);
-#else
-    gui_surface_draw_pattern_abs(&gui_fb_surface, rect, pattern, c1, c2);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_draw_pattern_abs(rect, pattern, c1, c2);
+    } else {
+        gui_surface_draw_pattern_abs(&gui_fb_surface, rect, pattern, c1, c2);
+    }
 
     gui_fb_mark_dirty(rect);
 }
@@ -77,11 +77,11 @@ gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 global void
 gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect)
 {
-#if VGA_MODE_12H
-    gui_planar_draw_surface(dst_x, dst_y, src_sf, src_rect);
-#else
-    gui_surface_copy(&gui_fb_surface, dst_x, dst_y, src_sf, src_rect);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_draw_surface(dst_x, dst_y, src_sf, src_rect);
+    } else {
+        gui_surface_copy(&gui_fb_surface, dst_x, dst_y, src_sf, src_rect);
+    }
 
     gui_fb_mark_dirty(gui_rect_make(dst_x, dst_y, src_rect.width, src_rect.height));
 }
@@ -89,11 +89,11 @@ gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect)
 global void
 gui_fb_draw_outline(rect_st rect)
 {
-#if VGA_MODE_12H
-    gui_planar_xor_corners(rect);
-#else
-    gui_surface_draw_border(gui_fb_vram_surface, rect, COLOR_BORDER);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_xor_corners(rect);
+    } else {
+        gui_surface_draw_border(gui_fb_vram_surface, rect, COLOR_BORDER);
+    }
 }
 
 global void
@@ -108,11 +108,11 @@ gui_fb_flush(void)
     rect_st rect = dirty_rect;
     dirty_rect = (rect_st) { 0 };
 
-#if VGA_MODE_12H
-    gui_planar_flush(rect);
-#else
-    gui_surface_copy(gui_fb_vram_surface, rect.x, rect.y, &gui_fb_surface, rect);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_flush(rect);
+    } else {
+        gui_surface_copy(gui_fb_vram_surface, rect.x, rect.y, &gui_fb_surface, rect);
+    }
 
     gui_pointer_draw();
     gui_drag_draw_outline();

@@ -131,11 +131,7 @@ gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect)
         return;
     }
 
-#if VGA_MODE_12H
     uint8_t (*dst)[FB_PLANE_SIZE] = (uint8_t (*)[FB_PLANE_SIZE])gui_planar_pixels;
-#else
-    uint8_t (*dst)[FB_PLANE_SIZE] = NULL;
-#endif
 
     int dst_l_x = dst_x;
     int dst_r_x = dst_x + src_rect.width - 1;
@@ -392,8 +388,7 @@ gui_planar_xor_corners(rect_st rect)
 global void
 gui_planar_init(void)
 {
-#if VGA_MODE_12H
-    gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
-    memset(gui_planar_pixels, 0, 4 * FB_PLANE_SIZE);
-#endif
+    if (VGA_MODE_12H) {
+        gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
+    }
 }

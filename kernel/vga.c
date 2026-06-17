@@ -27,8 +27,6 @@ enum {
         VGA_NUM_CRTC_REGS + VGA_NUM_GC_REGS + VGA_NUM_AC_REGS
 };
 
-#if VGA_MODE_12H
-
 static const uint8_t krn_vga_regs_12h[VGA_NUM_TOTAL_REGS] = {
     /* MISC */
     0xE3,
@@ -114,16 +112,14 @@ krn_vga_clear_screen_12h(void)
     memset(pixels, 0x00, 640 * 480 / 8);
 }
 
-#endif /* VGA_MODE_12H */
-
 global void
 krn_vga_set_color(int index, uint32_t rgb)
 {
     uint8_t dac_index = index;
 
-#if VGA_MODE_12H
-    dac_index = krn_vga_dac_indexes[index & 0x0F];
-#endif
+    if (VGA_MODE_12H) {
+        dac_index = krn_vga_dac_indexes[index & 0x0F];
+    }
 
     outb(dac_index, 0x3C8);
     outb((rgb >> 18) & 0x3F, 0x3C9);
@@ -136,12 +132,12 @@ krn_vga_init(void)
 {
     krn_debug_printf("Initializing video... ");
 
-#if VGA_MODE_12H
-    krn_vga_set_mode(krn_vga_regs_12h);
-    krn_vga_set_write_mode(0);
-    krn_vga_set_bit_mask(0xFF);
-    krn_vga_clear_screen_12h();
-#endif
+    if (VGA_MODE_12H) {
+        krn_vga_set_mode(krn_vga_regs_12h);
+        krn_vga_set_write_mode(0);
+        krn_vga_set_bit_mask(0xFF);
+        krn_vga_clear_screen_12h();
+    }
 
     krn_vga_set_color(0x01, 0x002041);
     krn_vga_set_color(0x05, 0x710071);
