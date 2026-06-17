@@ -49,6 +49,10 @@ krn_heap_alloc(size_t size, const char *desc, int assert)
         }
     }
 
+    if (ret) {
+        memset(ret, 0, size);
+    }
+
     krn_debug_printf("%x\n", (uint32_t)ret);
 
     ASSERT(ret || !assert);
