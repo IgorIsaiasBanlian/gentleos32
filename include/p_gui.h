@@ -31,7 +31,6 @@ extern void gui_drag_draw_outline(void);
 extern void gui_drag_clear_outline(void);
 /* gui/fb.c */
 extern surface_st *gui_fb_vram_surface;
-extern uint8_t gui_fb_bpp;
 extern void gui_fb_draw_start(void);
 extern void gui_fb_draw_end(void);
 extern void gui_fb_mark_dirty(rect_st rect);
