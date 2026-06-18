@@ -21,7 +21,7 @@ krn_mboot_init(void)
         krn_system_info.mem_upper = m->mem_upper;
     }
 
-    if (m->flags & 0x800) {
+    if (m->flags & 0x1000) {
         krn_system_info.fb_addr = m->fb_addr;
         krn_system_info.fb_width = m->fb_width;
         krn_system_info.fb_height = m->fb_height;
@@ -35,7 +35,7 @@ krn_mboot_init(void)
         krn_debug_printf("Bootloader: %s\n", m->boot_loader_name);
     }
 
-    if (m->flags & 0x800 && !VGA_MODE_12H) {
+    if (m->flags & 0x1000) {
         krn_debug_printf(
             "Video: %08x %dx%dx%d\n",
             (uint32_t)m->fb_addr,
