@@ -7,31 +7,15 @@
 
 #include <gui.h>
 
-enum {
-    GRID_CELL_WIDTH = VGA_MODE_12H ? 32 : 18,
-    GRID_CELL_HEIGHT = VGA_MODE_12H ? 32 : 18,
-    GRID_ROWS = VGA_MODE_12H ? 4 : 16,
-    GRID_COLS = VGA_MODE_12H ? 4 : 16,
-    GRID_CELLS_COUNT = (GRID_ROWS * GRID_COLS),
-    GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
-    GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS),
-    GRID_X = 1,
-    GRID_Y = TITLE_BAR_HEIGHT,
-
-    WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
-    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
-};
-
 static surface_st window_surface;
 static window_st window;
 
-static widget_st color_buttons[GRID_CELLS_COUNT];
-static widget_st *active_color_button = &color_buttons[0];
+static size_t color_buttons_count;
+static widget_st *color_buttons;
+static widget_st *active_color_button;
 
 static widget_st close_button;
 static widget_st title_bar;
-
-static widget_st *widgets[GRID_CELLS_COUNT + 2];
 
 static grid_st grid;
 
@@ -46,6 +30,7 @@ update_status(void)
     gui_status_set("Hex:%02x Dec:%d", active_color_button->tag2,
         active_color_button->tag2);
 }
+
 static void
 on_color_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
@@ -97,17 +82,46 @@ on_active_change(window_st *window)
 }
 
 static void
+init_grid(void)
+{
+    system_info_st *si = &krn_system_info;
+
+    if (si->fb_bpp == 8) {
+        grid.cell_width = 18;
+        grid.cell_height = 18;
+        grid.cols = 16;
+        grid.rows = 16;
+    } else {
+        grid.cell_width = 32;
+        grid.cell_height = 32;
+        grid.cols = 4;
+        grid.rows = 4;
+    }
+
+    grid.x = 1;
+    grid.y = TITLE_BAR_HEIGHT;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Colors pixels", 1);
+    int grid_width = GRID_WIDTH_SPACED(grid.cell_width, grid.cols);
+    int grid_height = GRID_HEIGHT_SPACED(grid.cell_height, grid.rows);
+    int width = grid.x + grid_width + 1;
+    int height = grid.y + grid_height + 1;
+
+    color_buttons_count = grid.cols * grid.rows;
+
+    window_surface.size.width = width;
+    window_surface.size.height = height;
+    window_surface.pitch = width;
+    window_surface.pixels = krn_heap_alloc(width * height, "Colors pixels", 1);
 
     window.surface = &window_surface;
     window.title = "Colors";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.widgets_capacity = color_buttons_count + 2;
+    window.widgets = krn_heap_alloc(sizeof(widget_st *) * window.widgets_capacity,
+        "Colors widgets", 1);
     window.draw = draw_window;
     window.on_active_change = on_active_change;
 
@@ -117,14 +131,11 @@ init_window(void)
 static void
 init_color_buttons(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    color_buttons = krn_heap_alloc(sizeof(widget_st) * color_buttons_count,
+        "Colors buttons", 1);
+    active_color_button = &color_buttons[0];
 
-    for (size_t i = 0; i < GRID_CELLS_COUNT; i++) {
+    for (int i = 0; i < (grid.cols * grid.rows); i++) {
         int col = i % grid.cols;
         int row = i / grid.cols;
 
@@ -142,6 +153,7 @@ init_color_buttons(void)
 static void
 init_app(void)
 {
+    init_grid();
     init_window();
     init_color_buttons();
 }
