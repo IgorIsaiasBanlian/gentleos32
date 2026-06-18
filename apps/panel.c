@@ -8,15 +8,9 @@
 #include <gui.h>
 
 enum {
-    WINDOW_WIDTH = PANEL_WIDTH,
-    WINDOW_HEIGHT = GUI_HEIGHT,
-
     APP_BUTTON_MARGIN = 8,
     APP_BUTTON_SIZE = 48,
     APP_BUTTON_STRIDE = APP_BUTTON_SIZE + APP_BUTTON_MARGIN,
-
-    APP_BUTTONS_COUNT = (WINDOW_HEIGHT - STATUS_HEIGHT - APP_BUTTON_MARGIN)
-        / APP_BUTTON_STRIDE,
 
     NAV_WIDTH = PANEL_WIDTH / 2,
     NAV_HEIGHT = STATUS_HEIGHT,
@@ -27,22 +21,22 @@ static int current_page = 0;
 static surface_st window_surface;
 static window_st window;
 
-static widget_st app_buttons[APP_BUTTONS_COUNT];
+static size_t app_buttons_count;
+static widget_st *app_buttons;
 static widget_st prev_button;
 static widget_st next_button;
-static widget_st *widgets[APP_BUTTONS_COUNT + 2];
 
 static void
 set_page(int page)
 {
     current_page = page;
 
-    rect_st area = { .x = 1, .y = 0, .width = WINDOW_WIDTH - 1,
-        .height = WINDOW_HEIGHT - STATUS_HEIGHT };
+    rect_st area = { .x = 1, .y = 0, .width = window.rect.width - 1,
+        .height = window.rect.height - STATUS_HEIGHT };
     gui_surface_draw_rect(window.surface, area, COLOR_WIDGET_BG);
 
-    for (size_t i = 0; i < APP_BUTTONS_COUNT; i++) {
-        size_t app_idx = current_page * APP_BUTTONS_COUNT + i;
+    for (size_t i = 0; i < app_buttons_count; i++) {
+        size_t app_idx = current_page * app_buttons_count + i;
 
         if (app_idx >= gui_apps_count) {
             app_buttons[i].hidden = 1;
@@ -84,7 +78,7 @@ on_next_pointer_up(widget_st *widget, event_st event, point_st pos)
 {
     gui_button_on_pointer_up(widget, event, pos);
 
-    int max_page = (gui_apps_count + APP_BUTTONS_COUNT - 1) / APP_BUTTONS_COUNT - 1;
+    int max_page = (gui_apps_count + app_buttons_count - 1) / app_buttons_count - 1;
 
     if (current_page < max_page) {
         set_page(current_page + 1);
@@ -95,7 +89,7 @@ static void
 draw_window(window_st *window)
 {
     gui_surface_draw_rect(window->surface, gui_window_area(window), COLOR_WIDGET_BG);
-    gui_surface_draw_v_seg(window->surface, 0, 0, WINDOW_HEIGHT - STATUS_HEIGHT + 1,
+    gui_surface_draw_v_seg(window->surface, 0, 0, window->rect.height - STATUS_HEIGHT + 1,
         COLOR_BORDER);
 
     gui_widget_draw(&prev_button);
@@ -107,18 +101,25 @@ draw_window(window_st *window)
 static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Panel pixels", 1);
+    system_info_st *si = &krn_system_info;
+    int width = PANEL_WIDTH;
+    int height = si->fb_height;
 
-    window.rect.x = GUI_WIDTH - WINDOW_WIDTH;
+    app_buttons_count = (height - STATUS_HEIGHT - APP_BUTTON_MARGIN) / APP_BUTTON_STRIDE;
+
+    window_surface.size.width = width;
+    window_surface.size.height = height;
+    window_surface.pitch = width;
+    window_surface.pixels = krn_heap_alloc(width * height, "Panel pixels", 1);
+
+    window.rect.x = si->fb_width - width;
     window.rect.y = 0;
-    window.rect.width = WINDOW_WIDTH;
-    window.rect.height = WINDOW_HEIGHT;
+    window.rect.width = width;
+    window.rect.height = height;
     window.surface = &window_surface;
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    window.widgets_capacity = app_buttons_count + 2;
+    window.widgets = krn_heap_alloc(sizeof(widget_st *) * window.widgets_capacity,
+        "Panel widgets", 1);
     window.visible = 1;
     window.draw = draw_window;
 }
@@ -126,7 +127,10 @@ init_window(void)
 static void
 init_app_buttons(void)
 {
-    for (size_t i = 0; i < APP_BUTTONS_COUNT; i++) {
+    app_buttons = krn_heap_alloc(sizeof(widget_st) * app_buttons_count,
+        "Panel app buttons", 1);
+
+    for (size_t i = 0; i < app_buttons_count; i++) {
         gui_button_init(&app_buttons[i]);
         app_buttons[i].rect.x = APP_BUTTON_MARGIN;
         app_buttons[i].rect.y = APP_BUTTON_MARGIN + (i * APP_BUTTON_STRIDE);
@@ -145,7 +149,7 @@ init_nav_buttons(void)
 {
     gui_button_init(&prev_button);
     prev_button.rect.x = 1;
-    prev_button.rect.y = WINDOW_HEIGHT - NAV_HEIGHT;
+    prev_button.rect.y = window.rect.height - NAV_HEIGHT;
     prev_button.rect.width = NAV_WIDTH - 1;
     prev_button.rect.height = NAV_HEIGHT;
     prev_button.window = &window;
@@ -156,7 +160,7 @@ init_nav_buttons(void)
 
     gui_button_init(&next_button);
     next_button.rect.x = NAV_WIDTH;
-    next_button.rect.y = WINDOW_HEIGHT - NAV_HEIGHT;
+    next_button.rect.y = window.rect.height - NAV_HEIGHT;
     next_button.rect.width = NAV_WIDTH;
     next_button.rect.height = NAV_HEIGHT;
     next_button.window = &window;
