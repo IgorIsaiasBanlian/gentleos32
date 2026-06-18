@@ -30,7 +30,10 @@ enum {
     LABEL_COL = 2,
     VALUE_COL = 11,
     VALUE_LEN = GRID_COLS - VALUE_COL - 2,
+
     CPU_USAGE_ROW = 1,
+    MEM_USED_ROW = 3,
+    MEM_AVAIL_ROW = 4,
 
     REFRESH_TICKS = TICK_FREQUENCY, /* 1s */
 };
@@ -52,22 +55,33 @@ draw_text_sm(int col, int row, const char *text)
     }
 
     rect_st r = gui_grid_cell_rect(&grid, col, row);
+    r.width = strlen(text) * 8;
+
     gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
         text, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+
+    gui_wm_render_window_region(&window, r);
 }
 
 static void
 draw_cpu_usage(void)
 {
     static char buf[8];
+
     snprintf(buf, sizeof(buf), "%u%%   ", krn_timer_get_cpu_usage());
+    draw_text_sm(VALUE_COL, CPU_USAGE_ROW, buf);
+}
 
-    rect_st r = gui_grid_cell_rect(&grid, VALUE_COL, CPU_USAGE_ROW);
-    gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
-        buf, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+static void
+draw_mem_usage(void)
+{
+    static char buf[VALUE_LEN + 1];
 
-    r.width = (sizeof(buf) - 1) * 8;
-    gui_wm_render_window_region(&window, r);
+    snprintf(buf, sizeof(buf), "%u KB   ", krn_system_get_used_mem() >> 10);
+    draw_text_sm(VALUE_COL, MEM_USED_ROW, buf);
+
+    snprintf(buf, sizeof(buf), "%u KB   ", krn_system_get_avail_mem() >> 10);
+    draw_text_sm(VALUE_COL, MEM_AVAIL_ROW, buf);
 }
 
 static void
@@ -124,13 +138,9 @@ draw_info(void)
     draw_text_sm(LABEL_COL, line, "Mem:");
     draw_text_sm(VALUE_COL, line++, buf);
 
-    snprintf(buf, sizeof(buf), "%u KB", krn_system_get_used_mem() >> 10);
-    draw_text_sm(LABEL_COL, line, "Used:");
-    draw_text_sm(VALUE_COL, line++, buf);
-
-    snprintf(buf, sizeof(buf), "%u KB", krn_system_get_avail_mem() >> 10);
-    draw_text_sm(LABEL_COL, line, "Avail:");
-    draw_text_sm(VALUE_COL, line++, buf);
+    draw_text_sm(LABEL_COL, line++, "Used:");
+    draw_text_sm(LABEL_COL, line++, "Avail:");
+    draw_mem_usage();
 
     draw_top_bar();
     draw_bottom_bar();
@@ -155,6 +165,7 @@ on_tick(window_st *window)
 
     count = 0;
     draw_cpu_usage();
+    draw_mem_usage();
 }
 
 static void
