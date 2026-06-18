@@ -22,12 +22,13 @@ krn_mboot_init(void)
     }
 
     if (m->flags & 0x800) {
-        krn_system_info.fb_fields_valid  = 1;
         krn_system_info.fb_addr = m->fb_addr;
-        krn_system_info.fb_pitch = m->fb_pitch;
         krn_system_info.fb_width = m->fb_width;
         krn_system_info.fb_height = m->fb_height;
+        krn_system_info.fb_pitch = m->fb_pitch;
         krn_system_info.fb_bpp = m->fb_bpp;
+        krn_system_info.fb_planar = m->fb_bpp != 8;
+        krn_system_info.fb_fields_valid  = 1;
     }
 
     if (m->flags & 0x04) {

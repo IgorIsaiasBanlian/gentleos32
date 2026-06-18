@@ -54,7 +54,8 @@ typedef struct {
     uint32_t fb_pitch;
     uint32_t fb_width;
     uint32_t fb_height;
-    uint8_t  fb_bpp;
+    uint8_t fb_bpp;
+    uint8_t fb_planar;
 } system_info_st;
 
 enum {

@@ -130,6 +130,8 @@ krn_vga_set_color(int index, uint32_t rgb)
 global void
 krn_vga_init(void)
 {
+    system_info_st *si = &krn_system_info;
+
     krn_debug_printf("Initializing video... ");
 
     if (VGA_MODE_12H) {
@@ -137,6 +139,14 @@ krn_vga_init(void)
         krn_vga_set_write_mode(0);
         krn_vga_set_bit_mask(0xFF);
         krn_vga_clear_screen_12h();
+
+        si->fb_addr = (uint8_t *)0xA0000;
+        si->fb_width = 640;
+        si->fb_height = 480;
+        si->fb_pitch = 640 / 8;
+        si->fb_bpp = 4;
+        si->fb_planar = 1;
+        si->fb_fields_valid = 1;
     }
 
     krn_vga_set_color(0x01, 0x002041);
