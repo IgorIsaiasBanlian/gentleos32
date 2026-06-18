@@ -5,7 +5,7 @@ A hobby operating system for vintage 32-bit PCs.
 Its goal is to provide a simple platform for tinkering with retro
 hardware and running graphical interactive apps on bare metal.
 
-At minimum, it only requires an i386 CPU, 4MB of RAM, and a VGA display
+At minimum, it only requires an i386 CPU, 2MB of RAM, and a VGA display
 capable of 640x480x16 mode.
 
 By design it's entirely monolithic, mostly configured at compile time,
