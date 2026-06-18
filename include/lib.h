@@ -51,11 +51,11 @@ typedef struct {
 
     int fb_fields_valid;
     uint8_t *fb_addr;
-    uint32_t fb_pitch;
-    uint32_t fb_width;
-    uint32_t fb_height;
-    uint8_t fb_bpp;
-    uint8_t fb_planar;
+    int fb_pitch;
+    int fb_width;
+    int fb_height;
+    int fb_bpp;
+    int fb_planar;
 } system_info_st;
 
 enum {
