@@ -107,11 +107,12 @@ draw_bottom_bar(void)
 static void
 draw_info(void)
 {
+    system_info_st *si = &krn_system_info;
     rect_st r = gui_grid_rect(&grid);
     static char buf[VALUE_LEN + 1];
     int line = 0;
 
-    snprintf(buf, sizeof(buf), "%dx%dx%d", GUI_WIDTH, GUI_HEIGHT, 1 << gui_fb_bpp);
+    snprintf(buf, sizeof(buf), "%dx%dx%d", si->fb_width, si->fb_height, 1 << si->fb_bpp);
 
     draw_text_sm(LABEL_COL, line, "Display:");
     draw_text_sm(VALUE_COL, line++, buf);
