@@ -22,18 +22,14 @@ krn_system_get_total_mem(void)
 global uint32_t
 krn_system_get_used_mem(void)
 {
-    return (uint32_t)&krn_link_end - (uint32_t)&krn_link_start;
+    uint32_t static_mem = ((uint32_t)&krn_link_end - (uint32_t)&krn_link_start);
+    uint32_t heap_mem = krn_heap_get_used_mem();
+
+    return static_mem + heap_mem;
 }
 
 global uint32_t
 krn_system_get_avail_mem(void)
 {
-    system_info_st *si = &krn_system_info;
-    uint32_t kernel_size = krn_system_get_used_mem();
-
-    if (!si->mem_fields_valid) {
-        return 0;
-    }
-
-    return (si->mem_upper << 10) - kernel_size;
+    return krn_heap_get_avail_mem();
 }

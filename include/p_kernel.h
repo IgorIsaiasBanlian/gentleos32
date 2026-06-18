@@ -16,6 +16,8 @@ extern int krn_event_pop(event_st *event);
 extern uint16_t krn_event_count(void);
 /* kernel/heap.c */
 extern void *krn_heap_alloc(size_t size, const char *desc, int assert);
+extern uint32_t krn_heap_get_used_mem(void);
+extern uint32_t krn_heap_get_avail_mem(void);
 extern void krn_heap_init(void);
 /* kernel/intr.c */
 extern void krn_intr_handle(isr_stack_st *isr_stack);
