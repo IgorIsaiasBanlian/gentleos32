@@ -256,12 +256,14 @@ gui_wm_set_status_window(window_st *w)
 global void
 gui_wm_init(void)
 {
+    system_info_st *si = &krn_system_info;
+
 #if defined(WALLPAPER_PATH) && !VGA_MODE_12H
     gui_wm_bg_bitmap = &bitmap_wallpaper;
 #endif
 
-    gui_wm_container.width = GUI_WIDTH - PANEL_WIDTH;
-    gui_wm_container.height = GUI_HEIGHT - STATUS_HEIGHT;
+    gui_wm_container.width = si->fb_width - PANEL_WIDTH;
+    gui_wm_container.height = si->fb_height - STATUS_HEIGHT;
     gui_wm_render_wallpaper(gui_wm_container);
 
     gui_status_init();

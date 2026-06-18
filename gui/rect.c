@@ -7,13 +7,6 @@
 
 #include <gui.h>
 
-global const rect_st GUI_RECT_SCREEN = {
-    .x = 0,
-    .y = 0,
-    .width = GUI_WIDTH,
-    .height = GUI_HEIGHT,
-};
-
 global int
 gui_rect_is_empty(rect_st r)
 {

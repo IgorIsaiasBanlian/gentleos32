@@ -31,6 +31,7 @@ extern void gui_drag_draw_outline(void);
 extern void gui_drag_clear_outline(void);
 /* gui/fb.c */
 extern surface_st *gui_fb_vram_surface;
+extern rect_st gui_fb_screen_rect;
 extern void gui_fb_draw_start(void);
 extern void gui_fb_draw_end(void);
 extern void gui_fb_mark_dirty(rect_st rect);
@@ -64,7 +65,6 @@ extern void gui_pointer_draw(void);
 extern void gui_pointer_move(uint16_t x, uint16_t y);
 extern void gui_pointer_init(void);
 /* gui/rect.c */
-extern const rect_st GUI_RECT_SCREEN;
 extern int gui_rect_is_empty(rect_st r);
 extern rect_st gui_rect_make(int x, int y, int width, int height);
 extern rect_st gui_rect_translate(rect_st r, point_st v);

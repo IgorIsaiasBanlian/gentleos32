@@ -8,8 +8,10 @@
 #include <gui.h>
 
 enum {
-    FB_PITCH = GUI_WIDTH / 8,
-    FB_PLANE_SIZE = GUI_HEIGHT * FB_PITCH,
+    FB_WIDTH = 640,
+    FB_HEIGHT = 480,
+    FB_PITCH = FB_WIDTH / 8,
+    FB_PLANE_SIZE = FB_HEIGHT * FB_PITCH,
 };
 
 static uint8_t (*gui_planar_pixels)[FB_PLANE_SIZE];
@@ -243,12 +245,12 @@ gui_planar_draw_pointer(int dst_x, int dst_y)
     int bmp_w = bitmap->size.width;
     int bmp_h = bitmap->size.height;
 
-    if (dst_x + bmp_w > GUI_WIDTH) {
-        bmp_w = GUI_WIDTH - dst_x;
+    if (dst_x + bmp_w > FB_WIDTH) {
+        bmp_w = FB_WIDTH - dst_x;
     }
 
-    if (dst_y + bmp_h > GUI_HEIGHT) {
-        bmp_h = GUI_HEIGHT - dst_y;
+    if (dst_y + bmp_h > FB_HEIGHT) {
+        bmp_h = FB_HEIGHT - dst_y;
     }
 
     if (bmp_w <= 0 || bmp_h <= 0) {

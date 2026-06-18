@@ -10,6 +10,7 @@
 static surface_st _gui_fb_vram_surface = { 0 };
 global surface_st *gui_fb_vram_surface = &_gui_fb_vram_surface;
 static surface_st gui_fb_surface;
+global rect_st gui_fb_screen_rect = { 0 };
 
 static rect_st dirty_rect = { 0 };
 
@@ -26,8 +27,7 @@ gui_fb_draw_end(void)
 global void
 gui_fb_mark_dirty(rect_st rect)
 {
-    static rect_st screen_rect = { .width = GUI_WIDTH, .height = GUI_HEIGHT };
-    dirty_rect = gui_rect_clip(gui_rect_enclose(dirty_rect, rect), screen_rect);
+    dirty_rect = gui_rect_clip(gui_rect_enclose(dirty_rect, rect), gui_fb_screen_rect);
 }
 
 global void
@@ -50,7 +50,8 @@ gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
         return;
     }
 
-    ASSERT(bitmap->size.width == GUI_WIDTH && bitmap->size.height == GUI_HEIGHT);
+    ASSERT(bitmap->size.width == gui_fb_surface.size.width &&
+        bitmap->size.height == gui_fb_surface.size.height);
 
     for (uint16_t i = 0; i < rect.height; ++i) {
         size_t fb_off = (rect.y + i) * gui_fb_surface.pitch + rect.x;
@@ -122,14 +123,15 @@ gui_fb_init(void)
 {
     system_info_st *si = &krn_system_info;
 
-    gui_fb_vram_surface->size.width = si->fb_width;
-    gui_fb_vram_surface->size.height = si->fb_height;
+    gui_fb_screen_rect.width = si->fb_width;
+    gui_fb_screen_rect.height = si->fb_height;
+
+    gui_fb_vram_surface->size = gui_fb_screen_rect.size;
     gui_fb_vram_surface->pitch = si->fb_pitch;
     gui_fb_vram_surface->pixels = si->fb_addr;
 
     if (!VGA_MODE_12H) {
-        gui_fb_surface.size.width = si->fb_width;
-        gui_fb_surface.size.height = si->fb_height;
+        gui_fb_surface.size = gui_fb_screen_rect.size;
         gui_fb_surface.pitch = si->fb_width;
         gui_fb_surface.pixels = krn_heap_alloc(si->fb_width * si->fb_height,
             "linear pixels", 1);

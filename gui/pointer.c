@@ -57,8 +57,10 @@ gui_pointer_move(uint16_t x, uint16_t y)
 global void
 gui_pointer_init(void)
 {
-    gui_pointer_rect.x = GUI_WIDTH / 2,
-    gui_pointer_rect.y = GUI_HEIGHT / 2,
+    system_info_st *si = &krn_system_info;
+
+    gui_pointer_rect.x = si->fb_width / 2,
+    gui_pointer_rect.y = si->fb_height / 2,
     gui_pointer_rect.width = bitmap_pointer.size.width;
     gui_pointer_rect.height = bitmap_pointer.size.height;
 }
