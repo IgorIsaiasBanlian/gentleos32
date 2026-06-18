@@ -22,6 +22,7 @@ krn_main(void)
     krn_heap_init();
     krn_vga_init();
     krn_timer_init();
+    krn_mouse_init();
     krn_keyboard_init();
     krn_ps2_init();
 

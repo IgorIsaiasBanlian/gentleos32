@@ -12,23 +12,20 @@ static struct {
     int16_t y;
     uint16_t btn_left;
     uint16_t btn_right;
-} mouse_state = {
-    .x = GUI_WIDTH / 2,
-    .y = GUI_HEIGHT / 2,
-    .btn_left = 0,
-    .btn_right = 0,
-};
+} mouse_state = { 0 };
 
 static void
 krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
 {
+    system_info_st *si = &krn_system_info;
+
     int32_t current_x = mouse_state.x + dx;
     int32_t current_y = mouse_state.y - dy;
 
-    current_x = MIN(current_x, GUI_WIDTH);
+    current_x = MIN(current_x, si->fb_width);
     current_x = MAX(current_x, 0);
 
-    current_y = MIN(current_y, GUI_HEIGHT);
+    current_y = MIN(current_y, si->fb_height);
     current_y = MAX(current_y, 0);
 
     event_st event = {
@@ -120,4 +117,13 @@ krn_mouse_handle_ps2_data(uint8_t data)
     btn_right = p[0] & 0x02 ? 1 : 0;
 
     krn_mouse_handle_packet(dx, dy, btn_left, btn_right);
+}
+
+global void
+krn_mouse_init(void)
+{
+    system_info_st *si = &krn_system_info;
+
+    mouse_state.x = si->fb_width / 2;
+    mouse_state.y = si->fb_height / 2;
 }

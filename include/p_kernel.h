@@ -32,6 +32,7 @@ extern void krn_mboot_init(void);
 /* kernel/mouse.c */
 extern void krn_mouse_handle_uart_data(uint8_t data);
 extern void krn_mouse_handle_ps2_data(uint8_t data);
+extern void krn_mouse_init(void);
 /* kernel/pic.c */
 extern void krn_pic_init(void);
 /* kernel/ps2.c */
