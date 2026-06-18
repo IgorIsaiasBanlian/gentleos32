@@ -8,10 +8,6 @@
 #include <gui.h>
 
 enum {
-    STATUS_WIDTH = GUI_WIDTH - PANEL_WIDTH,
-};
-
-enum {
     FONT_WIDTH = 8,
     FONT_HEIGHT = 16,
 };
@@ -19,14 +15,15 @@ enum {
 enum {
     TEXT_X = FONT_WIDTH,
     TEXT_Y = (STATUS_HEIGHT - FONT_HEIGHT) / 2,
-    TEXT_MAX_LEN = (STATUS_WIDTH / FONT_WIDTH) - 2,
 };
 
-static uint8_t window_pixels[STATUS_WIDTH * STATUS_HEIGHT];
 static surface_st window_surface;
 static window_st window;
 
-static char status_text[TEXT_MAX_LEN + 1] = "";
+static char *status_text_tmp = 0;
+static char *status_text = 0;
+static size_t status_text_buf_size = 0;
+
 static uint8_t status_text_color = 0;
 static size_t status_text_len = 0;
 static uint8_t status_bg_color = 0;
@@ -41,7 +38,7 @@ gui_status_set_bg_color(uint8_t color)
     rect_st bg_rect = {
         .x = 0,
         .y = 1,
-        .width = STATUS_WIDTH,
+        .width = window.rect.width,
         .height = STATUS_HEIGHT - 1,
     };
 
@@ -57,8 +54,8 @@ gui_status_set_text(const char *text, uint8_t color)
     size_t len = strlen(text);
     font_st *font = font_8x16;
 
-    strncpy(status_text, text, sizeof(status_text) - 1);
-    status_text[sizeof(status_text) - 1] = 0;
+    strncpy(status_text, text, status_text_buf_size - 1);
+    status_text[status_text_buf_size - 1] = 0;
     status_text_color = color;
 
     gui_surface_draw_str(window.surface, TEXT_X, TEXT_Y, font, text, color,
@@ -79,7 +76,7 @@ gui_status_set_text(const char *text, uint8_t color)
     rect_st text_rect = {
         .x = TEXT_X,
         .y = TEXT_Y,
-        .width = STATUS_WIDTH - TEXT_X * 2,
+        .width = window.rect.width - TEXT_X * 2,
         .height = font->size.height,
     };
 
@@ -91,32 +88,28 @@ gui_status_set_text(const char *text, uint8_t color)
 global void
 gui_status_set(const char *fmt, ...)
 {
-    static char buf[TEXT_MAX_LEN + 1];
-
     va_list args;
 
     va_start(args, fmt);
-    (void) vsnprintf(buf, sizeof(buf), fmt, args);
+    (void) vsnprintf(status_text_tmp, status_text_buf_size, fmt, args);
     va_end(args);
 
     gui_status_set_bg_color(COLOR_WIDGET_BG);
-    gui_status_set_text(buf, COLOR_WIDGET_FG);
+    gui_status_set_text(status_text_tmp, COLOR_WIDGET_FG);
 }
 
 
 global void
 gui_status_set_alert(const char *fmt, ...)
 {
-    static char buf[TEXT_MAX_LEN + 1];
-
     va_list args;
 
     va_start(args, fmt);
-    (void) vsnprintf(buf, sizeof(buf), fmt, args);
+    (void) vsnprintf(status_text_tmp, status_text_buf_size, fmt, args);
     va_end(args);
 
     gui_status_set_bg_color(COLOR_WIDGET_BG);
-    gui_status_set_text(buf, COLOR_ALERT_FG);
+    gui_status_set_text(status_text_tmp, COLOR_ALERT_FG);
 
     /* Flush immediately on alerts */
     gui_fb_flush();
@@ -125,9 +118,9 @@ gui_status_set_alert(const char *fmt, ...)
 static void
 draw_window(window_st *window)
 {
-    gui_surface_draw_h_seg(window->surface, 0, 0, STATUS_WIDTH, COLOR_BORDER);
+    gui_surface_draw_h_seg(window->surface, 0, 0, window->rect.width, COLOR_BORDER);
 
-    rect_st bg = { .x = 0, .y = 1, .width = STATUS_WIDTH, .height = STATUS_HEIGHT - 1 };
+    rect_st bg = { .x = 0, .y = 1, .width = window->rect.width, .height = STATUS_HEIGHT - 1 };
     status_bg_color = COLOR_WIDGET_BG;
     gui_surface_draw_rect(window->surface, bg, status_bg_color);
 
@@ -138,14 +131,21 @@ draw_window(window_st *window)
 global void
 gui_status_init(void)
 {
-    window_surface.size.width = STATUS_WIDTH;
+    system_info_st *si = &krn_system_info;
+    int width = si->fb_width - PANEL_WIDTH;
+
+    status_text_buf_size = (width / FONT_WIDTH) - 2 + 1;
+    status_text = krn_heap_alloc(status_text_buf_size, "Status text buffer", 1);
+    status_text_tmp = krn_heap_alloc(status_text_buf_size, "Status text tmp buffer", 1);
+
+    window_surface.size.width = width;
     window_surface.size.height = STATUS_HEIGHT;
-    window_surface.pitch = STATUS_WIDTH;
-    window_surface.pixels = window_pixels;
+    window_surface.pitch = width;
+    window_surface.pixels = krn_heap_alloc(width * STATUS_HEIGHT, "Status pixels", 1);
 
     window.rect.x = 0;
-    window.rect.y = GUI_HEIGHT - STATUS_HEIGHT;
-    window.rect.width = STATUS_WIDTH;
+    window.rect.y = si->fb_height - STATUS_HEIGHT;
+    window.rect.width = width;
     window.rect.height = STATUS_HEIGHT;
     window.surface = &window_surface;
     window.visible = 1;
