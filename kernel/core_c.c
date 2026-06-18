@@ -19,10 +19,7 @@ global uint32_t krn_core_mboot_header[] = {
     MBOOT_FLAGS,
     MBOOT_CKSUM,
     0, 0, 0, 0, 0,
-    0,
-    VESA_WIDTH,
-    VESA_HEIGHT,
-    8,
+    0, 0, 0, 8,
 };
 
 global void

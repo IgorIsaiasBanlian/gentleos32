@@ -62,9 +62,6 @@ dd if=build/disk.img of=<TARGET DISK> bs=1M conv=fsync status=progress
 
 ### Booting from a floppy disk
 
-The floppy image uses GRUB Legacy, and it only works if VGA_MODE_12H
-is enabled in config.h
-
 To prepare a bootable floppy, run:
 
 ```bash
