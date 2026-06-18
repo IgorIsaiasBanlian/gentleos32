@@ -86,7 +86,7 @@ gui_drag_clear_outline(void)
         return;
     }
 
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_xor_corners(drag_outline_rect);
     } else {
         gui_fb_mark_dirty(drag_outline_rect);

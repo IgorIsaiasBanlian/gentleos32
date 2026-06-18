@@ -390,7 +390,7 @@ gui_planar_xor_corners(rect_st rect)
 global void
 gui_planar_init(void)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
     }
 }

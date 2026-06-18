@@ -8,11 +8,7 @@
 #include <kernel.h>
 
 enum {
-#if VGA_MODE_12H
-    MBOOT_FLAGS = 0x03, /* page align & mem info */
-#else
     MBOOT_FLAGS = 0x07, /* page align & mem info & video mode */
-#endif
     MBOOT_MAGIC = 0x1BADB002,
     MBOOT_CKSUM = -(MBOOT_MAGIC + MBOOT_FLAGS),
 };

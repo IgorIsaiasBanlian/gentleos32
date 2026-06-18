@@ -33,7 +33,7 @@ gui_fb_mark_dirty(rect_st rect)
 global void
 gui_fb_draw_rect(rect_st rect, uint8_t color)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_draw_rect(rect, color);
     } else {
         gui_surface_draw_rect(&gui_fb_surface, rect, color);
@@ -45,7 +45,7 @@ gui_fb_draw_rect(rect_st rect, uint8_t color)
 global void
 gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         /* Unsupported */
         return;
     }
@@ -65,7 +65,7 @@ gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap)
 global void
 gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_draw_pattern_abs(rect, pattern, c1, c2);
     } else {
         gui_surface_draw_pattern_abs(&gui_fb_surface, rect, pattern, c1, c2);
@@ -77,7 +77,7 @@ gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 global void
 gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_draw_surface(dst_x, dst_y, src_sf, src_rect);
     } else {
         gui_surface_copy(&gui_fb_surface, dst_x, dst_y, src_sf, src_rect);
@@ -89,7 +89,7 @@ gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect)
 global void
 gui_fb_draw_outline(rect_st rect)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_xor_corners(rect);
     } else {
         gui_surface_draw_border(gui_fb_vram_surface, rect, COLOR_BORDER);
@@ -108,7 +108,7 @@ gui_fb_flush(void)
     rect_st rect = dirty_rect;
     dirty_rect = (rect_st) { 0 };
 
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_flush(rect);
     } else {
         gui_surface_copy(gui_fb_vram_surface, rect.x, rect.y, &gui_fb_surface, rect);
@@ -130,7 +130,7 @@ gui_fb_init(void)
     gui_fb_vram_surface->pitch = si->fb_pitch;
     gui_fb_vram_surface->pixels = si->fb_addr;
 
-    if (!VGA_MODE_12H) {
+    if (!krn_system_info.fb_planar) {
         gui_fb_surface.size = gui_fb_screen_rect.size;
         gui_fb_surface.pitch = si->fb_width;
         gui_fb_surface.pixels = krn_heap_alloc(si->fb_width * si->fb_height,

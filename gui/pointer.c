@@ -37,7 +37,7 @@ static rect_st gui_pointer_rect;
 global void
 gui_pointer_draw(void)
 {
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         gui_planar_draw_pointer(gui_pointer_rect.x, gui_pointer_rect.y);
     } else {
         gui_surface_draw_bitmap(gui_fb_vram_surface, gui_pointer_rect.x,

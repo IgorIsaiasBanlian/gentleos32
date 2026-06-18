@@ -258,8 +258,10 @@ gui_wm_init(void)
 {
     system_info_st *si = &krn_system_info;
 
-#if defined(WALLPAPER_PATH) && !VGA_MODE_12H
-    gui_wm_bg_bitmap = &bitmap_wallpaper;
+#if defined(WALLPAPER_PATH)
+    if (!si->fb_planar) {
+        gui_wm_bg_bitmap = &bitmap_wallpaper;
+    }
 #endif
 
     gui_wm_container.width = si->fb_width - PANEL_WIDTH;

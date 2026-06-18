@@ -117,7 +117,7 @@ krn_vga_set_color(int index, uint32_t rgb)
 {
     uint8_t dac_index = index;
 
-    if (VGA_MODE_12H) {
+    if (krn_system_info.fb_planar) {
         dac_index = krn_vga_dac_indexes[index & 0x0F];
     }
 
@@ -132,9 +132,9 @@ krn_vga_init(void)
 {
     system_info_st *si = &krn_system_info;
 
-    krn_debug_printf("Initializing video... ");
+    if (!si->fb_fields_valid || si->fb_bpp != 8) {
+        krn_debug_printf("Initializing video mode 12h... ");
 
-    if (VGA_MODE_12H) {
         krn_vga_set_mode(krn_vga_regs_12h);
         krn_vga_set_write_mode(0);
         krn_vga_set_bit_mask(0xFF);
@@ -147,7 +147,11 @@ krn_vga_init(void)
         si->fb_bpp = 4;
         si->fb_planar = 1;
         si->fb_fields_valid = 1;
+
+        krn_debug_printf("ok\n");
     }
+
+    krn_debug_printf("Initializing color palette... ");
 
     krn_vga_set_color(0x01, 0x002041);
     krn_vga_set_color(0x05, 0x710071);
