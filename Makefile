@@ -32,6 +32,7 @@ DEPS    := $(OBJS:.o=.d)
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 
 all: disks
+	./tools/chkcfg.pl
 
 disks: $(BUILDDIR)/gentleos.elf
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
@@ -75,7 +76,7 @@ print:
 	@echo "SRCS=$(SRCS)"
 	@echo "OBJS=$(OBJS)"
 
-.PHONY: all clean kernel print
+.PHONY: all clean kernel print check-config
 
 # Include auto-generated dependency files if they exist
 -include $(DEPS)
