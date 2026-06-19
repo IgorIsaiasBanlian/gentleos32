@@ -31,16 +31,18 @@ OBJS    := $(patsubst %.c,$(BUILDDIR)/%.o,$(C_SRCS)) \
 DEPS    := $(OBJS:.o=.d)
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 
-all: $(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(BUILDDIR)/gentleos.elf
+all: disks
 
+disks: $(BUILDDIR)/gentleos.elf
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/gentleos.elf ::
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/_grub.cfg ::boot/grub/grub.cfg
+	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
 	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/gentleos.elf ::
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot
+	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/_menu.lst ::boot/menu.lst
+	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
 
 clean:
 	rm -rf $(BUILDDIR)
@@ -50,6 +52,9 @@ $(OBJDIRS):
 
 $(CONFIG_H):
 	[ -f $@ ] || cp $(BASEDIR)/config.sample.h $@
+
+$(BUILDDIR)/gentleos.elf: $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $@
 
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@

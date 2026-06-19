@@ -2,6 +2,8 @@
 /.vscode/*
 /build/*
 /config.h
+/misc/grub.cfg
+/misc/menu.lst
 /tmp/*
 *.swp
 __pycache__
