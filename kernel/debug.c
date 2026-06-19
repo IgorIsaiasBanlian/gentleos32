@@ -62,13 +62,3 @@ krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
         sleep(msecs);
     }
 }
-
-global void
-krn_debug_dump_kernel_location(void)
-{
-    uint32_t start = (uint32_t) &krn_link_start;
-    uint32_t end = (uint32_t) &krn_link_end;
-    uint32_t size = (end - start) >> 10;
-
-    krn_debug_printf("Kernel location: %08x - %08x (%dKB)\n", start, end, size);
-}

@@ -8,7 +8,6 @@ extern void krn_debug_putc(char c);
 extern void krn_debug_printf(const char *fmt, ...);
 extern void krn_debug_assert(int expr, const char *file, unsigned line);
 extern void krn_debug_beep(unsigned hz, unsigned msecs, unsigned count);
-extern void krn_debug_dump_kernel_location(void);
 /* kernel/event.c */
 extern int krn_event_ipush(event_st event);
 extern int krn_event_push(event_st event);
