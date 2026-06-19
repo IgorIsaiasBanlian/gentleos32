@@ -29,10 +29,12 @@ typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 typedef struct {
     uint32_t flags;
 
-    uint32_t mem_lower; /* KB of lower memory (flag 0x01) */
-    uint32_t mem_upper; /* KB of upper memory above 1 MB (flag 0x01) */
+    uint32_t mem_lower;
+    uint32_t mem_upper;
+    uint32_t boot_device;
+    const char *cmdline;
 
-    uint32_t unused_1[13];
+    uint32_t unused_1[11];
 
     const char *boot_loader_name;
 
