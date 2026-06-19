@@ -1,10 +1,7 @@
 /*
- * Available themes:
- * - GUI_THEME_DEFAULT
- * - GUI_THEME_MONO
- * - GUI_THEME_NEON
+ * The VESA_WIDTH, VESA_HEIGHT, VGA_MODE_12H, GUI_THEME, UART_MODE settings
+ * have been replaced with GRUB cmdline arguments. See misc/grub.cfg for details.
  */
-#define GUI_THEME GUI_THEME_DEFAULT
 
 /*
  * To set a wallpaper, save an image using GIMP as an ASCII-formatted PPM.
@@ -13,14 +10,3 @@
  * The wallpaper is only supported in 256-color video modes.
  * #define WALLPAPER_PATH "tmp/wall.ppm"
  */
-
-/*
- * Available modes for COM1 serial port:
- * - UART_MODE_NONE  - Unused
- * - UART_MODE_MOUSE - MS mouse driver
- * - UART_MODE_DEBUG - Debug output (8N1/9600)
- */
-#define UART_MODE UART_MODE_NONE
-
-/* Enable to print keyboard debug information */
-#define DEBUG_KEYBOARD 0

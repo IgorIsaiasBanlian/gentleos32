@@ -55,10 +55,10 @@ krn_keyboard_handle_scancode(uint8_t scancode)
         (KEY_MOD_CTRL * ctrl) |
         (KEY_MOD_ALT * alt);
 
-#if DEBUG_KEYBOARD
-    krn_debug_printf("Key %s: code=%02X mods=%02X\n",
-        is_key_down ? "down" : "up", ev.key_code, ev.key_mods);
-#endif
+    if (krn_system_info.debug_keyboard) {
+        krn_debug_printf("Key %s: code=%02X mods=%02X\n",
+            is_key_down ? "down" : "up", ev.key_code, ev.key_mods);
+    }
 
     if (ev.key_code == KEY_DEL && ctrl && alt && is_key_down) {
         krn_ps2_reboot();

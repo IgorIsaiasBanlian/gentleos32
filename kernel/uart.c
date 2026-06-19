@@ -42,7 +42,7 @@ krn_uart_flush_data(void)
 static void
 krn_uart_handle_data(uint8_t data)
 {
-    if (UART_MODE == UART_MODE_MOUSE) {
+    if (krn_system_info.uart_mode == UART_MODE_MOUSE) {
         krn_mouse_handle_uart_data(data);
     }
 }
@@ -90,16 +90,18 @@ krn_uart_set_baud_rate(uint32_t rate)
 global void
 krn_uart_init(void)
 {
+    system_info_st *si = &krn_system_info;
+
     krn_uart_outb(0x00, UART_IER);
     krn_intr_set_handler(0x24, krn_uart_handle_intr);
 
     krn_uart_outb(0x00, UART_FCR);
 
-    if (UART_MODE == UART_MODE_MOUSE) {
+    if (si->uart_mode == UART_MODE_MOUSE) {
         krn_uart_set_baud_rate(1200);
         krn_uart_outb(0x02, UART_LCR); /* 7N1 */
         krn_uart_outb(0x0B, UART_MCR); /* DTR + RTS + OUT2 */
-    } else if (UART_MODE == UART_MODE_DEBUG) {
+    } else if (si->uart_mode == UART_MODE_DEBUG) {
         krn_uart_set_baud_rate(9600);
         krn_uart_outb(0x03, UART_LCR); /* 8N1 */
         krn_uart_outb(0x08, UART_MCR); /* OUT2 */

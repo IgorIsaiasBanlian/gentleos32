@@ -48,6 +48,10 @@ typedef struct {
     int fb_height;
     int fb_bpp;
     int fb_planar;
+
+    int initial_theme;
+    int uart_mode;
+    int debug_keyboard;
 } system_info_st;
 
 enum {

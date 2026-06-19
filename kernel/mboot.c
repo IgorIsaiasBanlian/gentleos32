@@ -17,8 +17,36 @@ enum {
 /* Only access early on boot, later it gets overwritten */
 global mboot_info_st *krn_core_mboot_info;
 
+static int
+cmdline_has_flag(const char *cmdline, const char *flag)
+{
+    const char *tok;
+    const char *p = cmdline;
+    size_t tok_len;
+    size_t flag_len = strlen(flag);
+
+    while (*p) {
+        while (*p == ' ') {
+            ++p;
+        }
+
+        tok = p;
+        while (*p && *p != ' ') {
+            ++p;
+        }
+
+        tok_len = (size_t)(p - tok);
+
+        if (tok_len == flag_len && strncmp(tok, flag, flag_len) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 global void
-krn_mboot_init(void)
+krn_mboot_dump(void)
 {
     mboot_info_st *m = krn_core_mboot_info;
 
@@ -30,27 +58,52 @@ krn_mboot_init(void)
         krn_debug_printf("Cmdline: %s\n", m->cmdline);
     }
 
-    if (m->flags & MBOOT_FLAG_MEM) {
-        krn_system_info.mem_fields_valid = 1;
-        krn_system_info.mem_lower = m->mem_lower;
-        krn_system_info.mem_upper = m->mem_upper;
+    if (m->flags & MBOOT_FLAG_FRAMEBUFFER) {
+        krn_debug_printf("Video: %08x %dx%dx%d\n", (uint32_t)m->fb_addr,
+            m->fb_width, m->fb_height, m->fb_bpp);
+    }
 
-        krn_debug_printf("Mem: lower %u KB, upper %u KB\n", m->mem_lower, m->mem_upper);
+    if (m->flags & MBOOT_FLAG_MEM) {
+        krn_debug_printf("Mem low:   %u KB\n", m->mem_lower);
+        krn_debug_printf("Mem high:  %u KB\n", m->mem_upper);
+    }
+}
+
+global void
+krn_mboot_init(void)
+{
+    mboot_info_st *m = krn_core_mboot_info;
+    system_info_st *si = &krn_system_info;
+
+    if (m->flags & MBOOT_FLAG_CMDLINE) {
+        if (cmdline_has_flag(m->cmdline, "theme=mono")) {
+            si->initial_theme = GUI_THEME_MONO;
+        } else if (cmdline_has_flag(m->cmdline, "theme=neon")) {
+            si->initial_theme = GUI_THEME_NEON;
+        }
+
+        if (cmdline_has_flag(m->cmdline, "uart=mouse")) {
+            si->uart_mode = UART_MODE_MOUSE;
+        } else if (cmdline_has_flag(m->cmdline, "uart=debug")) {
+            si->uart_mode = UART_MODE_DEBUG;
+        }
+
+        krn_system_info.debug_keyboard = cmdline_has_flag(m->cmdline, "debug_keyboard");
+    }
+
+    if (m->flags & MBOOT_FLAG_MEM) {
+        si->mem_fields_valid = 1;
+        si->mem_lower = m->mem_lower;
+        si->mem_upper = m->mem_upper;
     }
 
     if (m->flags & MBOOT_FLAG_FRAMEBUFFER) {
-        krn_system_info.fb_addr = m->fb_addr;
-        krn_system_info.fb_width = m->fb_width;
-        krn_system_info.fb_height = m->fb_height;
-        krn_system_info.fb_pitch = m->fb_pitch;
-        krn_system_info.fb_bpp = m->fb_bpp;
-        krn_system_info.fb_planar = m->fb_bpp != 8;
-        krn_system_info.fb_fields_valid  = 1;
-
-        krn_debug_printf(
-            "Video: %08x %dx%dx%d\n",
-            (uint32_t)m->fb_addr,
-            m->fb_width, m->fb_height, m->fb_bpp
-        );
+        si->fb_addr = m->fb_addr;
+        si->fb_width = m->fb_width;
+        si->fb_height = m->fb_height;
+        si->fb_pitch = m->fb_pitch;
+        si->fb_bpp = m->fb_bpp;
+        si->fb_planar = m->fb_bpp != 8;
+        si->fb_fields_valid  = 1;
     }
 }

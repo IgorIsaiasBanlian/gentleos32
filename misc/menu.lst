@@ -1,7 +1,19 @@
 # Config for GRUB Legacy
 
-set timeout=1
+set timeout=5
 set default=0
 
 title GentleOS/32
 kernel /gentleos.elf
+
+title GentleOS/32 (neon theme)
+kernel /gentleos.elf theme=neon
+
+title GentleOS/32 (mono theme)
+kernel /gentleos.elf theme=mono
+
+title GentleOS/32 (serial debug)
+kernel /gentleos.elf uart=debug
+
+title GentleOS/32 (serial mouse)
+kernel /gentleos.elf uart=mouse

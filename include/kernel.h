@@ -67,6 +67,12 @@ enum {
     UART_MODE_DEBUG = 2,
 };
 
+enum {
+    GUI_THEME_DEFAULT = 0,
+    GUI_THEME_MONO = 1,
+    GUI_THEME_NEON = 2,
+};
+
 typedef struct {
     uint8_t second;
     uint8_t minute;

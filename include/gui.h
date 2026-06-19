@@ -175,12 +175,6 @@ typedef struct {
     uint8_t piano_key_sel;
 } gui_theme_st;
 
-enum {
-    GUI_THEME_DEFAULT = 0,
-    GUI_THEME_MONO = 1,
-    GUI_THEME_NEON = 2,
-};
-
 #define COLOR_WIDGET_BG         gui_theme.widget_bg
 #define COLOR_WIDGET_FG         gui_theme.widget_fg
 #define COLOR_WIDGET_SEL_BG     gui_theme.widget_sel_bg

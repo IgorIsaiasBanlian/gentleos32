@@ -12,7 +12,7 @@ global void (*krn_debug_status_cb)(const char *, ...) = (void (*)(const char *, 
 global void
 krn_debug_putc(char c)
 {
-    if (UART_MODE == UART_MODE_DEBUG) {
+    if (krn_system_info.uart_mode == UART_MODE_DEBUG) {
         krn_uart_write_data(c);
     } else {
         outb(c, 0xe9); /* QEMU debug port */
