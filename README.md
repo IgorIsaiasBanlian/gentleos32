@@ -8,10 +8,10 @@ hardware and running graphical interactive apps on bare metal.
 At minimum, it only requires an i386 CPU, 2MB of RAM, and a VGA display
 capable of 640x480x16 mode.
 
-By design it's entirely monolithic, mostly configured at compile time,
-and only supports standard PC devices: VGA/SVGA, keyboard, PS/2 mouse,
-serial mouse, PC speaker. The only future plans are bugfixes,
-optimizations, and adding more apps.
+By design it's entirely monolithic and only supports standard
+PC devices: VGA/SVGA, keyboard, PS/2 mouse, serial mouse, PC speaker.
+The only future plans are refactoring, bugfixes, optimizations,
+and adding more apps.
 
 GentleOS/32 has a pure 16-bit spin-off called
 [GentleOS/16](https://github.com/luke8086/gentleos),
