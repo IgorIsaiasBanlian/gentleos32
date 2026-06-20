@@ -1,6 +1,6 @@
 # Config for GRUB Legacy
 # To override, copy this file to misc/menu.lst
-# For GRUB 2, and all the available options, see misc/_grub.cfg
+# For GRUB 2, and all the available options, see misc/grub.sample.cfg
 
 set timeout=5
 set default=0

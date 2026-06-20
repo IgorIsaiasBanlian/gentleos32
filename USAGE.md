@@ -46,7 +46,7 @@ For audio support on Macs, also add:
 
 If you already have GRUB installed on the target machine,
 you can have it boot `build/gentleos.elf` directly. See
-[misc/_grub.cfg](misc/_grub.cfg) for a sample config.
+[misc/grub.sample.cfg](misc/grub.sample.cfg) for a sample config.
 
 ### Booting from HDD/pendrive
 
