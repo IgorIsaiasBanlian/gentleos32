@@ -17,9 +17,26 @@ GentleOS/32 has a pure 16-bit spin-off called
 [GentleOS/16](https://github.com/luke8086/gentleos),
 which targets devices as old as 80186.
 
-For details on building and running, see [USAGE.md](USAGE.md).
-
 <img src="doc/machimg/t1900c.webp" width="400">
+
+## Downloads
+
+* [gentleos32-disk.img](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32-disk.img) -
+  HDD image with GRUB 2, requires 4MB RAM
+* [gentleos32-floppy.img](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32-floppy.img) -
+  floppy image with GRUB Legacy, requires 2MB RAM, only supports 640x480x16 mode
+* [gentleos32.elf](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32.elf) -
+  kernel file that can be booted with either GRUB 2 and GRUB Legacy
+
+## Running
+
+For a quick test, install QEMU, fetch the HDD image, and run:
+
+```bash
+qemu-system-i386 -drive format=raw,file=gentleos32-disk.img -m 8 -debugcon stdio
+```
+
+For details, see [USAGE.md](USAGE.md).
 
 ## Gallery
 <img src="doc/machimg/380z.webp" width="400"> <img src="doc/machimg/t1800.webp" width="400">
