@@ -1,46 +1,33 @@
 # GentleOS/32
 
-A hobby operating system for vintage 32-bit PCs.
+A hobby operating system for vintage 32-bit PCs,
+built for tinkering with old hardware on the bare metal.
 
-Its goal is to provide a simple platform for tinkering with retro
-hardware and running graphical interactive apps on bare metal.
+You can find more information on its [website](https://luke8086.dev/gentleos32).
 
-At minimum, it only requires an i386 CPU, 2MB of RAM, and a VGA display
-capable of 640x480x16 mode.
-
-By design it's entirely monolithic and only supports standard
-PC devices: VGA/SVGA, keyboard, PS/2 mouse, serial mouse, PC speaker.
-The only future plans are refactoring, bugfixes, optimizations,
-and adding more apps.
-
-GentleOS/32 has a pure 16-bit spin-off called
+It has a spin-off called
 [GentleOS/16](https://github.com/luke8086/gentleos),
-which targets devices as old as 80186.
+which targets even older, 16-bit PCs.
 
 <img src="doc/machimg/t1900c.webp" width="400">
 
-## Downloads
+## Building
 
-* [gentleos32-disk.img](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32-disk.img) -
-  HDD image with GRUB 2, requires 4MB RAM
-* [gentleos32-floppy.img](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32-floppy.img) -
-  floppy image with GRUB Legacy, requires 2MB RAM, only supports 640x480x16 mode
-* [gentleos32.elf](https://github.com/luke8086/gentleos32/releases/download/latest-release/gentleos32.elf) -
-  kernel file that can be booted with either GRUB 2 and GRUB Legacy
+The only prerequisite is Docker & Docker Compose, supporting linux/amd64 platform.
 
-## Running
-
-For a quick test, install QEMU, fetch the HDD image, and run:
+To compile GentleOS/32, run:
 
 ```bash
-qemu-system-i386 -drive format=raw,file=gentleos32-disk.img -m 8 -debugcon stdio
+docker compose run --rm dev make -j4
 ```
 
-For details, see [USAGE.md](USAGE.md).
+You will find the resulting binaries in `build/`.
 
-## Gallery
-<img src="doc/machimg/380z.webp" width="400"> <img src="doc/machimg/t1800.webp" width="400">
-<img src="doc/machimg/libr20.webp" width="400"> <img src="doc/machimg/380z-2.webp" width="400">
+To clean up docker artifacts, run:
+
+```bash
+docker compose down --rmi all
+```
 
 ## Attributions
 
