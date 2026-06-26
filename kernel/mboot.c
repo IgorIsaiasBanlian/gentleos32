@@ -7,6 +7,28 @@
 
 #include <kernel.h>
 
+typedef struct {
+    uint32_t flags;
+
+    uint32_t mem_lower;
+    uint32_t mem_upper;
+    uint32_t boot_device;
+    const char *cmdline;
+
+    uint32_t unused_1[11];
+
+    const char *boot_loader_name;
+
+    uint32_t unused_2[5];
+
+    uint8_t *fb_addr;
+    uint32_t unused_4;
+    uint32_t fb_pitch;
+    uint32_t fb_width;
+    uint32_t fb_height;
+    uint8_t fb_bpp;
+} __attribute__ ((packed)) mboot_info_st;
+
 enum {
     MBOOT_FLAG_MEM         = 1 << 0,
     MBOOT_FLAG_CMDLINE     = 1 << 2,
@@ -15,7 +37,7 @@ enum {
 };
 
 /* Only access early on boot, later it gets overwritten */
-global mboot_info_st *krn_core_mboot_info;
+mboot_info_st *krn_core_mboot_info;
 
 static int
 cmdline_has_flag(const char *cmdline, const char *flag)

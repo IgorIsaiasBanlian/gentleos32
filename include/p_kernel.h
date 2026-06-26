@@ -28,7 +28,6 @@ extern void krn_keyboard_init(void);
 extern system_info_st krn_system_info;
 extern void krn_main(void);
 /* kernel/mboot.c */
-extern mboot_info_st *krn_core_mboot_info;
 extern void krn_mboot_dump(void);
 extern void krn_mboot_init(void);
 /* kernel/mouse.c */
