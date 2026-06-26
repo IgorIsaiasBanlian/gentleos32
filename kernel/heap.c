@@ -80,6 +80,7 @@ krn_heap_init(void)
     system_info_st *si = &krn_system_info;
     uint32_t krn_start = (uint32_t)&krn_link_start;
     uint32_t krn_end = (uint32_t)&krn_link_end;
+    uint32_t initrd_end = si->initrd_start + si->initrd_size;
 
     ASSERT(si->mem_fields_valid);
 
@@ -89,6 +90,10 @@ krn_heap_init(void)
     ASSERT(mem_lower_ptr < mem_lower_end);
 
     mem_upper_start = krn_heap_align_addr(krn_end);
+    if (initrd_end > mem_upper_start) {
+        mem_upper_start = krn_heap_align_addr(initrd_end);
+    }
+
     mem_upper_ptr = mem_upper_start;
     mem_upper_end = 0x100000 + (si->mem_upper << 10);
     ASSERT(mem_upper_ptr < mem_upper_end);

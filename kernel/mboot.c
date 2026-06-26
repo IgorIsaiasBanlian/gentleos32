@@ -15,7 +15,9 @@ typedef struct {
     uint32_t boot_device;
     const char *cmdline;
 
-    uint32_t unused_1[11];
+    uint32_t mods_count;
+    uint32_t mods_addr;
+    uint32_t unused_1[9];
 
     const char *boot_loader_name;
 
@@ -29,9 +31,17 @@ typedef struct {
     uint8_t fb_bpp;
 } __attribute__ ((packed)) mboot_info_st;
 
+typedef struct {
+    uint32_t mod_start;
+    uint32_t mod_end;
+    uint32_t cmdline;
+    uint32_t reserved;
+} __attribute__((packed)) mboot_mod_st;
+
 enum {
     MBOOT_FLAG_MEM         = 1 << 0,
     MBOOT_FLAG_CMDLINE     = 1 << 2,
+    MBOOT_FLAG_MODS        = 1 << 3,
     MBOOT_FLAG_BOOTLOADER  = 1 << 9,
     MBOOT_FLAG_FRAMEBUFFER = 1 << 12,
 };
@@ -89,6 +99,12 @@ krn_mboot_dump(void)
         krn_debug_printf("Mem low:   %u KB\n", m->mem_lower);
         krn_debug_printf("Mem high:  %u KB\n", m->mem_upper);
     }
+
+    if ((m->flags & MBOOT_FLAG_MODS) && m->mods_count >= 1) {
+        mboot_mod_st *mod = (mboot_mod_st *)m->mods_addr;
+        krn_debug_printf("Initrd:    %08x - %08x (%d KB)\n",
+            mod->mod_start, mod->mod_end, (mod->mod_end - mod->mod_start) >> 10);
+    }
 }
 
 global void
@@ -127,5 +143,11 @@ krn_mboot_init(void)
         si->fb_bpp = m->fb_bpp;
         si->fb_planar = m->fb_bpp != 8;
         si->fb_fields_valid  = 1;
+    }
+
+    if ((m->flags & MBOOT_FLAG_MODS) && m->mods_count >= 1) {
+        mboot_mod_st *mod = (mboot_mod_st *)m->mods_addr;
+        si->initrd_start = mod->mod_start;
+        si->initrd_size = mod->mod_end - mod->mod_start;
     }
 }

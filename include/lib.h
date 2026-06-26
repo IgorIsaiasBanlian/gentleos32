@@ -41,6 +41,9 @@ typedef struct {
     uint32_t mem_lower;
     uint32_t mem_upper;
 
+    uint32_t initrd_start;
+    uint32_t initrd_size;
+
     int fb_fields_valid;
     uint8_t *fb_addr;
     int fb_pitch;
