@@ -36,7 +36,7 @@ extern void gui_fb_draw_start(void);
 extern void gui_fb_draw_end(void);
 extern void gui_fb_mark_dirty(rect_st rect);
 extern void gui_fb_draw_rect(rect_st rect, uint8_t color);
-extern void gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap);
+extern void gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap, uint8_t color);
 extern void gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2);
 extern void gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect);
 extern void gui_fb_draw_outline(rect_st rect);

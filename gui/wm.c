@@ -126,7 +126,7 @@ gui_wm_render_wallpaper(rect_st rect)
         gui_fb_draw_pattern(rect, gui_theme.desktop_pattern, COLOR_DESKTOP,
             COLOR_DESKTOP_ALT);
     } else if (gui_wm_bg_bitmap) {
-        gui_fb_draw_bitmap(rect, gui_wm_bg_bitmap);
+        gui_fb_draw_bitmap(rect, gui_wm_bg_bitmap, COLOR_DESKTOP);
     } else {
         gui_fb_draw_rect(rect, COLOR_DESKTOP);
     }
