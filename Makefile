@@ -5,9 +5,10 @@ NASM 	:= nasm
 BASEDIR 	:= .
 BUILDDIR 	:= $(BASEDIR)/build
 
-FLOPPY_IMAGE 		:= $(BUILDDIR)/floppy.img
-DISK_IMAGE 			:= $(BUILDDIR)/disk.img
-DISK_FS_OFFSET 		:= 1048576
+KERNEL_ELF		:= gentleos.elf
+FLOPPY_IMAGE 	:= gentleos32-floppy.img
+DISK_IMAGE 		:= gentleos32-disk.img
+DISK_FS_OFFSET 	:= 1048576
 
 CFLAGS 	:=  -std=c11 -m32 -march=i386 -O2 \
 			-ffreestanding -fno-stack-protector \
@@ -34,19 +35,19 @@ OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 all: disks
 	./tools/chkcfg.pl
 
-disks: $(BUILDDIR)/gentleos.elf
+disks: $(KERNEL_ELF)
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BUILDDIR)/gentleos.elf ::
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_ELF) ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
 	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
 	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BUILDDIR)/gentleos.elf ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_ELF) ::
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.sample.lst ::boot/menu.lst
 	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) $(KERNEL_ELF) $(DISK_IMAGE) $(FLOPPY_IMAGE)
 
 $(OBJDIRS):
 	@mkdir -p $@
@@ -54,7 +55,7 @@ $(OBJDIRS):
 $(CONFIG_H):
 	[ -f $@ ] || cp $(BASEDIR)/config.sample.h $@
 
-$(BUILDDIR)/gentleos.elf: $(OBJS)
+$(KERNEL_ELF): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
 
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c

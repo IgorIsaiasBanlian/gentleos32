@@ -2,6 +2,9 @@
 /.vscode/*
 /build/*
 /config.h
+/gentleos.elf
+/gentleos32-disk.img
+/gentleos32-floppy.img
 /misc/grub.cfg
 /misc/menu.lst
 /tmp/*
