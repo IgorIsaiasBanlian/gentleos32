@@ -3,6 +3,7 @@
 /build/*
 /config.h
 /gentleos.elf
+/gentleos.rd
 /gentleos32-disk.img
 /gentleos32-floppy.img
 /misc/grub.cfg
