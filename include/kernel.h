@@ -26,6 +26,12 @@ typedef struct {
 
 typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 
+typedef struct {
+    char name[24];
+    void *addr;
+    uint32_t size;
+} __attribute__((packed)) initrd_entry_st;
+
 enum {
     UART_COM1 = 0x3F8,
     UART_BASE = UART_COM1,

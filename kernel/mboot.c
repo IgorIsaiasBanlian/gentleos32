@@ -99,12 +99,6 @@ krn_mboot_dump(void)
         krn_debug_printf("Mem low:   %u KB\n", m->mem_lower);
         krn_debug_printf("Mem high:  %u KB\n", m->mem_upper);
     }
-
-    if ((m->flags & MBOOT_FLAG_MODS) && m->mods_count >= 1) {
-        mboot_mod_st *mod = (mboot_mod_st *)m->mods_addr;
-        krn_debug_printf("Initrd:    %08x - %08x (%d KB)\n",
-            mod->mod_start, mod->mod_end, (mod->mod_end - mod->mod_start) >> 10);
-    }
 }
 
 global void

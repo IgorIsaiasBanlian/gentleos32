@@ -18,6 +18,9 @@ extern void *krn_heap_alloc(size_t size, const char *desc, int assert);
 extern uint32_t krn_heap_get_used_mem(void);
 extern uint32_t krn_heap_get_avail_mem(void);
 extern void krn_heap_init(void);
+/* kernel/initrd.c */
+extern initrd_entry_st *krn_initrd_lookup(const char *name);
+extern void krn_initrd_init(void);
 /* kernel/intr.c */
 extern void krn_intr_handle(isr_stack_st *isr_stack);
 extern void krn_intr_set_handler(uint8_t int_no, isr_handler_fn handler);
