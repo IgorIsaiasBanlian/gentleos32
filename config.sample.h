@@ -4,9 +4,6 @@
  */
 
 /*
- * To set a wallpaper, save an image using GIMP as an ASCII-formatted PPM.
- * It must exactly match the screen resolution and only use colors
- * from misc/vga-256.gpl palette.
- * The wallpaper is only supported in 256-color video modes.
- * #define WALLPAPER_PATH "tmp/wall.ppm"
+ * WALLPAPER_PATH was replaced by support for initial RAM disk (initrd).
+ * See README.md for new instructions.
  */

@@ -50,17 +50,6 @@ sub load_palette {
     return \%palette;
 }
 
-sub get_wallpaper_path {
-    my $default = "assets/misc/point.ppm";
-
-    open(my $fh, "<", "config.h") or return undef;
-    local $/;
-    my $content = <$fh>;
-    close $fh;
-
-    return $content =~ /^\s*#define\s+WALLPAPER_PATH\s+"([^"]+)"/m ? $1 : $default;
-}
-
 sub clean_pbm {
     my ($path) = @_;
 
@@ -169,87 +158,6 @@ sub process_pbm {
     return join("\n", @lines);
 }
 
-sub load_ppm {
-    my ($path) = @_;
-    open(my $fh, "<", $path) or die "Cannot read $path: $!\n";
-
-    printf "- %-32s", $path;
-
-    my @header;
-    my @values;
-    while (my $line = <$fh>) {
-        $line =~ s/#.*$//;
-        if (@header < 4) {
-            my @parts = split(' ', $line);
-            while (@parts && @header < 4) {
-                push @header, shift @parts;
-            }
-            push @values, @parts;
-        } else {
-            push @values, split(' ', $line);
-        }
-    }
-    close $fh;
-
-    if (@header < 4 || $header[0] ne "P3") {
-        die "\nNot a P3 PPM file\n";
-    }
-
-    my $width = int($header[1]);
-    my $height = int($header[2]);
-
-    print "  size: ${width}x${height}";
-
-    my @pixels;
-    for (my $y = 0; $y < $height; $y++) {
-        my @row;
-        for (my $x = 0; $x < $width; $x++) {
-            my $idx = ($y * $width + $x) * 3;
-            push @row, [$values[$idx], $values[$idx + 1], $values[$idx + 2]];
-        }
-        push @pixels, \@row;
-    }
-
-    return (\@pixels, $width, $height);
-}
-
-sub process_ppm {
-    my ($path, $name, $palette) = @_;
-
-    my ($pixels, $width, $height) = load_ppm($path);
-
-    print "\n";
-
-    my @pixel_lines;
-
-    foreach my $row (@$pixels) {
-        my @bytes;
-        foreach my $rgb (@$row) {
-            my $key = join(",", @$rgb);
-            my $idx = $palette->{$key};
-            die "\nColor ($key) in $path not in palette\n" unless defined $idx;
-            push @bytes, $idx;
-        }
-        my $pixel_str = join("", map { sprintf("\\x%02x", $_) } @bytes);
-        push @pixel_lines, "        \"$pixel_str\" \\";
-    }
-
-    my @lines = (
-        "global bitmap_st $name = {",
-        "    .size = { .width = $width, .height = $height },",
-        "    .bpp = 8,",
-        "    .pitch = $width,",
-        "    .alpha = 0xfd,",
-        "    .pixels = (uint8_t *)",
-        @pixel_lines,
-        "};",
-        "",
-    );
-
-    return join("\n", @lines);
-}
-
-
 sub process_bitmaps {
     my ($palette) = @_;
 
@@ -264,8 +172,6 @@ sub process_bitmaps {
     foreach my $f (@pbm_files) {
         push @lines, process_pbm($f);
     }
-
-    push @lines, process_ppm(get_wallpaper_path(), "bitmap_wallpaper", $palette);
 
     return join("\n", @lines);
 }

@@ -258,11 +258,9 @@ gui_wm_init(void)
 {
     system_info_st *si = &krn_system_info;
 
-#if defined(WALLPAPER_PATH)
     if (!si->fb_planar) {
-        gui_wm_bg_bitmap = &bitmap_wallpaper;
+        gui_wm_bg_bitmap = gui_load_bitmap("wallpaper");
     }
-#endif
 
     gui_wm_container.width = si->fb_width - PANEL_WIDTH;
     gui_wm_container.height = si->fb_height - STATUS_HEIGHT;

@@ -12,7 +12,7 @@ use warnings;
 my $PATH = "config.h";
 
 sub check_deprecated_settings {
-    my @DEPRECATED = qw(VESA_WIDTH VESA_HEIGHT VGA_MODE_12H GUI_THEME UART_MODE);
+    my @DEPRECATED = qw(VESA_WIDTH VESA_HEIGHT VGA_MODE_12H GUI_THEME UART_MODE WALLPAPER_PATH);
 
     open(my $fh, "<", $PATH) or return;
     local $/;

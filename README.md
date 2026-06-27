@@ -29,6 +29,27 @@ To clean up docker artifacts, run:
 docker compose down --rmi all
 ```
 
+## Setting wallpaper
+
+A wallpaper can be provided using an initial RAM disk (initrd).
+To create it, you need Python 3 with [Pillow](https://pillow.readthedocs.io/),
+and [mtools](https://www.gnu.org/software/mtools/).
+On macOS:
+
+```bash
+brew install pillow mtools
+```
+
+To create the initrd and install it in the disk image, run:
+
+```bash
+./tools/mkinitrd.py --wallpaper /path/to/image.png --disk-image gentleos32-disk.img
+```
+
+Note: the wallpaper will only be shown in 256-color video modes.
+In GIMP you can import the provided [VGA palette](misc/vga-256.gpl)
+and use indexed mode for best results.
+
 ## Attributions
 
 - Assets in [vendor/icons8](vendor/icons8) have been sourced from

@@ -85,5 +85,4 @@ extern bitmap_st glyph_mn_tulip;
 extern bitmap_st glyph_mn_tulip_2x;
 extern bitmap_st glyph_mn_west;
 extern bitmap_st glyph_mn_white;
-extern bitmap_st bitmap_wallpaper;
 extern font_st fonts[];

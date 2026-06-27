@@ -29,6 +29,22 @@ global app_st *gui_apps[] = {
 
 global unsigned gui_apps_count = (sizeof(gui_apps) / sizeof(gui_apps[0]));
 
+global bitmap_st *
+gui_load_bitmap(const char *name)
+{
+    initrd_entry_st *entry = krn_initrd_lookup(name);
+    bitmap_st *bitmap;
+
+    if (!entry) {
+        return NULL;
+    }
+
+    bitmap = (bitmap_st *)entry->addr;
+    bitmap->pixels = (uint8_t *)((uint32_t)entry->addr + sizeof(bitmap_st));
+
+    return bitmap;
+}
+
 global void
 gui_run_app(app_st *app)
 {
