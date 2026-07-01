@@ -20,6 +20,24 @@ krn_uart_inb(uint8_t reg)
 }
 
 static int
+krn_uart_probe(void)
+{
+    krn_uart_outb(0xAA, UART_SR);
+
+    if (krn_uart_inb(UART_SR) != 0xAA) {
+        return 0;
+    }
+
+    krn_uart_outb(0x55, UART_SR);
+
+    if (krn_uart_inb(UART_SR) != 0x55) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
 krn_uart_has_data(void)
 {
     return krn_uart_inb(UART_LSR) & 0x01;
@@ -34,7 +52,9 @@ krn_uart_read_data(void)
 static void
 krn_uart_flush_data(void)
 {
-    while (krn_uart_has_data()) {
+    size_t i;
+
+    for (i = 0; i < 1024 && krn_uart_has_data(); ++i) {
         (void)krn_uart_inb(UART_RBR);
     }
 }
@@ -91,6 +111,14 @@ global void
 krn_uart_init(void)
 {
     system_info_st *si = &krn_system_info;
+
+    if (si->uart_mode != UART_MODE_NONE && !krn_uart_probe()) {
+        si->uart_mode = UART_MODE_NONE;
+    }
+
+    if (si->uart_mode == UART_MODE_NONE) {
+        return;
+    }
 
     krn_uart_outb(0x00, UART_IER);
     krn_intr_set_handler(0x24, krn_uart_handle_intr);

@@ -45,6 +45,7 @@ enum {
     UART_LCR  = 3, /* Line Control */
     UART_MCR  = 4, /* Modem Control */
     UART_LSR  = 5, /* Line Status */
+    UART_SR   = 7, /* Scratch Register */
 
     UART_MODE_NONE  = 0,
     UART_MODE_MOUSE = 1,
