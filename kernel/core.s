@@ -2,11 +2,11 @@
 ; Copyright (c) 2014-2026 luke8086
 ; Distributed under the terms of GPL-2 License
 ;
-; File: core_a.s - Main entry point, setup of the core structures
+; File: core.s - Main entry point, setup of the core structures
 ;
 
-extern krn_core_c_main
-extern krn_core_c_isr_handle
+extern krn_main
+extern krn_intr_handle
 extern krn_core_mboot_info
 extern krn_link_bss_start
 extern krn_link_bss_end
@@ -59,7 +59,7 @@ krn_core_asm_main:
     call krn_core_gdt_load
 
     ; Jump to C code (stack pointer is already aligned)
-    jmp krn_core_c_main
+    jmp krn_main
 
 
 ;;
@@ -180,7 +180,7 @@ krn_core_isr_%1:
 
     ; Call interrupt handler in C
     push esp
-    call krn_core_c_isr_handle
+    call krn_intr_handle
     add esp, 4
 
     ; If interrupt comes from PIC 1, send end-of-interrupt to PIC 1

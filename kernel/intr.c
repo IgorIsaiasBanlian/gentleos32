@@ -30,7 +30,7 @@ extern idt_pointer_st krn_core_idt_pointer;
 extern uint32_t krn_core_isr_pointers[];
 static isr_handler_fn krn_intr_handlers[INTR_COUNT] = { NULL };
 
-global void
+global __attribute__((force_align_arg_pointer)) void
 krn_intr_handle(isr_stack_st *isr_stack)
 {
     if (krn_intr_handlers[isr_stack->int_no]) {

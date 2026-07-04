@@ -1,6 +1,3 @@
-/* kernel/core_c.c */
-extern void krn_core_c_main(void);
-extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */
 extern void (*krn_debug_status_cb)(const char *, ...);
 extern void krn_debug_putc(char c);
@@ -21,7 +18,7 @@ extern void krn_heap_init(void);
 extern initrd_entry_st *krn_initrd_lookup(const char *name);
 extern void krn_initrd_init(void);
 /* kernel/intr.c */
-extern void krn_intr_handle(isr_stack_st *isr_stack);
+extern __attribute__((force_align_arg_pointer)) void krn_intr_handle(isr_stack_st *isr_stack);
 extern void krn_intr_set_handler(uint8_t int_no, isr_handler_fn handler);
 extern void krn_intr_init(void);
 /* kernel/keyboard.c */
