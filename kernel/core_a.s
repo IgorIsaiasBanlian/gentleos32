@@ -61,11 +61,13 @@ krn_core_asm_main:
     ; Jump to C code (stack pointer is already aligned)
     jmp krn_core_c_main
 
+
+;;
+;; Stack
+;;
+
 [section .bss]
 
-;
-; Empty space for the stack
-;
 align 16
 krn_core_stack:
   resb 0x10000
@@ -79,9 +81,6 @@ krn_core_stack_end:
 
 [section .text]
 
-;
-; Load GDT and update segment registers
-;
 global krn_core_gdt_load:function
 krn_core_gdt_load:
     lgdt [krn_core_gdt_pointer]
@@ -98,9 +97,6 @@ krn_core_gdt_load:
 
 [section .rodata]
 
-;
-; Contents of the GDT
-;
 align 16
 global krn_core_gdt_descriptors:data
 krn_core_gdt_descriptors:
@@ -128,9 +124,6 @@ krn_core_gdt_descriptors:
     db 11001111b  ; G, B, _, AVL, segment limit[19:16]
     db 0x00       ; base addr[31:24]
 
-;
-; Pointer to the GDT
-;
 global krn_core_gdt_pointer:data
 krn_core_gdt_pointer:
     dw (3 * 8 - 1)      ; limit (3 descriptors * 8 bytes - 1)
@@ -146,19 +139,14 @@ krn_core_gdt_pointer:
 
 [section .bss]
 
-;
-; Contents of the IDT
-;
 align 16
 global krn_core_idt:data
 krn_core_idt:
     resq INTR_COUNT
 
+
 [section .rodata]
 
-;
-; Pointer to the IDT
-;
 global krn_core_idt_pointer:data
 krn_core_idt_pointer:
   dw (INTR_COUNT * 8 - 1)   ; limit (INTR_COUNT descriptors * 8 bytes - 1)
@@ -228,9 +216,6 @@ krn_core_isr_%1:
 
 [section .rodata]
 
-;
-; Array of pointers to interrupt service routines
-;
 global krn_core_isr_pointers:data
 krn_core_isr_pointers:
 
