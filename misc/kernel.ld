@@ -1,5 +1,5 @@
 OUTPUT_FORMAT(elf32-i386)
-ENTRY(krn_core_entry)
+ENTRY(krn_link_start)
 
 krn_link_start = 0x00100000;
 
@@ -11,7 +11,7 @@ SECTIONS {
 
     .text : {
         krn_link_text_start = .;
-        KEEP(*(.multiboot))
+        KEEP(*(.entry))
         *(.text*)
     }
     krn_link_text_end = .;

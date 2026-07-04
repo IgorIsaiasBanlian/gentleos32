@@ -1,5 +1,4 @@
 /* kernel/core_c.c */
-extern uint32_t krn_core_mboot_header[];
 extern void krn_core_c_main(void);
 extern __attribute__((force_align_arg_pointer)) void krn_core_c_isr_handle(isr_stack_st *isr_stack);
 /* kernel/debug.c */

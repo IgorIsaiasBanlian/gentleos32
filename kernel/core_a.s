@@ -15,16 +15,30 @@ extern krn_link_bss_end
 [cpu 386]
 
 ;;
-;; Main entry point for the bootloader
+;; Main entry point with multiboot header
 ;;
 
-[section .text]
+[section .entry]
 
-;
-; Main entry point
-;
-global krn_core_entry:function
-krn_core_entry:
+    jmp krn_core_asm_main
+
+
+MBOOT_FLAGS equ 0x07  ; page align & mem info & video mode
+MBOOT_MAGIC equ 0x1BADB002
+MBOOT_CKSUM equ -(MBOOT_MAGIC + MBOOT_FLAGS)
+
+align 4
+global krn_core_mboot_header:data
+krn_core_mboot_header:
+    dd MBOOT_MAGIC
+    dd MBOOT_FLAGS
+    dd MBOOT_CKSUM
+    dd 0, 0, 0, 0, 0   ; header/load/entry addresses (unused)
+    dd 0, 0, 0, 8      ; video mode: type, width, height, depth
+
+
+global krn_core_asm_main:function
+krn_core_asm_main:
     ; Clear BSS memory
     mov  edi, krn_link_bss_start
     mov  ecx, krn_link_bss_end

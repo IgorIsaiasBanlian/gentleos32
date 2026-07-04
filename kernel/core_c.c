@@ -7,21 +7,6 @@
 
 #include <kernel.h>
 
-enum {
-    MBOOT_FLAGS = 0x07, /* page align & mem info & video mode */
-    MBOOT_MAGIC = 0x1BADB002,
-    MBOOT_CKSUM = -(MBOOT_MAGIC + MBOOT_FLAGS),
-};
-
-__attribute__((section(".multiboot"))) __attribute__((aligned(4)))
-global uint32_t krn_core_mboot_header[] = {
-    MBOOT_MAGIC,
-    MBOOT_FLAGS,
-    MBOOT_CKSUM,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 8,
-};
-
 global void
 krn_core_c_main(void)
 {
