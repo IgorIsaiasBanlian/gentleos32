@@ -8,6 +8,8 @@
 extern krn_core_c_main
 extern krn_core_c_isr_handle
 extern krn_core_mboot_info
+extern krn_link_bss_start
+extern krn_link_bss_end
 
 [bits 32]
 [cpu 386]
@@ -23,6 +25,15 @@ extern krn_core_mboot_info
 ;
 global krn_core_entry:function
 krn_core_entry:
+    ; Clear BSS memory
+    mov  edi, krn_link_bss_start
+    mov  ecx, krn_link_bss_end
+    sub  ecx, edi
+    shr  ecx, 2
+    xor  eax, eax
+    cld
+    rep stosd
+
     ; Initialize stack
     mov  esp, krn_core_stack_end
     mov  ebp, esp

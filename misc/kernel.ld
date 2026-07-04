@@ -30,6 +30,7 @@ SECTIONS {
         *(.bss*)
         *(COMMON)
     }
+    . = ALIGN(0x10);
     krn_link_bss_end = .;
 
     krn_link_end = .;
