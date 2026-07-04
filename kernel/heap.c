@@ -100,15 +100,15 @@ krn_heap_init(void)
 
     mem_use_upper = 0;
 
-    krn_debug_printf("Kernel:    %08x - %08x (%d KB)\n",
+    krn_debug_printf("Kernel:    %08x - %08x (%u KB)\n",
         krn_start, krn_end, (krn_end - krn_start) >> 10);
 
-    krn_debug_printf("Initrd:    %08x - %08x (%d KB)\n",
+    krn_debug_printf("Initrd:    %08x - %08x (%u KB)\n",
         si->initrd_start, initrd_end, si->initrd_size >> 10);
 
-    krn_debug_printf("Heap low:  %08x - %08x (%d KB)\n",
+    krn_debug_printf("Heap low:  %08x - %08x (%u KB)\n",
         mem_lower_start, mem_lower_end, (mem_lower_end - mem_lower_start) >> 10);
 
-    krn_debug_printf("Heap high: %08x - %08x (%d KB)\n",
+    krn_debug_printf("Heap high: %08x - %08x (%u KB)\n",
         mem_upper_start, mem_upper_end, (mem_upper_end - mem_upper_start) >> 10);
 }
