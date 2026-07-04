@@ -10,6 +10,8 @@ use File::Basename;
 
 my $VERBOSE = grep { $_ eq "-v" } @ARGV;
 
+my $TARGET = "build/data.c";
+
 my @FONTS = (
     {
         path => "vendor/int10h/pc-8x16.pbm",
@@ -270,6 +272,16 @@ sub process_fonts {
     return join("\n", @lines);
 }
 
+sub slurp {
+    my ($path) = @_;
+    open(my $fh, "<", $path) or return "";
+    binmode($fh);
+    local $/;
+    my $content = <$fh>;
+    close($fh);
+    return defined($content) ? $content : "";
+}
+
 sub process_all {
     my $palette = load_palette("misc/vga-256.gpl");
     my @bitmap_lines = process_bitmaps($palette);
@@ -289,10 +301,19 @@ sub process_all {
         "",
     );
 
-    open(my $fh, ">", "build/data.c") or die "Cannot write build/data.c: $!\n";
+    my $content = join("\n", @lines);
+
+    if (slurp($TARGET) eq $content) {
+        print "$0: $TARGET unchanged\n";
+        return;
+    }
+
+    open(my $fh, ">", $TARGET) or die "Cannot write $TARGET: $!\n";
     binmode($fh);
-    print $fh join("\n", @lines);
+    print $fh $content;
     close($fh);
+
+    print "$0: $TARGET updated\n";
 }
 
 process_all();
