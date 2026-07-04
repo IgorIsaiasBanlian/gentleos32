@@ -15,6 +15,16 @@ sub uniq {
     return @ret;
 }
 
+sub slurp {
+    my ($path) = @_;
+    open(my $fh, "<", $path) or return "";
+    binmode($fh);
+    local $/;
+    my $content = <$fh>;
+    close($fh);
+    return defined($content) ? $content : "";
+}
+
 sub process_file {
     my ($file) = @_;
     my @protos;
@@ -55,10 +65,19 @@ sub main {
         }
 
         my $header = "include/p_${dir}.h";
+        my $content = join("\n", @lines) . "\n";
+
+        if (slurp($header) eq $content) {
+            print "$0: $header unchanged\n";
+            next;
+        }
+
         open(my $fh, ">", $header) or die "Cannot open $header: $!";
         binmode($fh);
-        print $fh join("\n", @lines) . "\n";
+        print $fh $content;
         close($fh);
+
+        print "$0: $header updated\n";
     }
 }
 
