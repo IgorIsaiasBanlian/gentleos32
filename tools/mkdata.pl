@@ -8,6 +8,8 @@
 
 use File::Basename;
 
+my $VERBOSE = grep { $_ eq "-v" } @ARGV;
+
 my @FONTS = (
     {
         path => "vendor/int10h/pc-8x16.pbm",
@@ -67,7 +69,7 @@ sub load_pbm {
     my ($path) = @_;
     open(my $fh, "<", $path) or die "Cannot read $path: $!\n";
 
-    printf "- %-32s", $path;
+    printf "- %-32s", $path if $VERBOSE;
 
     my @header;
     my $raster = "";
@@ -93,7 +95,7 @@ sub load_pbm {
     my $width = int($header[1]);
     my $height = int($header[2]);
 
-    print "  size: ${width}x${height}";
+    print "  size: ${width}x${height}" if $VERBOSE;
 
     $raster =~ s/\s+//g;
     my @flat = split(//, $raster);
@@ -117,7 +119,7 @@ sub process_pbm {
     my ($pixels, $width, $height) = load_pbm($path);
     my $pitch = int(($width + 7) / 8);
 
-    print "\n";
+    print "\n" if $VERBOSE;
 
     my @pixel_lines;
 
@@ -189,7 +191,7 @@ sub load_font {
     my $rows = int($img_height / $height);
     my $num_chars = $cols * $rows;
 
-    print "  grid: ${cols}x${rows}  chars: $num_chars\n";
+    print "  grid: ${cols}x${rows}  chars: $num_chars\n" if $VERBOSE;
 
     if ($num_chars > $FONT_MAX_CHARS) {
         $num_chars = $FONT_MAX_CHARS;
