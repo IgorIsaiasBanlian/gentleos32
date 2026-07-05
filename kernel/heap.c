@@ -15,6 +15,10 @@ static uint32_t mem_upper_ptr;
 static uint32_t mem_upper_end;
 static int mem_use_upper;
 
+enum {
+    MEM_UPPER_START = 0x100000,
+};
+
 static uint32_t
 krn_heap_align_addr(uint32_t addr)
 {
@@ -89,18 +93,22 @@ krn_heap_init(void)
     ASSERT(si->mem_fields_valid);
 
     mem_lower_start = 0x10000;
-    mem_lower_ptr = mem_lower_start;
-    mem_lower_end = MIN(si->mem_lower << 10, (uint32_t)0xA0000);
-    ASSERT(mem_lower_ptr < mem_lower_end);
-
-    mem_upper_start = krn_heap_align_addr(krn_end);
-    if (initrd_end > mem_upper_start) {
-        mem_upper_start = krn_heap_align_addr(initrd_end);
+    if (krn_start < MEM_UPPER_START) {
+        mem_lower_start = MAX(mem_lower_start, krn_end);
+        mem_lower_start = MAX(mem_lower_start, initrd_end);
     }
+    mem_lower_start = krn_heap_align_addr(mem_lower_start);
+    mem_lower_end = MIN(si->mem_lower << 10, (uint32_t)0xA0000);
+    ASSERT(mem_lower_start <= mem_lower_end);
+    mem_lower_ptr = mem_lower_start;
 
+    mem_upper_start = MEM_UPPER_START;
+    mem_upper_start = MAX(mem_upper_start, krn_end);
+    mem_upper_start = MAX(mem_upper_start, initrd_end);
+    mem_upper_start = krn_heap_align_addr(mem_upper_start);
+    mem_upper_end = MEM_UPPER_START + (si->mem_upper << 10);
+    ASSERT(mem_upper_start <= mem_upper_end);
     mem_upper_ptr = mem_upper_start;
-    mem_upper_end = 0x100000 + (si->mem_upper << 10);
-    ASSERT(mem_upper_ptr < mem_upper_end);
 
     mem_use_upper = 0;
 

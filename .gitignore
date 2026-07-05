@@ -5,8 +5,7 @@
 /gentleos.elf
 /gentleos.bin
 /gentleos.rd
-/gentleos32-disk.img
-/gentleos32-floppy.img
+/gentleos32-*.img
 /misc/grub.cfg
 /misc/menu.lst
 /tmp/*

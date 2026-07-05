@@ -6,15 +6,18 @@ OBJCOPY         := objcopy
 BASEDIR         := .
 BUILDDIR        := $(BASEDIR)/build
 
-KERNEL_ELF      := $(BUILDDIR)/gentleos.elf
-KERNEL_BIN      := gentleos.bin
+KERNEL_HIMEM_ELF    := $(BUILDDIR)/kernel-himem.elf
+KERNEL_HIMEM_BIN    := gentleos.bin
+KERNEL_LOMEM_ELF    := $(BUILDDIR)/kernel-lomem.elf
+KERNEL_LOMEM_BIN    := $(BUILDDIR)/kernel-lomem.bin
 
 FLOPPY_IMAGE    := gentleos32-floppy.img
 DISK_IMAGE      := gentleos32-disk.img
 DISK_FS_OFFSET  := 1048576
 
 CONFIG_H        := $(BASEDIR)/config.h
-KERNEL_LD       := $(BASEDIR)/misc/kernel.ld
+KERNEL_HIMEM_LD := $(BASEDIR)/misc/kernel-himem.ld
+KERNEL_LOMEM_LD := $(BASEDIR)/misc/kernel-lomem.ld
 
 KERNEL_ASFLAGS  :=
 
@@ -36,24 +39,29 @@ KERNEL_OBJS     := $(patsubst %.c,$(BUILDDIR)/%.o,$(KERNEL_C_SRCS)) \
                    $(BUILDDIR)/data.o
 KERNEL_DEPS     := $(KERNEL_OBJS:.o=.d)
 
+BOOT1_BIN       := $(BUILDDIR)/boot1.bin
+BOOT2_BIN       := $(BUILDDIR)/boot2.bin
+
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS))
 
 all: disks
 	./tools/chkcfg.pl
 
-disks: $(KERNEL_BIN)
+disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT1_BIN) $(BOOT2_BIN)
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_BIN) ::
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_HIMEM_BIN) ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
 	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
 	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_BIN) ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_HIMEM_BIN) ::
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.sample.lst ::boot/menu.lst
 	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
 
+	cat $(BOOT1_BIN) $(BOOT1_BIN) $(BOOT2_BIN) $(KERNEL_LOMEM_BIN) > gentleos32-lomem.img
+
 clean:
-	rm -rf $(BUILDDIR) $(KERNEL_BIN) $(DISK_IMAGE) $(FLOPPY_IMAGE)
+	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(FLOPPY_IMAGE)
 
 $(OBJDIRS):
 	@mkdir -p $@
@@ -61,10 +69,16 @@ $(OBJDIRS):
 $(CONFIG_H):
 	[ -f $@ ] || cp $(BASEDIR)/config.sample.h $@
 
-$(KERNEL_ELF): $(KERNEL_OBJS) $(KERNEL_LD)
-	$(LD) $(KERNEL_LDFLAGS) -T$(KERNEL_LD) $(KERNEL_OBJS) -o $@
+$(KERNEL_HIMEM_ELF): $(KERNEL_OBJS) $(KERNEL_HIMEM_LD)
+	$(LD) $(KERNEL_LDFLAGS) -T$(KERNEL_HIMEM_LD) $(KERNEL_OBJS) -o $@
 
-$(KERNEL_BIN): $(KERNEL_ELF)
+$(KERNEL_LOMEM_ELF): $(KERNEL_OBJS) $(KERNEL_LOMEM_LD)
+	$(LD) $(KERNEL_LDFLAGS) -T$(KERNEL_LOMEM_LD) $(KERNEL_OBJS) -o $@
+
+$(KERNEL_HIMEM_BIN): $(KERNEL_HIMEM_ELF)
+	$(OBJCOPY) -O binary $< $@
+
+$(KERNEL_LOMEM_BIN): $(KERNEL_LOMEM_ELF)
 	$(OBJCOPY) -O binary $< $@
 
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
@@ -80,6 +94,12 @@ $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(KERNEL_ASFLAGS) -f elf32 $< -o $@
+
+$(BOOT1_BIN): boot/boot1.s
+	$(NASM) -o $@ $<
+
+$(BOOT2_BIN): boot/boot2.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
+	$(NASM) -o $@ $< -DKERNEL_SECTORS=$(shell ./tools/sectors.pl $(KERNEL_LOMEM_BIN))
 
 print:
 	@echo "KERNEL_SUBDIRS=$(KERNEL_SUBDIRS)"
