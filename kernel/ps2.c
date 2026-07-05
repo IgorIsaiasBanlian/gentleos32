@@ -48,39 +48,34 @@ krn_ps2_has_data(void)
     return (inb(PS2_PORT_STATUS) & 1) != 0;
 }
 
-static void
-krn_ps2_wait_for_data(void)
+global uint16_t
+krn_ps2_read_data(size_t timeout)
 {
-    for (volatile int i = 0; i < 1000000; ++i) {
+    uint32_t start = krn_timer_get_msecs();
+    uint16_t ret = 0;
+
+    do {
         if (krn_ps2_has_data()) {
-            break;
+            ret = inb(PS2_PORT_DATA);
+            ret = (ret << 8) | 1;
+            return ret;
         }
-    }
-}
+    } while (krn_timer_get_msecs() - start < timeout);
 
-global uint8_t
-krn_ps2_read_data(int wait)
-{
-    if (wait) {
-        krn_ps2_wait_for_data();
-    }
-
-    return inb(PS2_PORT_DATA);
+    return ret;
 }
 
 static void
-krn_ps2_skip_data(size_t count)
+krn_ps2_skip_data(size_t timeout)
 {
-    for (size_t i = 0; i < count; ++i) {
-        (void)krn_ps2_read_data(1);
-    }
+    (void)krn_ps2_read_data(timeout);
 }
 
 static void
 krn_ps2_flush_data(void)
 {
     while (krn_ps2_has_data()) {
-        (void)krn_ps2_read_data(0);
+        krn_ps2_skip_data(0);
     }
 }
 
@@ -89,7 +84,7 @@ krn_ps2_read_config(void)
 {
     krn_ps2_flush_data();
     krn_ps2_outb(PS2_CMD_READ_CONFIG, PS2_PORT_CMD);
-    return krn_ps2_read_data(1);
+    return krn_ps2_read_data(100) >> 8;
 }
 
 static void
@@ -115,7 +110,7 @@ krn_ps2_send_mouse(uint8_t cmd)
 static void
 krn_ps2_handle_intr(isr_stack_st *isr_stack _unsd)
 {
-    uint8_t data = krn_ps2_read_data(0);
+    uint8_t data = krn_ps2_read_data(0) >> 8;
 
     krn_mouse_handle_ps2_data(data);
 }
@@ -123,7 +118,7 @@ krn_ps2_handle_intr(isr_stack_st *isr_stack _unsd)
 global void
 krn_ps2_init(void)
 {
-    uint8_t config;
+    uint8_t config, mouse_detected;
 
     krn_debug_printf("Initializing PS2... ");
 
@@ -132,10 +127,15 @@ krn_ps2_init(void)
     krn_ps2_flush_data();
 
     krn_ps2_send_mouse(PS2_CMD_RESET);
-    krn_ps2_skip_data(3);
+    mouse_detected = krn_ps2_read_data(100) >> 8 == 0xfa; /* ACK */
 
-    krn_ps2_send_mouse(PS2_CMD_SET_DEFAULT);
-    krn_ps2_skip_data(1);
+    if (mouse_detected) {
+        krn_ps2_skip_data(750); /* self test */
+        krn_ps2_skip_data(100); /* device id */
+
+        krn_ps2_send_mouse(PS2_CMD_SET_DEFAULT);
+        krn_ps2_skip_data(100); /* ACK */
+    }
 
     config = krn_ps2_read_config();
     config |= PS2_CFG_ENABLE_KBD_IRQ;
@@ -150,5 +150,5 @@ krn_ps2_init(void)
     krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
     krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);
 
-    krn_debug_printf("ok\n");
+    krn_debug_printf("ok (mouse %s)\n", mouse_detected ? "detected" : "not detected");
 }
