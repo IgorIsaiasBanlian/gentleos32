@@ -18,6 +18,8 @@ static int mem_use_upper;
 static uint32_t
 krn_heap_align_addr(uint32_t addr)
 {
+    ASSERT(addr <= 0xfffffff0);
+
     return (addr + 0xf) & ~(uint32_t)(0xf);
 }
 
@@ -32,7 +34,7 @@ krn_heap_alloc(size_t size, const char *desc, int assert)
     if (!mem_use_upper) {
         p = krn_heap_align_addr(mem_lower_ptr);
 
-        if (p + size <= mem_lower_end) {
+        if (p <= mem_lower_end && size <= mem_lower_end - p) {
             mem_lower_ptr = p + size;
             ret = (void *)p;
         }
@@ -45,7 +47,7 @@ krn_heap_alloc(size_t size, const char *desc, int assert)
     if (mem_use_upper) {
         p = krn_heap_align_addr(mem_upper_ptr);
 
-        if (p + size <= mem_upper_end) {
+        if (p <= mem_upper_end && size <= mem_upper_end - p) {
             mem_upper_ptr = p + size;
             ret = (void *)p;
         }
