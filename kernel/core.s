@@ -8,6 +8,8 @@
 extern krn_main
 extern krn_intr_handle
 extern krn_core_mboot_info
+extern krn_link_start
+extern krn_link_data_end
 extern krn_link_bss_start
 extern krn_link_bss_end
 
@@ -23,7 +25,7 @@ extern krn_link_bss_end
     jmp krn_core_asm_main
 
 
-MBOOT_FLAGS equ 0x07  ; page align & mem info & video mode
+MBOOT_FLAGS equ 0x10007  ; page align & mem info & video mode & a.out kludge
 MBOOT_MAGIC equ 0x1BADB002
 MBOOT_CKSUM equ -(MBOOT_MAGIC + MBOOT_FLAGS)
 
@@ -33,8 +35,12 @@ krn_core_mboot_header:
     dd MBOOT_MAGIC
     dd MBOOT_FLAGS
     dd MBOOT_CKSUM
-    dd 0, 0, 0, 0, 0   ; header/load/entry addresses (unused)
-    dd 0, 0, 0, 8      ; video mode: type, width, height, depth
+    dd krn_core_mboot_header    ; header_addr
+    dd krn_link_start           ; load_addr
+    dd krn_link_data_end        ; load_end_addr
+    dd krn_link_bss_end         ; bss_end_addr
+    dd krn_link_start           ; entry_addr
+    dd 0, 0, 0, 8               ; video mode: type, width, height, depth
 
 
 global krn_core_asm_main:function

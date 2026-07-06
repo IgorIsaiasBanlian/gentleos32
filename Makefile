@@ -1,25 +1,30 @@
 CC 		:= gcc
 LD 		:= ld
 NASM 	:= nasm
+OBJCOPY := objcopy
 
 BASEDIR 	:= .
 BUILDDIR 	:= $(BASEDIR)/build
 
-KERNEL_ELF		:= gentleos.elf
+KERNEL_ELF		:= $(BUILDDIR)/gentleos.elf
+KERNEL_BIN		:= gentleos.bin
 FLOPPY_IMAGE 	:= gentleos32-floppy.img
 DISK_IMAGE 		:= gentleos32-disk.img
 DISK_FS_OFFSET 	:= 1048576
 
 CFLAGS 	:=  -std=c11 -m32 -march=i386 -O2 \
-			-ffreestanding -fno-stack-protector \
+			-ffreestanding -fno-stack-protector -fno-pic \
 			-Wall -Wextra -pedantic \
 			-I$(BASEDIR)/include
 
 ASFLAGS :=
 
+LINKER_SCRIPT := $(BASEDIR)/misc/kernel.ld
+
 LDFLAGS := 	-m elf_i386 -nostdlib -z nodefaultlib \
 			-z noexecstack --no-warn-rwx-segments \
-			-T$(BASEDIR)/misc/kernel.ld
+			--orphan-handling=warn \
+			-T$(LINKER_SCRIPT)
 
 SUBDIRS := gui apps lib kernel
 CONFIG_H := $(BASEDIR)/config.h
@@ -35,19 +40,19 @@ OBJDIRS := $(addprefix $(BUILDDIR)/,$(SUBDIRS))
 all: disks
 	./tools/chkcfg.pl
 
-disks: $(KERNEL_ELF)
+disks: $(KERNEL_BIN)
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_ELF) ::
+	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_BIN) ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
 	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
 	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_ELF) ::
+	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_BIN) ::
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.sample.lst ::boot/menu.lst
 	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
 
 clean:
-	rm -rf $(BUILDDIR) $(KERNEL_ELF) $(DISK_IMAGE) $(FLOPPY_IMAGE)
+	rm -rf $(BUILDDIR) $(KERNEL_BIN) $(DISK_IMAGE) $(FLOPPY_IMAGE)
 
 $(OBJDIRS):
 	@mkdir -p $@
@@ -55,8 +60,11 @@ $(OBJDIRS):
 $(CONFIG_H):
 	[ -f $@ ] || cp $(BASEDIR)/config.sample.h $@
 
-$(KERNEL_ELF): $(OBJS)
+$(KERNEL_ELF): $(OBJS) $(LINKER_SCRIPT)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
+
+$(KERNEL_BIN): $(KERNEL_ELF)
+	$(OBJCOPY) -O binary $< $@
 
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@

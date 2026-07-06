@@ -20,10 +20,18 @@ SECTIONS {
         krn_link_data_start = .;
         *(.data*)
         *(.rodata*)
-        *(.got.plt)
         *(.eh_frame)
     }
     krn_link_data_end = .;
+
+    .empty : {
+        *(.rel.*)
+        *(.got*)
+        *(.igot*)
+        *(.plt*)
+        *(.iplt*)
+    }
+    ASSERT(SIZEOF(.empty) == 0, "unexpected non-empty ELF sections")
 
     .bss : ALIGN(0x1000) {
         krn_link_bss_start = .;
@@ -37,6 +45,8 @@ SECTIONS {
 
     /DISCARD/ : {
         *(.comment)
+        *(.note.GNU-stack)
+        *(.note.gnu.property)
     }
 
 }

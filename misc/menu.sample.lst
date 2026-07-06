@@ -6,16 +6,16 @@ set timeout=5
 set default=0
 
 title GentleOS/32
-kernel /gentleos.elf
+kernel /gentleos.bin
 
 title GentleOS/32 (neon theme)
-kernel /gentleos.elf theme=neon
+kernel /gentleos.bin theme=neon
 
 title GentleOS/32 (mono theme)
-kernel /gentleos.elf theme=mono
+kernel /gentleos.bin theme=mono
 
 title GentleOS/32 (serial debug)
-kernel /gentleos.elf uart=debug
+kernel /gentleos.bin uart=debug
 
 title GentleOS/32 (serial mouse)
-kernel /gentleos.elf uart=mouse
+kernel /gentleos.bin uart=mouse
