@@ -28,8 +28,10 @@ krn_heap_alloc(size_t size, const char *desc, int assert)
 {
     uint32_t p;
     void *ret = 0;
+    const char *debug_unit = (size >> 10) > 4 ? "KB" : "B";
+    size_t debug_value = (size >> 10) > 4 ? size >> 10 : size;
 
-    krn_debug_printf("Allocating %x for %s... ", size, desc);
+    krn_debug_printf("Allocating %u %s for %s... ", debug_value, debug_unit, desc);
 
     if (!mem_use_upper) {
         p = krn_heap_align_addr(mem_lower_ptr);
