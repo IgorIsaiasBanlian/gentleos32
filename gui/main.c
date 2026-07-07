@@ -56,6 +56,17 @@ gui_run_app(app_st *app)
     app->show();
 }
 
+global int
+gui_handle_key(event_st event)
+{
+    if (event.key_code == KEY_M && event.key_mods & KEY_MOD_CTRL) {
+        krn_heap_dump();
+        return 1;
+    }
+
+    return 0;
+}
+
 global void
 gui_main(void)
 {
@@ -124,7 +135,7 @@ gui_main(void)
         } else if (event.type == EVENT_KEY_DOWN) {
             window_st *w = gui_wm_top_window();
 
-            if (w && w->on_key_down) {
+            if (!gui_handle_key(event) && w && w->on_key_down) {
                 w->on_key_down(w, event);
             }
         } else if (event.type == EVENT_KEY_UP) {

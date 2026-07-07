@@ -7,110 +7,245 @@
 
 #include <kernel.h>
 
-static uint32_t mem_lower_start;
-static uint32_t mem_lower_ptr;
-static uint32_t mem_lower_end;
-static uint32_t mem_upper_start;
-static uint32_t mem_upper_ptr;
-static uint32_t mem_upper_end;
-static int mem_use_upper;
+typedef struct krn_heap_block {
+    uint32_t magic;
+    uint32_t used;
+    size_t units;
+    struct krn_heap_block *next;
+    char desc[16];
+} krn_heap_block_st;
 
 enum {
     MEM_UPPER_START = 0x100000,
+    UNIT = sizeof(krn_heap_block_st),
+    HEAP_MAGIC = 0x48454150, /* "HEAP" */
 };
 
-static uint32_t
-krn_heap_align_addr(uint32_t addr)
-{
-    ASSERT(addr <= 0xfffffff0);
+static krn_heap_block_st krn_heap_base;
+static size_t krn_heap_total_bytes;
 
-    return (addr + 0xf) & ~(uint32_t)(0xf);
+static const char *
+krn_heap_format_units(size_t units)
+{
+    static char buf[10];
+    size_t bytes = units * UNIT;
+    int show_kb = (bytes >> 10) > 4;
+
+    snprintf(buf, sizeof(buf), "%6u %s",
+        show_kb ? (bytes >> 10) : bytes,
+        show_kb ? "KB" : " B"
+    );
+
+    return buf;
+}
+
+static uintptr_t
+krn_heap_align_up(uintptr_t addr)
+{
+    ASSERT(addr <= 0xffffffe0);
+
+    return (addr + (UNIT - 1)) & ~(uintptr_t)(UNIT - 1);
+}
+
+static size_t
+krn_heap_align_down(uintptr_t addr)
+{
+    return addr & ~(uintptr_t)(UNIT - 1);
+}
+
+static void
+krn_heap_validate(void)
+{
+    krn_heap_block_st *b;
+
+    for (b = krn_heap_base.next; b; b = b->next) {
+        ASSERT(b->magic == HEAP_MAGIC);
+        ASSERT(!b->next || (b->next >= (b + b->units) && b->next->magic == HEAP_MAGIC));
+    }
+}
+
+global void
+krn_heap_dump(void)
+{
+    krn_heap_block_st *b;
+
+    krn_debug_printf("Heap blocks:\n");
+
+    for (b = krn_heap_base.next; b; b = b->next) {
+        krn_debug_printf("- %08x  %s  %s  %s\n",
+            (uint32_t)b,
+            krn_heap_format_units(b->units),
+            b->used ? "USED" : "FREE",
+            b->used ? b->desc : ""
+        );
+    }
+
+    krn_heap_validate();
+}
+
+global size_t
+krn_heap_get_avail_mem(void)
+{
+    krn_heap_block_st *b;
+    size_t ret = 0;
+
+    for (b = krn_heap_base.next; b; b = b->next) {
+        ret += b->used ? 0 : b->units * UNIT;
+    }
+
+    return ret;
+}
+
+global size_t
+krn_heap_get_used_mem(void)
+{
+    return krn_heap_total_bytes - krn_heap_get_avail_mem();
+}
+
+static void
+krn_heap_init_block(krn_heap_block_st *b, int used, size_t units, krn_heap_block_st *next)
+{
+    b->magic = HEAP_MAGIC;
+    b->used = used;
+    b->units = units;
+    b->next = next;
+    b->desc[0] = '\0';
+}
+
+static void
+krn_heap_insert_block(krn_heap_block_st *newb)
+{
+    krn_heap_block_st *b = &krn_heap_base;
+
+    while (b->next != 0 && b->next < newb) {
+        b = b->next;
+    }
+
+    newb->next = b->next;
+    b->next = newb;
+
+    krn_heap_validate();
+}
+
+static void
+krn_heap_merge_free_blocks(void)
+{
+    krn_heap_block_st *b;
+
+    for (b = krn_heap_base.next; b; b = b->next) {
+        while (b->next && !b->used && !b->next->used && b + b->units == b->next) {
+            b->units += b->next->units;
+            b->next = b->next->next;
+        }
+    }
+
+    krn_heap_validate();
+}
+
+static void
+krn_heap_add_region(uintptr_t start, uintptr_t end)
+{
+    krn_heap_block_st *b;
+
+    start = krn_heap_align_up(start);
+    end = krn_heap_align_down(end);
+
+    if (end <= start) {
+        return;
+    }
+
+    b = (krn_heap_block_st *)start;
+    krn_heap_init_block(b, 0, (end - start) / UNIT, 0);
+    krn_heap_insert_block(b);
+
+    krn_heap_total_bytes += end - start;
 }
 
 global void *
 krn_heap_alloc(size_t size, const char *desc, int assert)
 {
-    uint32_t p;
+    krn_heap_block_st *b, *newb;
+    size_t units;
     void *ret = 0;
-    const char *debug_unit = (size >> 10) > 4 ? "KB" : "B";
-    size_t debug_value = (size >> 10) > 4 ? size >> 10 : size;
 
-    krn_debug_printf("Allocating %u %s for %s... ", debug_value, debug_unit, desc);
+    ASSERT(size > 0);
 
-    if (!mem_use_upper) {
-        p = krn_heap_align_addr(mem_lower_ptr);
+    units = (size + UNIT - 1) / UNIT + 1;
 
-        if (p <= mem_lower_end && size <= mem_lower_end - p) {
-            mem_lower_ptr = p + size;
-            ret = (void *)p;
+    krn_debug_printf("Alloc %s for %s... ", krn_heap_format_units(units), desc);
+
+    for (b = krn_heap_base.next; b; b = b->next) {
+        if (b->used) {
+            continue;
         }
-    }
 
-    if (!ret) {
-        mem_use_upper = 1;
-    }
+        if (b->units == units) {
+            b->used = 1;
+            ret = (void *)(b + 1);
+            break;
+        }
 
-    if (mem_use_upper) {
-        p = krn_heap_align_addr(mem_upper_ptr);
-
-        if (p <= mem_upper_end && size <= mem_upper_end - p) {
-            mem_upper_ptr = p + size;
-            ret = (void *)p;
+        if (b->units > units) {
+            newb = b + units;
+            krn_heap_init_block(newb, 0, b->units - units, b->next);
+            b->next = newb;
+            b->units = units;
+            b->used = 1;
+            ret = (void *)(b + 1);
+            break;
         }
     }
 
     if (ret) {
+        strncpy(b->desc, desc, sizeof(b->desc));
+        b->desc[sizeof(b->desc) - 1] = '\0';
         memset(ret, 0, size);
     }
 
-    krn_debug_printf("%x\n", (uint32_t)ret);
+    krn_debug_printf("%08x\n", (uint32_t)ret);
+
+    krn_heap_validate();
 
     ASSERT(ret || !assert);
 
     return ret;
 }
 
-global uint32_t
-krn_heap_get_used_mem(void)
+global void
+krn_heap_free(void *ptr)
 {
-    return (mem_lower_ptr - mem_lower_start) + (mem_upper_ptr - mem_upper_start);
-}
+    krn_heap_block_st *b;
 
-global uint32_t
-krn_heap_get_avail_mem(void)
-{
-    return (mem_lower_end - mem_lower_ptr) + (mem_upper_end - mem_upper_ptr);
+    if (!ptr) {
+        return;
+    }
+
+    b = (krn_heap_block_st *)ptr - 1;
+    ASSERT(b->magic == HEAP_MAGIC && b->used);
+
+    krn_debug_printf("Free  %s for %s... ", krn_heap_format_units(b->units), b->desc);
+
+    b->used = 0;
+    b->desc[0] = '\0';
+    krn_heap_merge_free_blocks();
+
+    krn_debug_printf("ok\n");
 }
 
 global void
 krn_heap_init(void)
 {
     system_info_st *si = &krn_system_info;
-    uint32_t krn_start = (uint32_t)&krn_link_start;
-    uint32_t krn_end = (uint32_t)&krn_link_end;
-    uint32_t initrd_end = si->initrd_start + si->initrd_size;
+    uintptr_t krn_start = (uintptr_t)&krn_link_start;
+    uintptr_t krn_end = (uintptr_t)&krn_link_end;
+    uintptr_t initrd_end = si->initrd_start + si->initrd_size;
+    uintptr_t low_start = 0x10000;
+    uintptr_t low_end = MIN(si->mem_lower << 10, (uintptr_t)0xA0000);
+    uintptr_t high_start = MEM_UPPER_START;
+    uintptr_t high_end = MEM_UPPER_START + (si->mem_upper << 10);
 
     ASSERT(si->mem_fields_valid);
-
-    mem_lower_start = 0x10000;
-    if (krn_start < MEM_UPPER_START) {
-        mem_lower_start = MAX(mem_lower_start, krn_end);
-        mem_lower_start = MAX(mem_lower_start, initrd_end);
-    }
-    mem_lower_start = krn_heap_align_addr(mem_lower_start);
-    mem_lower_end = MIN(si->mem_lower << 10, (uint32_t)0xA0000);
-    ASSERT(mem_lower_start <= mem_lower_end);
-    mem_lower_ptr = mem_lower_start;
-
-    mem_upper_start = MEM_UPPER_START;
-    mem_upper_start = MAX(mem_upper_start, krn_end);
-    mem_upper_start = MAX(mem_upper_start, initrd_end);
-    mem_upper_start = krn_heap_align_addr(mem_upper_start);
-    mem_upper_end = MEM_UPPER_START + (si->mem_upper << 10);
-    ASSERT(mem_upper_start <= mem_upper_end);
-    mem_upper_ptr = mem_upper_start;
-
-    mem_use_upper = 0;
+    ASSERT(UNIT == 32);
 
     krn_debug_printf("Kernel:    %08x - %08x (%u KB)\n",
         krn_start, krn_end, (krn_end - krn_start) >> 10);
@@ -118,9 +253,19 @@ krn_heap_init(void)
     krn_debug_printf("Initrd:    %08x - %08x (%u KB)\n",
         si->initrd_start, initrd_end, si->initrd_size >> 10);
 
-    krn_debug_printf("Heap low:  %08x - %08x (%u KB)\n",
-        mem_lower_start, mem_lower_end, (mem_lower_end - mem_lower_start) >> 10);
+    krn_heap_init_block(&krn_heap_base, 1, 0, 0);
+    krn_heap_total_bytes = 0;
 
-    krn_debug_printf("Heap high: %08x - %08x (%u KB)\n",
-        mem_upper_start, mem_upper_end, (mem_upper_end - mem_upper_start) >> 10);
+    if (krn_start < MEM_UPPER_START) {
+        low_start = MAX(low_start, krn_end);
+        low_start = MAX(low_start, initrd_end);
+    }
+
+    high_start = MAX(high_start, krn_end);
+    high_start = MAX(high_start, initrd_end);
+
+    krn_heap_add_region(low_start, low_end);
+    krn_heap_add_region(high_start, high_end);
+
+    krn_heap_dump();
 }

@@ -51,6 +51,7 @@ extern app_st *gui_apps[];
 extern unsigned gui_apps_count;
 extern bitmap_st *gui_load_bitmap(const char *name);
 extern void gui_run_app(app_st *app);
+extern int gui_handle_key(event_st event);
 extern void gui_main(void);
 /* gui/planar.c */
 extern void gui_planar_flush(rect_st rect);
