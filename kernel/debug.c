@@ -23,7 +23,7 @@ global void
 krn_debug_printf(const char *fmt, ...)
 {
     int count;
-    static char buf[4096];
+    static char buf[128];
 
     va_list args;
 
