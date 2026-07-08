@@ -211,6 +211,8 @@ typedef struct {
 #define COLOR_PIANO_KEY_SEL     gui_theme.piano_key_sel
 
 enum {
+    GUI_MIN_WIDTH = 640,
+    GUI_MIN_HEIGHT = 480,
     TITLE_BAR_HEIGHT = 24,
     PANEL_WIDTH = 64,
     STATUS_HEIGHT = 24,

@@ -10,19 +10,18 @@
 enum {
     FONT_WIDTH = 8,
     FONT_HEIGHT = 16,
-};
 
-enum {
     TEXT_X = FONT_WIDTH,
     TEXT_Y = (STATUS_HEIGHT - FONT_HEIGHT) / 2,
+
+    STATUS_TEXT_BUF_SIZE = ((GUI_MIN_WIDTH - PANEL_WIDTH) / FONT_WIDTH) - 2 + 1,
 };
 
 static surface_st window_surface;
 static window_st window;
 
-static char *status_text_tmp = 0;
-static char *status_text = 0;
-static size_t status_text_buf_size = 0;
+static char status_text_tmp[STATUS_TEXT_BUF_SIZE];
+static char status_text[STATUS_TEXT_BUF_SIZE];
 
 static uint8_t status_text_color = 0;
 static size_t status_text_len = 0;
@@ -54,8 +53,8 @@ gui_status_set_text(const char *text, uint8_t color)
     size_t len = strlen(text);
     font_st *font = font_8x16;
 
-    strncpy(status_text, text, status_text_buf_size - 1);
-    status_text[status_text_buf_size - 1] = 0;
+    strncpy(status_text, text, sizeof(status_text) - 1);
+    status_text[sizeof(status_text) - 1] = 0;
     status_text_color = color;
 
     gui_surface_draw_str(window.surface, TEXT_X, TEXT_Y, font, text, color,
@@ -91,7 +90,7 @@ gui_status_set(const char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    (void) vsnprintf(status_text_tmp, status_text_buf_size, fmt, args);
+    (void) vsnprintf(status_text_tmp, sizeof(status_text_tmp), fmt, args);
     va_end(args);
 
     gui_status_set_bg_color(COLOR_WIDGET_BG);
@@ -105,7 +104,7 @@ gui_status_set_alert(const char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    (void) vsnprintf(status_text_tmp, status_text_buf_size, fmt, args);
+    (void) vsnprintf(status_text_tmp, sizeof(status_text_tmp), fmt, args);
     va_end(args);
 
     gui_status_set_bg_color(COLOR_WIDGET_BG);
@@ -133,10 +132,6 @@ gui_status_init(void)
 {
     system_info_st *si = &krn_system_info;
     int width = si->fb_width - PANEL_WIDTH;
-
-    status_text_buf_size = (width / FONT_WIDTH) - 2 + 1;
-    status_text = krn_heap_alloc(status_text_buf_size, "Status text buffer", 1);
-    status_text_tmp = krn_heap_alloc(status_text_buf_size, "Status text tmp buffer", 1);
 
     window_surface.size.width = width;
     window_surface.size.height = STATUS_HEIGHT;

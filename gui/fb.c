@@ -139,6 +139,8 @@ gui_fb_init(void)
 {
     system_info_st *si = &krn_system_info;
 
+    ASSERT(si->fb_width >= GUI_MIN_WIDTH && si->fb_height >= GUI_MIN_HEIGHT);
+
     gui_fb_screen_rect.width = si->fb_width;
     gui_fb_screen_rect.height = si->fb_height;
 
