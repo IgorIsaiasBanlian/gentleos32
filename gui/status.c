@@ -97,6 +97,15 @@ gui_status_set(const char *fmt, ...)
     gui_status_set_text(status_text_tmp, COLOR_WIDGET_FG);
 }
 
+global void
+gui_status_set_error(int err)
+{
+    const char *msg = error_message_for(err);
+
+    if (msg) {
+        gui_status_set("Error: %s", msg);
+    }
+}
 
 global void
 gui_status_set_alert(const char *fmt, ...)

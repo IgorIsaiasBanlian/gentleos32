@@ -83,6 +83,7 @@ extern void gui_rect_translate_diff(rect_st r1, rect_st r2, rect_st *hdiff, rect
 extern const char *gui_rect_format(rect_st r);
 /* gui/status.c */
 extern void gui_status_set(const char *fmt, ...);
+extern void gui_status_set_error(int err);
 extern void gui_status_set_alert(const char *fmt, ...);
 extern void gui_status_init(void);
 /* gui/surface.c */
