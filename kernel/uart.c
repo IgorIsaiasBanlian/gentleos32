@@ -107,17 +107,14 @@ krn_uart_set_baud_rate(uint32_t rate)
     krn_uart_outb(lcr & 0x7F, UART_LCR);
 }
 
-global void
-krn_uart_init(void)
+global int
+krn_uart_set_mode(int mode)
 {
     system_info_st *si = &krn_system_info;
 
-    if (si->uart_mode != UART_MODE_NONE && !krn_uart_probe()) {
+    if (!krn_uart_probe()) {
         si->uart_mode = UART_MODE_NONE;
-    }
-
-    if (si->uart_mode == UART_MODE_NONE) {
-        return;
+        return 0;
     }
 
     krn_uart_outb(0x00, UART_IER);
@@ -125,11 +122,11 @@ krn_uart_init(void)
 
     krn_uart_outb(0x00, UART_FCR);
 
-    if (si->uart_mode == UART_MODE_MOUSE) {
+    if (mode == UART_MODE_MOUSE) {
         krn_uart_set_baud_rate(1200);
         krn_uart_outb(0x02, UART_LCR); /* 7N1 */
         krn_uart_outb(0x0B, UART_MCR); /* DTR + RTS + OUT2 */
-    } else if (si->uart_mode == UART_MODE_DEBUG) {
+    } else if (mode == UART_MODE_DEBUG) {
         krn_uart_set_baud_rate(9600);
         krn_uart_outb(0x03, UART_LCR); /* 8N1 */
         krn_uart_outb(0x08, UART_MCR); /* OUT2 */
@@ -137,4 +134,17 @@ krn_uart_init(void)
 
     krn_uart_flush_data();
     krn_uart_outb(0x01, UART_IER);
+
+    si->uart_mode = mode;
+    return 1;
+}
+
+global void
+krn_uart_init(void)
+{
+    system_info_st *si = &krn_system_info;
+
+    if (si->uart_mode != UART_MODE_NONE) {
+        krn_uart_set_mode(si->uart_mode);
+    }
 }

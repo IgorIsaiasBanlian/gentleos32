@@ -58,6 +58,7 @@ extern uint8_t krn_timer_get_cpu_usage(void);
 extern void krn_timer_init(void);
 /* kernel/uart.c */
 extern void krn_uart_write_data(uint8_t data);
+extern int krn_uart_set_mode(int mode);
 extern void krn_uart_init(void);
 /* kernel/vga.c */
 extern void krn_vga_set_color(int index, uint32_t rgb);
