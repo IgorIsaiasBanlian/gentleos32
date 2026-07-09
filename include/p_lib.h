@@ -1,3 +1,5 @@
+/* lib/errors.c */
+extern const char *error_message_for(int code);
 /* lib/key.c */
 extern char key_char_for_code(uint8_t code, uint8_t mods);
 extern int key_number_for_code(uint8_t code);

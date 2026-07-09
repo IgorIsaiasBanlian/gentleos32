@@ -36,6 +36,13 @@
 typedef uint32_t size_t;
 typedef int32_t ssize_t;
 
+enum {
+    E_OK,
+    E_NOT_ENOUGH_MEMORY,
+    E_TOO_MANY_WINDOWS,
+    E_CODES_COUNT,
+};
+
 typedef struct {
     int mem_fields_valid;
     uint32_t mem_lower;
