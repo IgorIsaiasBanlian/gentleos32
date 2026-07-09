@@ -118,6 +118,7 @@ struct window {
     void (*on_key_up)(window_st *, event_st event);
     void (*on_tick)(window_st *);
     void (*on_active_change)(window_st *);
+    void (*on_close)(window_st *);
 };
 
 typedef struct {

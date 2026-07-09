@@ -49,8 +49,13 @@ gui_close_button_draw(widget_st *widget)
 static void
 gui_close_button_on_pointer_up(widget_st *widget, event_st event, point_st pos)
 {
+    window_st *window = widget->window;
+
     gui_button_on_pointer_up(widget, event, pos);
-    gui_wm_remove_window(widget->window);
+
+    if (window && window->on_close) {
+        window->on_close(window);
+    }
 }
 
 global void
