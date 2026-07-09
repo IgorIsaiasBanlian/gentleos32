@@ -84,8 +84,22 @@ gui_launch_app(app_st *app)
 global int
 gui_handle_key(event_st event)
 {
-    if (event.key_code == KEY_M && event.key_mods & KEY_MOD_CTRL) {
+    int is_special = (event.key_mods & KEY_MOD_CTRL) && (event.key_mods & KEY_MOD_SHIFT);
+    int key_code = event.key_code;
+    int ok;
+
+    if (!is_special) {
+        return 0;
+    }
+
+    if (key_code == KEY_M) {
         krn_heap_dump();
+        return 1;
+    }
+
+    if (key_code == KEY_S) {
+        ok = krn_uart_set_mode(UART_MODE_MOUSE);
+        gui_status_set(ok ? "Serial mouse activated" : "Serial port unavailable");
         return 1;
     }
 
