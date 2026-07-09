@@ -25,24 +25,31 @@ enum {
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + GRID_PAD + 1,
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st *widgets[2];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st *widgets[2];
 
-static grid_st grid;
+    grid_st grid;
 
-static time_st last_time;
+    time_st last_time;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static void
 draw_cell(int x, int y, int active)
 {
-    rect_st r = gui_grid_cell_rect(&grid, x, y);
+    app_state_st *a = app_state;
+
+    rect_st r = gui_grid_cell_rect(&a->grid, x, y);
     uint8_t color = active ? COLOR_WIDGET_FG : COLOR_WIDGET_BG;
-    gui_surface_draw_rect(window.surface, r, color);
-    gui_wm_render_window_region(&window, r);
+    gui_surface_draw_rect(a->window.surface, r, color);
+    gui_wm_render_window_region(&a->window, r);
 }
 
 static void
@@ -62,14 +69,15 @@ draw_digit(int x, int y, int digit)
 static void
 draw_time(void)
 {
+    app_state_st *a = app_state;
     time_st t;
     krn_rtc_get_time(&t);
 
-    if (krn_rtc_are_times_equal(&t, &last_time)) {
+    if (krn_rtc_are_times_equal(&t, &a->last_time)) {
         return;
     }
 
-    last_time = t;
+    a->last_time = t;
 
     draw_digit(1, 1, t.hour / 10);
     draw_digit(5, 1, t.hour % 10);
@@ -110,49 +118,69 @@ on_tick(window_st *window _unsd)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_clock.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Clock pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Clock";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_tick = on_tick;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Clock";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_tick = on_tick;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_grid(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
+
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Clock app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_grid();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_clock.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_clock = {
     .icon = &icon_clock,
     .init = init_app,
-    .show = show_app,
 };

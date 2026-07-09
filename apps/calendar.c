@@ -29,29 +29,34 @@ enum {
     WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
 };
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st prev_button;
-static widget_st next_button;
-static widget_st day_buttons[GRID_CELLS_COUNT];
-static widget_st *widgets[GRID_CELLS_COUNT + 4];
-
-static surface_st window_surface;
-static window_st window;
-
 enum {
     MIN_YEAR = 1900,
     MAX_YEAR = 2099,
 };
 
-static int current_month = 0;
-static int current_year = 0;
-static int current_day = 0;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static int selected_month = 0;
-static int selected_year = 0;
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st prev_button;
+    widget_st next_button;
+    widget_st day_buttons[GRID_CELLS_COUNT];
+    widget_st *widgets[GRID_CELLS_COUNT + 4];
 
-static grid_st grid;
+    int current_month;
+    int current_year;
+    int current_day;
+
+    int selected_month;
+    int selected_year;
+
+    grid_st grid;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static int
 get_day_of_week(int day, int month, int year)
@@ -82,8 +87,10 @@ draw_month_label(void)
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
+    app_state_st *a = app_state;
+
     char buf[16];
-    snprintf(buf, sizeof(buf), "%s %d", month_names[selected_month - 1], selected_year);
+    snprintf(buf, sizeof(buf), "%s %d", month_names[a->selected_month - 1], a->selected_year);
 
     rect_st rect = {
         .x = TOOL_BAR_HEIGHT - 1,
@@ -92,21 +99,23 @@ draw_month_label(void)
         .height = TOOL_BAR_HEIGHT,
     };
 
-    gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
-    gui_surface_draw_str_centered(window.surface, rect, font_8x16, buf,
+    gui_surface_draw_border(a->window.surface, rect, COLOR_BORDER);
+    gui_surface_draw_str_centered(a->window.surface, rect, font_8x16, buf,
         COLOR_WIDGET_FG, COLOR_WIDGET_BG);
-    gui_wm_render_window_region(&window, rect);
+    gui_wm_render_window_region(&a->window, rect);
 }
 
 static void
 draw_day_button(widget_st *widget)
 {
+    app_state_st *a = app_state;
+
     int day = widget->tag1;
-    int num_days = get_num_days_in_month(selected_month, selected_year);
+    int num_days = get_num_days_in_month(a->selected_month, a->selected_year);
 
     int is_in_month = day >= 0 && day < num_days;
-    int is_current = (day == current_day - 1 && selected_month == current_month
-        && selected_year == current_year);
+    int is_current = (day == a->current_day - 1 && a->selected_month == a->current_month
+        && a->selected_year == a->current_year);
     int is_pressed = (widget == widget->window->pressed_widget) || widget->active;
     int fg, bg;
 
@@ -146,11 +155,13 @@ draw_day_button(widget_st *widget)
 static void
 draw_selected_month(void)
 {
-    int day_of_week = get_day_of_week(1, selected_month, selected_year);
+    app_state_st *a = app_state;
+
+    int day_of_week = get_day_of_week(1, a->selected_month, a->selected_year);
 
     for (size_t i = 0; i < GRID_CELLS_COUNT; ++i) {
-        day_buttons[i].tag1 = i - day_of_week;
-        gui_widget_draw(&day_buttons[i]);
+        a->day_buttons[i].tag1 = i - day_of_week;
+        gui_widget_draw(&a->day_buttons[i]);
     }
 
     draw_month_label();
@@ -159,6 +170,8 @@ draw_selected_month(void)
 static void
 draw_week_bar(void)
 {
+    app_state_st *a = app_state;
+
     static const char *day_names[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
     for (int y = 0; y < 7; y++) {
@@ -169,8 +182,8 @@ draw_week_bar(void)
             .height = WEEK_BAR_HEIGHT,
         };
 
-        gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
-        gui_surface_draw_str_centered(window.surface, rect, font_8x16,
+        gui_surface_draw_border(a->window.surface, rect, COLOR_BORDER);
+        gui_surface_draw_str_centered(a->window.surface, rect, font_8x16,
             day_names[y], COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     }
 }
@@ -178,8 +191,10 @@ draw_week_bar(void)
 static void
 draw_window(window_st *window)
 {
+    app_state_st *a = app_state;
+
     gui_window_draw(window, COLOR_WIDGET_BG);
-    gui_grid_draw_background(&grid, window, COLOR_BORDER);
+    gui_grid_draw_background(&a->grid, window, COLOR_BORDER);
     draw_week_bar();
     draw_selected_month();
 }
@@ -188,13 +203,15 @@ static void
 on_prev_button(widget_st *widget _unsd, event_st event,
     point_st pos)
 {
+    app_state_st *a = app_state;
+
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (selected_month > 1) {
-        selected_month -= 1;
-    } else if (selected_year > MIN_YEAR) {
-        selected_year -= 1;
-        selected_month = 12;
+    if (a->selected_month > 1) {
+        a->selected_month -= 1;
+    } else if (a->selected_year > MIN_YEAR) {
+        a->selected_year -= 1;
+        a->selected_month = 12;
     } else {
         return;
     }
@@ -206,13 +223,15 @@ static void
 on_next_button(widget_st *widget _unsd, event_st event,
     point_st pos)
 {
+    app_state_st *a = app_state;
+
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (selected_month < 12) {
-        selected_month += 1;
-    } else if (selected_year < MAX_YEAR) {
-        selected_year += 1;
-        selected_month = 1;
+    if (a->selected_month < 12) {
+        a->selected_month += 1;
+    } else if (a->selected_year < MAX_YEAR) {
+        a->selected_year += 1;
+        a->selected_month = 1;
     } else {
         return;
     }
@@ -221,102 +240,126 @@ on_next_button(widget_st *widget _unsd, event_st event,
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_calendar.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Calendar pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Calendar";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Calendar";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_buttons(void)
 {
-    gui_button_init(&prev_button);
-    prev_button.rect.x = 0;
-    prev_button.rect.y = TOOL_BAR_Y;
-    prev_button.rect.width = TOOL_BAR_HEIGHT;
-    prev_button.rect.height = TOOL_BAR_HEIGHT;
-    prev_button.label = "<";
-    prev_button.on_pointer_up = on_prev_button;
+    app_state_st *a = app_state;
 
-    gui_button_init(&next_button);
-    next_button.rect.x = WINDOW_WIDTH - TOOL_BAR_HEIGHT;
-    next_button.rect.y = TOOL_BAR_Y;
-    next_button.rect.width = TOOL_BAR_HEIGHT;
-    next_button.rect.height = TOOL_BAR_HEIGHT;
-    next_button.label = ">";
-    next_button.on_pointer_up = on_next_button;
+    gui_button_init(&a->prev_button);
+    a->prev_button.rect.x = 0;
+    a->prev_button.rect.y = TOOL_BAR_Y;
+    a->prev_button.rect.width = TOOL_BAR_HEIGHT;
+    a->prev_button.rect.height = TOOL_BAR_HEIGHT;
+    a->prev_button.label = "<";
+    a->prev_button.on_pointer_up = on_prev_button;
 
-    gui_window_add_widget(&window, &prev_button);
-    gui_window_add_widget(&window, &next_button);
+    gui_button_init(&a->next_button);
+    a->next_button.rect.x = WINDOW_WIDTH - TOOL_BAR_HEIGHT;
+    a->next_button.rect.y = TOOL_BAR_Y;
+    a->next_button.rect.width = TOOL_BAR_HEIGHT;
+    a->next_button.rect.height = TOOL_BAR_HEIGHT;
+    a->next_button.label = ">";
+    a->next_button.on_pointer_up = on_next_button;
+
+    gui_window_add_widget(&a->window, &a->prev_button);
+    gui_window_add_widget(&a->window, &a->next_button);
 }
 
 static void
 init_day_buttons(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
 
-    gui_grid_draw_background(&grid, &window, COLOR_BORDER);
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
+
+    gui_grid_draw_background(&a->grid, &a->window, COLOR_BORDER);
 
     for (size_t i = 0; i < GRID_CELLS_COUNT; ++i) {
         int col = i % GRID_COLS;
         int row = i / GRID_COLS;
 
-        gui_button_init(&day_buttons[i]);
-        day_buttons[i].rect = gui_grid_cell_rect(&grid, col, row);
-        day_buttons[i].draw = draw_day_button;
-        day_buttons[i].font = font_8x16;
-        day_buttons[i].press_on_move_in = 1;
+        gui_button_init(&a->day_buttons[i]);
+        a->day_buttons[i].rect = gui_grid_cell_rect(&a->grid, col, row);
+        a->day_buttons[i].draw = draw_day_button;
+        a->day_buttons[i].font = font_8x16;
+        a->day_buttons[i].press_on_move_in = 1;
 
-        gui_window_add_widget(&window, &day_buttons[i]);
+        gui_window_add_widget(&a->window, &a->day_buttons[i]);
     }
 }
 
 static void
 init_current_date(void)
 {
+    app_state_st *a = app_state;
+
     time_st t;
     krn_rtc_get_time(&t);
 
-    current_month = t.month;
-    current_year = t.year;
-    current_day = t.day;
+    a->current_month = t.month;
+    a->current_year = t.year;
+    a->current_day = t.day;
 
-    selected_month = current_month;
-    selected_year = current_year;
+    a->selected_month = a->current_month;
+    a->selected_year = a->current_year;
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Calendar app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_buttons();
     init_day_buttons();
     init_current_date();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_calendar.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_calendar = {
     .icon = &icon_calendar,
     .init = init_app,
-    .show = show_app,
 };

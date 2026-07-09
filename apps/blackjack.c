@@ -41,43 +41,53 @@ enum {
     STATE_OVER = 1,
 };
 
-static surface_st window_surface;
-static window_st window;
-static card_game_st game;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st hit_button;
-static widget_st stand_button;
-static widget_st deal_button;
-static widget_st *widgets[5];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st hit_button;
+    widget_st stand_button;
+    widget_st deal_button;
+    widget_st *widgets[5];
 
-static card_t deck[CARD_DECK_SIZE];
-static int deck_pos;
+    card_game_st game;
 
-static card_t player_hand[HAND_SIZE_MAX];
-static int player_hand_count;
+    card_t deck[CARD_DECK_SIZE];
+    int deck_pos;
 
-static card_t dealer_hand[HAND_SIZE_MAX];
-static int dealer_hand_count;
+    card_t player_hand[HAND_SIZE_MAX];
+    int player_hand_count;
 
-static const char *status_msg = "";
-static int game_state;
-static int wins;
-static int losses;
+    card_t dealer_hand[HAND_SIZE_MAX];
+    int dealer_hand_count;
+
+    const char *status_msg;
+    int game_state;
+    int wins;
+    int losses;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static void
 shuffle_deck(void)
 {
-    deck_pos = 0;
-    card_deck_init(deck, CARD_DECK_SIZE);
-    card_deck_shuffle(deck, CARD_DECK_SIZE);
+    app_state_st *a = app_state;
+
+    a->deck_pos = 0;
+    card_deck_init(a->deck, CARD_DECK_SIZE);
+    card_deck_shuffle(a->deck, CARD_DECK_SIZE);
 }
 
 static card_t
 deal_card(void)
 {
-    return deck[deck_pos++];
+    app_state_st *a = app_state;
+
+    return a->deck[a->deck_pos++];
 }
 
 static int
@@ -116,23 +126,26 @@ is_blackjack(card_t *hand, int count)
 static void
 draw_card(int x, int y, card_t card, int face_up)
 {
+    app_state_st *a = app_state;
+
     if (face_up) {
-        card_draw(&game, x, y, card, 0);
+        card_draw(&a->game, x, y, card, 0);
     } else {
-        card_back_draw(&game, x, y);
+        card_back_draw(&a->game, x, y);
     }
 }
 
 static void
 draw_hand(card_t *hand)
 {
-    int is_player = (hand == player_hand);
-    int count = is_player ? player_hand_count : dealer_hand_count;
+    app_state_st *a = app_state;
+    int is_player = (hand == a->player_hand);
+    int count = is_player ? a->player_hand_count : a->dealer_hand_count;
     int y = is_player ? CARDS_PLAYER_Y : CARDS_DEALER_Y;
-    int all_face_up = is_player || game_state == STATE_OVER;
+    int all_face_up = is_player || a->game_state == STATE_OVER;
 
     rect_st r = gui_rect_make(CARDS_X, y, CARDS_WIDTH, CARD_HEIGHT);
-    gui_surface_draw_rect(window.surface, r, COLOR_WIDGET_BG);
+    gui_surface_draw_rect(a->window.surface, r, COLOR_WIDGET_BG);
 
     int step = CARD_WIDTH + CARD_SPACING;
     if (count > 1) {
@@ -145,48 +158,53 @@ draw_hand(card_t *hand)
         draw_card(x, y, hand[i], all_face_up || i == 0);
     }
 
-    gui_wm_render_window_region(&window, r);
+    gui_wm_render_window_region(&a->window, r);
 }
 
 static void
 update_buttons(void)
 {
-    hit_button.hidden = game_state == STATE_OVER;
-    stand_button.hidden = game_state == STATE_OVER;
-    deal_button.hidden = game_state == STATE_PLAYING;
+    app_state_st *a = app_state;
+
+    a->hit_button.hidden = a->game_state == STATE_OVER;
+    a->stand_button.hidden = a->game_state == STATE_OVER;
+    a->deal_button.hidden = a->game_state == STATE_PLAYING;
 
     rect_st r = gui_rect_make(1, BUTTONS_Y, WINDOW_WIDTH - 2, BUTTON_HEIGHT);
-    gui_surface_draw_rect(window.surface, r, COLOR_WIDGET_BG);
+    gui_surface_draw_rect(a->window.surface, r, COLOR_WIDGET_BG);
 
-    gui_widget_draw(&hit_button);
-    gui_widget_draw(&stand_button);
-    gui_widget_draw(&deal_button);
+    gui_widget_draw(&a->hit_button);
+    gui_widget_draw(&a->stand_button);
+    gui_widget_draw(&a->deal_button);
 
-    gui_wm_render_window_region(&window, r);
+    gui_wm_render_window_region(&a->window, r);
 }
 
 static void
 update_status(void)
 {
-    int player_score = hand_score(player_hand, player_hand_count);
-    int dealer_score = hand_score(dealer_hand, dealer_hand_count);
+    app_state_st *a = app_state;
+    int player_score = hand_score(a->player_hand, a->player_hand_count);
+    int dealer_score = hand_score(a->dealer_hand, a->dealer_hand_count);
 
-    if (game_state == STATE_PLAYING) {
+    if (a->game_state == STATE_PLAYING) {
         gui_status_set("Dealer: ?  You:%2d  \xb3  W:%d  L:%d",
-        player_score, wins, losses);
+        player_score, a->wins, a->losses);
     } else {
         gui_status_set("Dealer:%2d  You:%2d  \xb3  %s  \xb3  W:%d  L:%d",
-            dealer_score, player_score, status_msg, wins, losses);
+            dealer_score, player_score, a->status_msg, a->wins, a->losses);
     }
 }
 
 static void
 end_game(const char *msg)
 {
-    game_state = STATE_OVER;
-    status_msg = msg;
+    app_state_st *a = app_state;
 
-    draw_hand(dealer_hand);
+    a->game_state = STATE_OVER;
+    a->status_msg = msg;
+
+    draw_hand(a->dealer_hand);
     update_buttons();
     update_status();
 }
@@ -194,31 +212,33 @@ end_game(const char *msg)
 static void
 restart_game(void)
 {
+    app_state_st *a = app_state;
+
     shuffle_deck();
 
-    player_hand_count = 0;
-    dealer_hand_count = 0;
+    a->player_hand_count = 0;
+    a->dealer_hand_count = 0;
 
-    player_hand[player_hand_count++] = deal_card();
-    dealer_hand[dealer_hand_count++] = deal_card();
-    player_hand[player_hand_count++] = deal_card();
-    dealer_hand[dealer_hand_count++] = deal_card();
+    a->player_hand[a->player_hand_count++] = deal_card();
+    a->dealer_hand[a->dealer_hand_count++] = deal_card();
+    a->player_hand[a->player_hand_count++] = deal_card();
+    a->dealer_hand[a->dealer_hand_count++] = deal_card();
 
-    game_state = STATE_PLAYING;
+    a->game_state = STATE_PLAYING;
     update_buttons();
-    draw_hand(player_hand);
-    draw_hand(dealer_hand);
+    draw_hand(a->player_hand);
+    draw_hand(a->dealer_hand);
 
-    int player_blackjack = is_blackjack(player_hand, player_hand_count);
-    int dealer_blackjack = is_blackjack(dealer_hand, dealer_hand_count);
+    int player_blackjack = is_blackjack(a->player_hand, a->player_hand_count);
+    int dealer_blackjack = is_blackjack(a->dealer_hand, a->dealer_hand_count);
 
     if (player_blackjack && dealer_blackjack) {
         end_game("Both Blackjack! Push");
     } else if (player_blackjack) {
-        wins++;
+        a->wins++;
         end_game("Blackjack! You win!");
     } else if (dealer_blackjack) {
-        losses++;
+        a->losses++;
         end_game("Dealer Blackjack!");
     } else {
         update_status();
@@ -228,22 +248,23 @@ restart_game(void)
 static void
 player_stand(void)
 {
-    int dealer_score = hand_score(dealer_hand, dealer_hand_count);
-    int player_score = hand_score(player_hand, player_hand_count);
+    app_state_st *a = app_state;
+    int dealer_score = hand_score(a->dealer_hand, a->dealer_hand_count);
+    int player_score = hand_score(a->player_hand, a->player_hand_count);
 
-    while (dealer_score < 17 && dealer_hand_count < HAND_SIZE_MAX) {
-        dealer_hand[dealer_hand_count++] = deal_card();
-        dealer_score = hand_score(dealer_hand, dealer_hand_count);
+    while (dealer_score < 17 && a->dealer_hand_count < HAND_SIZE_MAX) {
+        a->dealer_hand[a->dealer_hand_count++] = deal_card();
+        dealer_score = hand_score(a->dealer_hand, a->dealer_hand_count);
     }
 
     if (dealer_score > 21) {
-        wins++;
+        a->wins++;
         end_game("Dealer busts! You win!");
     } else if (player_score > dealer_score) {
-        wins++;
+        a->wins++;
         end_game("You win!");
     } else if (dealer_score > player_score) {
-        losses++;
+        a->losses++;
         end_game("Dealer wins");
     } else {
         end_game("Push!");
@@ -253,17 +274,19 @@ player_stand(void)
 static void
 player_hit(void)
 {
-    if (player_hand_count >= HAND_SIZE_MAX) {
+    app_state_st *a = app_state;
+
+    if (a->player_hand_count >= HAND_SIZE_MAX) {
         return;
     }
 
-    player_hand[player_hand_count++] = deal_card();
-    draw_hand(player_hand);
+    a->player_hand[a->player_hand_count++] = deal_card();
+    draw_hand(a->player_hand);
 
-    int score = hand_score(player_hand, player_hand_count);
+    int score = hand_score(a->player_hand, a->player_hand_count);
 
     if (score > 21) {
-        losses++;
+        a->losses++;
         end_game("Bust! You lose");
     } else if (score == 21) {
         player_stand();
@@ -275,9 +298,11 @@ player_hit(void)
 static void
 on_hit_button(widget_st *widget, event_st event, point_st pos)
 {
+    app_state_st *a = app_state;
+
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (game_state == STATE_PLAYING) {
+    if (a->game_state == STATE_PLAYING) {
         player_hit();
     }
 }
@@ -285,9 +310,11 @@ on_hit_button(widget_st *widget, event_st event, point_st pos)
 static void
 on_stand_button(widget_st *widget, event_st event, point_st pos)
 {
+    app_state_st *a = app_state;
+
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (game_state == STATE_PLAYING) {
+    if (a->game_state == STATE_PLAYING) {
         player_stand();
     }
 }
@@ -295,9 +322,11 @@ on_stand_button(widget_st *widget, event_st event, point_st pos)
 static void
 on_deal_button(widget_st *widget, event_st event, point_st pos)
 {
+    app_state_st *a = app_state;
+
     gui_button_on_pointer_up(widget, event, pos);
 
-    if (game_state == STATE_OVER) {
+    if (a->game_state == STATE_OVER) {
         restart_game();
     }
 }
@@ -305,15 +334,17 @@ on_deal_button(widget_st *widget, event_st event, point_st pos)
 static void
 draw_window(window_st *window)
 {
+    app_state_st *a = app_state;
+
     gui_window_draw(window, COLOR_WIDGET_BG);
     gui_surface_draw_h_seg(window->surface, 1, DIVIDER_Y, WINDOW_WIDTH - 2, COLOR_BORDER);
 
-    draw_hand(player_hand);
-    draw_hand(dealer_hand);
+    draw_hand(a->player_hand);
+    draw_hand(a->dealer_hand);
 
-    gui_widget_draw(&hit_button);
-    gui_widget_draw(&stand_button);
-    gui_widget_draw(&deal_button);
+    gui_widget_draw(&a->hit_button);
+    gui_widget_draw(&a->stand_button);
+    gui_widget_draw(&a->deal_button);
 }
 
 static void
@@ -325,71 +356,89 @@ on_active_change(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_blackjack.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Blackjack pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Blackjack";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_active_change = on_active_change;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    game.surface = &window_surface;
-    game.card_width = CARD_WIDTH;
-    game.card_height = CARD_HEIGHT;
+    a->window.surface = &a->window_surface;
+    a->window.title = "Blackjack";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_active_change = on_active_change;
+    a->window.on_close = close_window;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->game.surface = &a->window_surface;
+    a->game.card_width = CARD_WIDTH;
+    a->game.card_height = CARD_HEIGHT;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_buttons(void)
 {
-    gui_button_init(&hit_button);
-    hit_button.rect = gui_rect_make(BUTTON_HIT_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
-    hit_button.label = "Hit";
-    hit_button.on_pointer_up = on_hit_button;
-    gui_window_add_widget(&window, &hit_button);
+    app_state_st *a = app_state;
 
-    gui_button_init(&stand_button);
-    stand_button.rect = gui_rect_make(BUTTON_STAND_X, BUTTONS_Y, BUTTON_WIDTH,
-        BUTTON_HEIGHT);
-    stand_button.label = "Stand";
-    stand_button.on_pointer_up = on_stand_button;
-    gui_window_add_widget(&window, &stand_button);
+    gui_button_init(&a->hit_button);
+    a->hit_button.rect = gui_rect_make(BUTTON_HIT_X, BUTTONS_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+    a->hit_button.label = "Hit";
+    a->hit_button.on_pointer_up = on_hit_button;
+    gui_window_add_widget(&a->window, &a->hit_button);
 
-    gui_button_init(&deal_button);
-    deal_button.rect = gui_rect_make(BUTTON_DEAL_X, BUTTONS_Y, BUTTON_WIDTH,
+    gui_button_init(&a->stand_button);
+    a->stand_button.rect = gui_rect_make(BUTTON_STAND_X, BUTTONS_Y, BUTTON_WIDTH,
         BUTTON_HEIGHT);
-    deal_button.label = "Deal";
-    deal_button.hidden = 1;
-    deal_button.on_pointer_up = on_deal_button;
-    gui_window_add_widget(&window, &deal_button);
+    a->stand_button.label = "Stand";
+    a->stand_button.on_pointer_up = on_stand_button;
+    gui_window_add_widget(&a->window, &a->stand_button);
+
+    gui_button_init(&a->deal_button);
+    a->deal_button.rect = gui_rect_make(BUTTON_DEAL_X, BUTTONS_Y, BUTTON_WIDTH,
+        BUTTON_HEIGHT);
+    a->deal_button.label = "Deal";
+    a->deal_button.hidden = 1;
+    a->deal_button.on_pointer_up = on_deal_button;
+    gui_window_add_widget(&a->window, &a->deal_button);
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Blackjack app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_buttons();
 
     restart_game();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_blackjack.main_window = &app_state->window;
 
-    update_status();
+    return E_OK;
 }
 
 global app_st app_blackjack = {
     .icon = &icon_blackjack,
     .init = init_app,
-    .show = show_app,
 };

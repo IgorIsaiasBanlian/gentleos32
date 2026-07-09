@@ -132,8 +132,8 @@ typedef struct {
 
 typedef struct {
     bitmap_st *icon;
-    void (*init)(void);
-    void (*show)(void);
+    window_st *main_window;
+    int (*init)(void);
 } app_st;
 
 typedef struct {

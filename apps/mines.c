@@ -26,16 +26,6 @@ enum {
     MINE_COUNT = 32,
 };
 
-static surface_st window_surface;
-static window_st window;
-
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st cell_widgets[GRID_CELL_COUNT];
-static widget_st *widgets[GRID_CELL_COUNT + 2];
-
-static grid_st grid;
-
 enum {
     CELL_STATE_HIDDEN = 0,
     CELL_STATE_REVEALED = 1,
@@ -53,17 +43,33 @@ enum {
     GAME_STATE_LOST = 2,
 };
 
-static uint8_t cell_state[GRID_COLS][GRID_ROWS];
-static uint8_t cell_type[GRID_COLS][GRID_ROWS];
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
+
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st cell_widgets[GRID_CELL_COUNT];
+    widget_st *widgets[GRID_CELL_COUNT + 2];
+
+    grid_st grid;
+
+    uint8_t cell_state[GRID_COLS][GRID_ROWS];
+    uint8_t cell_type[GRID_COLS][GRID_ROWS];
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static size_t
 count_cells_by_state(uint8_t state)
 {
+    app_state_st *a = app_state;
     size_t count = 0;
 
     for (int y = 0; y < GRID_ROWS; ++y) {
         for (int x = 0; x < GRID_COLS; ++x) {
-            if (cell_state[x][y] == state) {
+            if (a->cell_state[x][y] == state) {
                 count++;
             }
         }
@@ -75,6 +81,7 @@ count_cells_by_state(uint8_t state)
 static size_t
 count_adjacent_mines(int col, int row)
 {
+    app_state_st *a = app_state;
     size_t count = 0;
 
     for (int dy = -1; dy <= 1; ++dy) {
@@ -87,7 +94,7 @@ count_adjacent_mines(int col, int row)
             int ny = row + dy;
 
             if (nx >= 0 && nx < GRID_COLS && ny >= 0 && ny < GRID_ROWS) {
-                if (cell_type[nx][ny] == CELL_TYPE_MINE) {
+                if (a->cell_type[nx][ny] == CELL_TYPE_MINE) {
                     ++count;
                 }
             }
@@ -100,54 +107,59 @@ count_adjacent_mines(int col, int row)
 static void
 draw_cell(widget_st *widget)
 {
+    app_state_st *a = app_state;
     int idx = widget->tag1;
     int col = idx % GRID_COLS;
     int row = idx / GRID_COLS;
-    uint8_t state = cell_state[col][row];
-    uint8_t type = cell_type[col][row];
+    uint8_t state = a->cell_state[col][row];
+    uint8_t type = a->cell_type[col][row];
     rect_st rect = widget->rect;
     rect_st dot_rect, num_rect;
     int pressed = widget->window->pressed_widget == widget;
     int activated = pressed && state == CELL_STATE_HIDDEN;
     char num_str[2] = { 0, 0 };
 
-    gui_surface_draw_rect(window.surface, rect,
+    gui_surface_draw_rect(a->window.surface, rect,
         activated ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG);
 
     if (state == CELL_STATE_FLAGGED) {
-        gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_flag,
+        gui_surface_draw_bitmap_centered(a->window.surface, rect, &sprite_flag,
             COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_MINE) {
-        gui_surface_draw_bitmap_centered(window.surface, rect, &sprite_mine,
+        gui_surface_draw_bitmap_centered(a->window.surface, rect, &sprite_mine,
             COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED && type == CELL_TYPE_EMPTY) {
         dot_rect = gui_rect_make(rect.x + rect.width / 2 - 1, rect.y + rect.height / 2, 2, 1);
-        gui_surface_draw_rect(window.surface, dot_rect, COLOR_WIDGET_FG);
+        gui_surface_draw_rect(a->window.surface, dot_rect, COLOR_WIDGET_FG);
     } else if (state == CELL_STATE_REVEALED) {
         num_str[0] = '0' + type;
         num_rect = gui_rect_make(rect.x + 1, rect.y, rect.width - 1, rect.height);
 
-        gui_surface_draw_str_centered(window.surface, num_rect, font_8x8,
+        gui_surface_draw_str_centered(a->window.surface, num_rect, font_8x8,
             num_str, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     }
 
-    gui_wm_render_window_region(&window, rect);
+    gui_wm_render_window_region(&a->window, rect);
 }
 
 static void
 update_cell(int col, int row, uint8_t type, uint8_t state)
 {
-    cell_type[col][row] = type;
-    cell_state[col][row] = state;
-    draw_cell(&cell_widgets[row * GRID_COLS + col]);
+    app_state_st *a = app_state;
+
+    a->cell_type[col][row] = type;
+    a->cell_state[col][row] = state;
+    draw_cell(&a->cell_widgets[row * GRID_COLS + col]);
 }
 
 static void
 update_all_mines(uint8_t state)
 {
+    app_state_st *a = app_state;
+
     for (int row = 0; row < GRID_ROWS; ++row) {
         for (int col = 0; col < GRID_COLS; ++col) {
-            if (cell_type[col][row] == CELL_TYPE_MINE) {
+            if (a->cell_type[col][row] == CELL_TYPE_MINE) {
                 update_cell(col, row, CELL_TYPE_MINE, state);
             }
         }
@@ -167,6 +179,7 @@ clear_cells(void)
 static void
 place_mines(int except_col, int except_row)
 {
+    app_state_st *a = app_state;
     int remaining = MINE_COUNT;
 
     while (remaining > 0) {
@@ -177,8 +190,8 @@ place_mines(int except_col, int except_row)
             continue;
         }
 
-        if (cell_type[col][row] != CELL_TYPE_MINE) {
-            cell_type[col][row] = CELL_TYPE_MINE;
+        if (a->cell_type[col][row] != CELL_TYPE_MINE) {
+            a->cell_type[col][row] = CELL_TYPE_MINE;
             --remaining;
         }
     }
@@ -187,10 +200,12 @@ place_mines(int except_col, int except_row)
 static int
 get_game_state(void)
 {
+    app_state_st *a = app_state;
+
     for (int row = 0; row < GRID_ROWS; ++row) {
         for (int col = 0; col < GRID_COLS; ++col) {
-            if (cell_type[col][row] == CELL_TYPE_MINE &&
-                cell_state[col][row] == CELL_STATE_REVEALED) {
+            if (a->cell_type[col][row] == CELL_TYPE_MINE &&
+                a->cell_state[col][row] == CELL_STATE_REVEALED) {
                 return GAME_STATE_LOST;
             }
         }
@@ -244,11 +259,13 @@ reveal_adjacent_cells(int col, int row)
 static void
 reveal_cell(int col, int row)
 {
+    app_state_st *a = app_state;
+
     if (col < 0 || col >= GRID_COLS || row < 0 || row >= GRID_ROWS) {
         return;
     }
 
-    if (cell_state[col][row] != CELL_STATE_HIDDEN) {
+    if (a->cell_state[col][row] != CELL_STATE_HIDDEN) {
         return;
     }
 
@@ -256,7 +273,7 @@ reveal_cell(int col, int row)
         place_mines(col, row);
     }
 
-    if (cell_type[col][row] == CELL_TYPE_MINE) {
+    if (a->cell_type[col][row] == CELL_TYPE_MINE) {
         update_all_mines(CELL_STATE_REVEALED);
         update_status();
         return;
@@ -285,6 +302,8 @@ on_cell_pointer_down(widget_st *widget, event_st event _unsd, point_st pos _unsd
 static void
 on_cell_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
+    app_state_st *a = app_state;
+
     if (get_game_state() != GAME_STATE_PLAYING) {
         restart_game();
         return;
@@ -294,7 +313,7 @@ on_cell_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
     int col = idx % GRID_COLS;
     int row = idx / GRID_COLS;
 
-    if (cell_state[col][row] != CELL_STATE_HIDDEN) {
+    if (a->cell_state[col][row] != CELL_STATE_HIDDEN) {
         return;
     }
 
@@ -304,6 +323,8 @@ on_cell_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 static void
 on_cell_pointer_alt(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
+    app_state_st *a = app_state;
+
     if (get_game_state() != GAME_STATE_PLAYING) {
         return;
     }
@@ -312,11 +333,11 @@ on_cell_pointer_alt(widget_st *widget, event_st event _unsd, point_st pos _unsd)
     int col = idx % GRID_COLS;
     int row = idx / GRID_COLS;
 
-    if (cell_state[col][row] == CELL_STATE_HIDDEN) {
-        update_cell(col, row, cell_type[col][row], CELL_STATE_FLAGGED);
+    if (a->cell_state[col][row] == CELL_STATE_HIDDEN) {
+        update_cell(col, row, a->cell_type[col][row], CELL_STATE_FLAGGED);
         update_status();
-    } else if (cell_state[col][row] == CELL_STATE_FLAGGED) {
-        update_cell(col, row, cell_type[col][row], CELL_STATE_HIDDEN);
+    } else if (a->cell_state[col][row] == CELL_STATE_FLAGGED) {
+        update_cell(col, row, a->cell_type[col][row], CELL_STATE_HIDDEN);
         update_status();
     }
 }
@@ -336,67 +357,87 @@ on_active_change(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_mines.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Mines pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Mines";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_active_change = on_active_change;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Mines";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_active_change = on_active_change;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_grid(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
+
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
 
     for (int i = 0; i < GRID_CELL_COUNT; i++) {
         int col = i % GRID_COLS;
         int row = i / GRID_COLS;
 
-        gui_button_init(&cell_widgets[i]);
-        cell_widgets[i].rect = gui_grid_cell_rect(&grid, col, row);
-        cell_widgets[i].draw = draw_cell;
-        cell_widgets[i].tag1 = i;
-        cell_widgets[i].on_pointer_down = on_cell_pointer_down;
-        cell_widgets[i].on_pointer_up = on_cell_pointer_up;
-        cell_widgets[i].on_pointer_alt = on_cell_pointer_alt;
+        gui_button_init(&a->cell_widgets[i]);
+        a->cell_widgets[i].rect = gui_grid_cell_rect(&a->grid, col, row);
+        a->cell_widgets[i].draw = draw_cell;
+        a->cell_widgets[i].tag1 = i;
+        a->cell_widgets[i].on_pointer_down = on_cell_pointer_down;
+        a->cell_widgets[i].on_pointer_up = on_cell_pointer_up;
+        a->cell_widgets[i].on_pointer_alt = on_cell_pointer_alt;
 
-        gui_window_add_widget(&window, &cell_widgets[i]);
+        gui_window_add_widget(&a->window, &a->cell_widgets[i]);
     }
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Mines app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_grid();
 
     restart_game();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_mines.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_mines = {
     .icon = &icon_mines,
     .init = init_app,
-    .show = show_app,
 };
 

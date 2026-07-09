@@ -64,6 +64,35 @@ gui_wm_raise_window(struct window *w)
 }
 
 global int
+gui_wm_has_window(struct window *w)
+{
+    unsigned i;
+
+    for (i = 0; i < WINDOWS_COUNT_MAX; ++i) {
+        if (gui_wm_windows[i] == w) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+global int
+gui_wm_free_slots(void)
+{
+    unsigned i;
+    int count = 0;
+
+    for (i = 0; i < WINDOWS_COUNT_MAX; ++i) {
+        if (gui_wm_windows[i] == NULL) {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
+global int
 gui_wm_add_window(struct window *w)
 {
     unsigned i;
@@ -73,20 +102,18 @@ gui_wm_add_window(struct window *w)
     for (i = 0; i < WINDOWS_COUNT_MAX; ++i) {
         if (gui_wm_windows[i] == w) {
             gui_wm_raise_window(w);
-            return 0;
+            return E_OK;
         }
 
         if (gui_wm_windows[i] == NULL) {
             gui_wm_windows[i] = w;
             w->visible = 1;
             gui_wm_raise_window(w);
-            return 1;
+            return E_OK;
         }
     }
 
-    gui_status_set("Error: Too many windows");
-
-    return 0;
+    return E_TOO_MANY_WINDOWS;
 }
 
 global void

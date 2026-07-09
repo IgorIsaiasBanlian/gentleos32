@@ -27,15 +27,29 @@ enum {
     MISMATCH_TICKS = TICK_FREQUENCY * 8 / 10, /* 0.8s */
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st buttons[GRID_CELL_COUNT];
-static widget_st *widgets[GRID_CELL_COUNT + 2];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st buttons[GRID_CELL_COUNT];
+    widget_st *widgets[GRID_CELL_COUNT + 2];
 
-static grid_st grid;
+    grid_st grid;
+
+    uint8_t button_icons[GRID_CELL_COUNT];
+    uint8_t button_states[GRID_CELL_COUNT];
+
+    int first_pick;
+    int second_pick;
+    int tries;
+    int matched_count;
+    unsigned waiting;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static bitmap_st *icons[PAIR_COUNT] = {
     &glyph_mn_bbchick_2x,
@@ -67,18 +81,10 @@ enum {
     BUTTON_STATE_MATCHED = 2,
 };
 
-static uint8_t button_icons[GRID_CELL_COUNT];
-static uint8_t button_states[GRID_CELL_COUNT];
-
-static int first_pick;
-static int second_pick;
-static int tries;
-static int matched_count;
-static unsigned waiting = 0;
-
 static void
 shuffle_icons(void)
 {
+    app_state_st *a = app_state;
     uint8_t deck[GRID_CELL_COUNT];
 
     for (int i = 0; i < PAIR_COUNT; i++) {
@@ -94,69 +100,79 @@ shuffle_icons(void)
     }
 
     for (int i = 0; i < GRID_CELL_COUNT; i++) {
-        button_icons[i] = deck[i];
+        a->button_icons[i] = deck[i];
     }
 }
 
 static void
 draw_button(widget_st *widget)
 {
+    app_state_st *a = app_state;
+
     int idx = widget->tag1;
-    uint8_t state = button_states[idx];
+    uint8_t state = a->button_states[idx];
     rect_st rect = widget->rect;
-    int pressed = widget->window->pressed_widget == widget && !waiting;
+    int pressed = widget->window->pressed_widget == widget && !a->waiting;
 
     if (state == BUTTON_STATE_HIDDEN && !pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
+        gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_BG);
     } else if (state == BUTTON_STATE_HIDDEN && pressed) {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_SEL_BG);
+        gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_SEL_BG);
     } else {
-        gui_surface_draw_rect(window.surface, rect, COLOR_WIDGET_BG);
-        gui_surface_draw_bitmap_centered(window.surface, rect, icons[button_icons[idx]],
+        gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_BG);
+        gui_surface_draw_bitmap_centered(a->window.surface, rect, icons[a->button_icons[idx]],
             COLOR_WIDGET_FG);
     }
 
-    gui_wm_render_window_region(&window, rect);
+    gui_wm_render_window_region(&a->window, rect);
 }
 
 static void
 reveal_icon(int idx)
 {
-    button_states[idx] = BUTTON_STATE_REVEALED;
-    draw_button(&buttons[idx]);
+    app_state_st *a = app_state;
+
+    a->button_states[idx] = BUTTON_STATE_REVEALED;
+    draw_button(&a->buttons[idx]);
 }
 
 static void
 hide_icon(int idx)
 {
-    button_states[idx] = BUTTON_STATE_HIDDEN;
-    draw_button(&buttons[idx]);
+    app_state_st *a = app_state;
+
+    a->button_states[idx] = BUTTON_STATE_HIDDEN;
+    draw_button(&a->buttons[idx]);
 }
 
 static void
 update_status(void)
 {
-    if (matched_count == PAIR_COUNT) {
-        gui_status_set("You won after %d tries! Click to play again", tries);
+    app_state_st *a = app_state;
+
+    if (a->matched_count == PAIR_COUNT) {
+        gui_status_set("You won after %d tries! Click to play again", a->tries);
     } else {
-        gui_status_set("Tries: %d", tries);
+        gui_status_set("Tries: %d", a->tries);
     }
 }
 
 static void
 restart_game(void)
 {
+    app_state_st *a = app_state;
+
     shuffle_icons();
 
-    first_pick = -1;
-    second_pick = -1;
-    tries = 0;
-    matched_count = 0;
-    waiting = 0;
+    a->first_pick = -1;
+    a->second_pick = -1;
+    a->tries = 0;
+    a->matched_count = 0;
+    a->waiting = 0;
 
     for (int i = 0; i < GRID_CELL_COUNT; i++) {
-        button_states[i] = BUTTON_STATE_HIDDEN;
-        draw_button(&buttons[i]);
+        a->button_states[i] = BUTTON_STATE_HIDDEN;
+        draw_button(&a->buttons[i]);
     }
 
     update_status();
@@ -165,21 +181,23 @@ restart_game(void)
 static void
 on_tick(window_st *window _unsd)
 {
-    if (!waiting) {
+    app_state_st *a = app_state;
+
+    if (!a->waiting) {
         return;
     }
 
-    if (--waiting) {
+    if (--a->waiting) {
         return;
     }
 
-    hide_icon(first_pick);
-    first_pick = -1;
+    hide_icon(a->first_pick);
+    a->first_pick = -1;
 
-    hide_icon(second_pick);
-    second_pick = -1;
+    hide_icon(a->second_pick);
+    a->second_pick = -1;
 
-    waiting = 0;
+    a->waiting = 0;
 
     update_status();
 }
@@ -187,39 +205,41 @@ on_tick(window_st *window _unsd)
 static void
 on_cell_pointer_up(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
-    if (matched_count == PAIR_COUNT) {
+    app_state_st *a = app_state;
+
+    if (a->matched_count == PAIR_COUNT) {
         restart_game();
         return;
     }
 
-    if (waiting) {
+    if (a->waiting) {
         return;
     }
 
     int idx = widget->tag1;
 
-    if (button_states[idx] != BUTTON_STATE_HIDDEN) {
+    if (a->button_states[idx] != BUTTON_STATE_HIDDEN) {
         return;
     }
 
-    if (first_pick == -1) {
-        first_pick = idx;
-        reveal_icon(first_pick);
+    if (a->first_pick == -1) {
+        a->first_pick = idx;
+        reveal_icon(a->first_pick);
         return;
     }
 
-    second_pick = idx;
-    reveal_icon(second_pick);
-    tries++;
+    a->second_pick = idx;
+    reveal_icon(a->second_pick);
+    a->tries++;
 
-    if (button_icons[first_pick] == button_icons[second_pick]) {
-        button_states[first_pick] = BUTTON_STATE_MATCHED;
-        button_states[second_pick] = BUTTON_STATE_MATCHED;
-        first_pick = -1;
-        second_pick = -1;
-        matched_count++;
+    if (a->button_icons[a->first_pick] == a->button_icons[a->second_pick]) {
+        a->button_states[a->first_pick] = BUTTON_STATE_MATCHED;
+        a->button_states[a->second_pick] = BUTTON_STATE_MATCHED;
+        a->first_pick = -1;
+        a->second_pick = -1;
+        a->matched_count++;
     } else {
-        waiting = MISMATCH_TICKS;
+        a->waiting = MISMATCH_TICKS;
     }
 
     update_status();
@@ -240,66 +260,86 @@ on_active_change(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_pairs.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Pairs pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Pairs";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_active_change = on_active_change;
-    window.on_tick = on_tick;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Pairs";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_active_change = on_active_change;
+    a->window.on_tick = on_tick;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_grid(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
+
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
 
     for (int i = 0; i < GRID_CELL_COUNT; i++) {
         int col = i % GRID_COLS;
         int row = i / GRID_COLS;
 
-        gui_button_init(&buttons[i]);
-        buttons[i].rect = gui_grid_cell_rect(&grid, col, row);
-        buttons[i].tag1 = i;
-        buttons[i].draw = draw_button;
-        buttons[i].on_pointer_up = on_cell_pointer_up;
-        buttons[i].hide_border = 1;
+        gui_button_init(&a->buttons[i]);
+        a->buttons[i].rect = gui_grid_cell_rect(&a->grid, col, row);
+        a->buttons[i].tag1 = i;
+        a->buttons[i].draw = draw_button;
+        a->buttons[i].on_pointer_up = on_cell_pointer_up;
+        a->buttons[i].hide_border = 1;
 
-        gui_window_add_widget(&window, &buttons[i]);
+        gui_window_add_widget(&a->window, &a->buttons[i]);
     }
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Pairs app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_grid();
 
     restart_game();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_pairs.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_pairs = {
     .icon = &icon_pairs,
     .init = init_app,
-    .show = show_app,
 };

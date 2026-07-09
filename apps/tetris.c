@@ -23,14 +23,29 @@ enum {
     DROP_TICKS = TICK_FREQUENCY * 3 / 10, /* 0.3s */
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st *widgets[2];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st *widgets[2];
 
-static grid_st grid;
+    grid_st grid;
+
+    uint8_t board[GRID_ROWS][GRID_COLS];
+    int cur_piece;
+    int cur_rot;
+    int cur_col;
+    int cur_row;
+    int game_over;
+    int game_paused;
+    size_t score;
+    size_t best_score;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static uint16_t pieces[7][4] = {
     { 0x4444, 0x0f00, 0x4444, 0x0f00 }, /* I */
@@ -42,60 +57,62 @@ static uint16_t pieces[7][4] = {
     { 0x0c60, 0x2640, 0x0c60, 0x2640 }, /* Z */
 };
 
-static uint8_t board[GRID_ROWS][GRID_COLS];
-static int cur_piece;
-static int cur_rot;
-static int cur_col;
-static int cur_row;
-static int game_over;
-static int game_paused;
-static size_t score;
-static size_t best_score;
-
 static void
 update_status(void)
 {
-    const char *paused_msg = game_paused ? "  \xb3  Press 'p' to resume" : "";
+    app_state_st *a = app_state;
 
-    if (game_over) {
-        gui_status_set("Game Over!  Score: %u  Best: %u", score, best_score);
+    const char *paused_msg = a->game_paused ? "  \xb3  Press 'p' to resume" : "";
+
+    if (a->game_over) {
+        gui_status_set("Game Over!  Score: %u  Best: %u", a->score, a->best_score);
     } else {
-        gui_status_set("Score: %u  Best: %u%s", score, best_score, paused_msg);
+        gui_status_set("Score: %u  Best: %u%s", a->score, a->best_score, paused_msg);
     }
 }
 
 static void
 pause_game(void)
 {
-    game_paused = 1;
+    app_state_st *a = app_state;
+
+    a->game_paused = 1;
     update_status();
 }
 
 static void
 resume_game(void)
 {
-    game_paused = 0;
+    app_state_st *a = app_state;
+
+    a->game_paused = 0;
     update_status();
 }
 
 static void
 update_score(int ds)
 {
-    score += ds;
+    app_state_st *a = app_state;
+
+    a->score += ds;
     update_status();
 }
 
 static void
 draw_cell(int row, int col, int active)
 {
-    rect_st cell = gui_grid_cell_rect(&grid, col, row);
-    gui_surface_draw_rect(window.surface, cell, active ? COLOR_TETRIS_BLOCK : COLOR_WIDGET_BG);
-    gui_wm_render_window_region(&window, cell);
+    app_state_st *a = app_state;
+
+    rect_st cell = gui_grid_cell_rect(&a->grid, col, row);
+    gui_surface_draw_rect(a->window.surface, cell, active ? COLOR_TETRIS_BLOCK : COLOR_WIDGET_BG);
+    gui_wm_render_window_region(&a->window, cell);
 }
 
 static int
 is_piece_valid(int piece_idx, int row, int col, int rot)
 {
+    app_state_st *a = app_state;
+
     uint16_t piece = pieces[piece_idx][rot];
 
     for (int dy = 0; dy < 4; ++dy) {
@@ -111,7 +128,7 @@ is_piece_valid(int piece_idx, int row, int col, int rot)
                 return 0;
             }
 
-            if (board[y][x]) {
+            if (a->board[y][x]) {
                 return 0;
             }
         }
@@ -123,7 +140,9 @@ is_piece_valid(int piece_idx, int row, int col, int rot)
 static void
 draw_current_piece(int visible)
 {
-    uint16_t piece = pieces[cur_piece][cur_rot];
+    app_state_st *a = app_state;
+
+    uint16_t piece = pieces[a->cur_piece][a->cur_rot];
 
     for (int dy = 0; dy < 4; ++dy) {
         for (int dx = 0; dx < 4; ++dx) {
@@ -131,8 +150,8 @@ draw_current_piece(int visible)
                 continue;
             }
 
-            int col = cur_col + dx;
-            int row = cur_row + dy;
+            int col = a->cur_col + dx;
+            int row = a->cur_row + dy;
 
             if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
                 draw_cell(row, col, visible);
@@ -144,7 +163,9 @@ draw_current_piece(int visible)
 static void
 lock_current_piece(void)
 {
-    uint16_t piece = pieces[cur_piece][cur_rot];
+    app_state_st *a = app_state;
+
+    uint16_t piece = pieces[a->cur_piece][a->cur_rot];
 
     for (int dy = 0; dy < 4; ++dy) {
         for (int dx = 0; dx < 4; ++dx) {
@@ -152,11 +173,11 @@ lock_current_piece(void)
                 continue;
             }
 
-            int col = cur_col + dx;
-            int row = cur_row + dy;
+            int col = a->cur_col + dx;
+            int row = a->cur_row + dy;
 
             if (col >= 0 && col < GRID_COLS && row >= 0 && row < GRID_ROWS) {
-                board[row][col] = 1;
+                a->board[row][col] = 1;
             }
         }
     }
@@ -167,18 +188,20 @@ lock_current_piece(void)
 static int
 move_current_piece(int dy, int dx, int dr)
 {
-    int row = cur_row + dy;
-    int col = cur_col + dx;
-    int rot = (cur_rot + dr) % 4;
+    app_state_st *a = app_state;
 
-    if (!is_piece_valid(cur_piece, row, col, rot)) {
+    int row = a->cur_row + dy;
+    int col = a->cur_col + dx;
+    int rot = (a->cur_rot + dr) % 4;
+
+    if (!is_piece_valid(a->cur_piece, row, col, rot)) {
         return 0;
     }
 
     draw_current_piece(0);
-    cur_col = col;
-    cur_row = row;
-    cur_rot = rot;
+    a->cur_col = col;
+    a->cur_row = row;
+    a->cur_rot = rot;
     draw_current_piece(1);
 
     return 1;
@@ -187,8 +210,10 @@ move_current_piece(int dy, int dx, int dr)
 static int
 is_row_full(int row)
 {
+    app_state_st *a = app_state;
+
     for (int col = 0; col < GRID_COLS; ++col) {
-        if (!board[row][col]) {
+        if (!a->board[row][col]) {
             return 0;
         }
     }
@@ -199,6 +224,8 @@ is_row_full(int row)
 static void
 clear_rows(void)
 {
+    app_state_st *a = app_state;
+
     for (int row = GRID_ROWS - 1; row >= 0; --row) {
         if (!is_row_full(row)) {
             continue;
@@ -206,17 +233,17 @@ clear_rows(void)
 
         for (int row_to_shift = row; row_to_shift > 0; --row_to_shift) {
             for (int col = 0; col < GRID_COLS; ++col) {
-                board[row_to_shift][col] = board[row_to_shift - 1][col];
+                a->board[row_to_shift][col] = a->board[row_to_shift - 1][col];
             }
         }
 
         for (int col = 0; col < GRID_COLS; ++col) {
-            board[0][col] = 0;
+            a->board[0][col] = 0;
         }
 
         for (int row_to_draw = 0; row_to_draw <= row; ++row_to_draw) {
             for (int col = 0; col < GRID_COLS; ++col) {
-                draw_cell(row_to_draw, col, board[row_to_draw][col]);
+                draw_cell(row_to_draw, col, a->board[row_to_draw][col]);
             }
         }
 
@@ -228,16 +255,18 @@ clear_rows(void)
 static void
 spawn_piece(void)
 {
-    cur_piece = rand() % 7;
-    cur_rot = 0;
-    cur_col = GRID_COLS / 2 - 1;
-    cur_row = 0;
+    app_state_st *a = app_state;
 
-    if (!is_piece_valid(cur_piece, cur_row, cur_col, cur_rot)) {
-        game_over = 1;
+    a->cur_piece = rand() % 7;
+    a->cur_rot = 0;
+    a->cur_col = GRID_COLS / 2 - 1;
+    a->cur_row = 0;
 
-        if (score > best_score) {
-            best_score = score;
+    if (!is_piece_valid(a->cur_piece, a->cur_row, a->cur_col, a->cur_rot)) {
+        a->game_over = 1;
+
+        if (a->score > a->best_score) {
+            a->best_score = a->score;
         }
 
         update_status();
@@ -250,12 +279,14 @@ spawn_piece(void)
 static void
 restart_game(void)
 {
-    game_over = 0;
-    score = 0;
+    app_state_st *a = app_state;
+
+    a->game_over = 0;
+    a->score = 0;
 
     for (int row = 0; row < GRID_ROWS; ++row) {
         for (int col = 0; col < GRID_COLS; ++col) {
-            board[row][col] = 0;
+            a->board[row][col] = 0;
             draw_cell(row, col, 0);
         }
     }
@@ -268,11 +299,13 @@ restart_game(void)
 static void
 draw_window(window_st *window)
 {
+    app_state_st *a = app_state;
+
     gui_window_draw(window, COLOR_WIDGET_BG);
 
     for (int row = 0; row < GRID_ROWS; ++row) {
         for (int col = 0; col < GRID_COLS; ++col) {
-            draw_cell(row, col, board[row][col]);
+            draw_cell(row, col, a->board[row][col]);
         }
     }
 
@@ -282,9 +315,10 @@ draw_window(window_st *window)
 static void
 on_tick(window_st *window)
 {
+    app_state_st *a = app_state;
     static unsigned count = 0;
 
-    if (!window->visible || game_over || game_paused) {
+    if (!window->visible || a->game_over || a->game_paused) {
         return;
     }
 
@@ -306,13 +340,15 @@ on_tick(window_st *window)
 static void
 on_keyboard(window_st *w _unsd, event_st event)
 {
-    if (game_over) {
+    app_state_st *a = app_state;
+
+    if (a->game_over) {
         restart_game();
         return;
     }
 
     if (event.key_code == KEY_P) {
-        if (game_paused) {
+        if (a->game_paused) {
             resume_game();
         } else {
             pause_game();
@@ -320,7 +356,7 @@ on_keyboard(window_st *w _unsd, event_st event)
         return;
     }
 
-    if (game_paused) {
+    if (a->game_paused) {
         return;
     }
 
@@ -350,53 +386,73 @@ on_active_change(window_st *win)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_tetris.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Tetris pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Tetris";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_key_down = on_keyboard;
-    window.on_active_change = on_active_change;
-    window.on_tick = on_tick;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Tetris";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_key_down = on_keyboard;
+    a->window.on_active_change = on_active_change;
+    a->window.on_tick = on_tick;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_grid(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
+
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Tetris app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_grid();
 
     restart_game();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_tetris.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_tetris = {
     .icon = &icon_tetris,
     .init = init_app,
-    .show = show_app,
 };

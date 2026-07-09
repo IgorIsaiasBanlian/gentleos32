@@ -113,21 +113,32 @@ static cell_st cells[] = {
     { .code = KEY_RIGHT,    .width = CELL_W,        .label = "\x1a" },
 };
 
+static int cells_initialized = 0;
+
 #define CELL_COUNT (sizeof(cells) / sizeof(cells[0]))
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st *widgets[2];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st *widgets[2];
 
-static int last_key_code = 0;
+    int last_key_code;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static void
 init_cells(void)
 {
-    int i;
+    size_t i;
+
+    if (cells_initialized) {
+        return;
+    }
 
     for (i = 0; i < (int)CELL_COUNT; ++i) {
         cells[i].x = 0;
@@ -155,22 +166,26 @@ init_cells(void)
             cells[i].y = cells[i - 1].y;
         }
     }
+
+    cells_initialized = 1;
 }
 
 static void
 draw_cell(cell_st *key, int pressed)
 {
+    app_state_st *a = app_state;
+
     rect_st rect;
     uint8_t fg = pressed ? COLOR_WIDGET_SEL_FG : COLOR_WIDGET_FG;
     uint8_t bg = pressed ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG;
 
     rect = gui_rect_make(KEYS_X + key->x, KEYS_Y + key->y, key->width + 1, CELL_H + 1);
 
-    gui_surface_draw_rect(window.surface, rect, bg);
-    gui_surface_draw_border(window.surface, rect, COLOR_BORDER);
-    gui_surface_draw_str_centered(window.surface, rect, font_8x8, key->label, fg, bg);
+    gui_surface_draw_rect(a->window.surface, rect, bg);
+    gui_surface_draw_border(a->window.surface, rect, COLOR_BORDER);
+    gui_surface_draw_str_centered(a->window.surface, rect, font_8x8, key->label, fg, bg);
 
-    gui_wm_render_window_region(&window, rect);
+    gui_wm_render_window_region(&a->window, rect);
 }
 
 static void
@@ -226,12 +241,14 @@ draw_window(window_st *window)
 static void
 on_key_down(window_st *w _unsd, event_st event)
 {
+    app_state_st *a = app_state;
+
     int escaped = !!(event.key_mods & KEY_MOD_ESC);
     char key_char = key_char_for_code(event.key_code, event.key_mods);
 
     update_cell(event.key_code, escaped, 1);
 
-    if (event.key_code != last_key_code) {
+    if (event.key_code != a->last_key_code) {
         gui_status_set("Last key:%02X  Mods:%02X  Char:%02X (%c)",
             event.key_code, event.key_mods, key_char, key_char ? key_char : ' ');
     }
@@ -246,39 +263,57 @@ on_key_up(window_st *w _unsd, event_st event)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_keys.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Keys pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Keys";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_key_down = on_key_down;
-    window.on_key_up = on_key_up;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Keys";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_key_down = on_key_down;
+    a->window.on_key_up = on_key_up;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Keys app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_cells();
     init_window();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_keys.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_keys = {
     .icon = &icon_keys,
     .init = init_app,
-    .show = show_app,
 };

@@ -59,7 +59,7 @@ on_button_pointer_up(widget_st *widget, event_st event, point_st pos)
     gui_button_on_pointer_up(widget, event, pos);
 
     if (gui_apps[widget->tag1]) {
-        gui_run_app(gui_apps[widget->tag1]);
+        gui_launch_app(gui_apps[widget->tag1]);
     }
 }
 

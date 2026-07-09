@@ -26,14 +26,19 @@ enum {
     TAG_KEY_B = 2,
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st keys_w[KEY_W_COUNT];
-static widget_st keys_b[KEY_B_COUNT];
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st *widgets[KEY_W_COUNT + KEY_B_COUNT + 2];
+    widget_st keys_w[KEY_W_COUNT];
+    widget_st keys_b[KEY_B_COUNT];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st *widgets[KEY_W_COUNT + KEY_B_COUNT + 2];
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static void
 draw_key_w(widget_st *widget)
@@ -119,75 +124,95 @@ draw_window(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_sounds.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Sounds pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Sounds";
-    window.draw = draw_window;
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Sounds";
+    a->window.draw = draw_window;
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_keys(void)
 {
+    app_state_st *a = app_state;
+
     for (int i = 0; i < KEY_B_COUNT; i++) {
         int octave_no = i / 5;
         int octave_ofs = i % 5;
         int key_w_idx = (octave_no * 7) + octave_ofs + 1 + (octave_ofs > 1 ? 1 : 0);
 
-        keys_b[i].rect.x = (key_w_idx * KEY_W_WIDTH) - key_w_idx - (KEY_B_WIDTH / 2);
-        keys_b[i].rect.y = TITLE_BAR_HEIGHT;
-        keys_b[i].rect.width = KEY_B_WIDTH;
-        keys_b[i].rect.height = KEY_B_HEIGHT;
-        keys_b[i].draw = draw_key_b;
-        keys_b[i].tag1 = TAG_KEY_B;
-        keys_b[i].tag2 = i;
-        keys_b[i].press_on_move_in = 1;
-        keys_b[i].on_pointer_down = on_key_pointer_down;
-        keys_b[i].on_pointer_up = on_key_pointer_up;
-        keys_b[i].on_pointer_out = on_key_pointer_out;
-        gui_window_add_widget(&window, &keys_b[i]);
+        a->keys_b[i].rect.x = (key_w_idx * KEY_W_WIDTH) - key_w_idx - (KEY_B_WIDTH / 2);
+        a->keys_b[i].rect.y = TITLE_BAR_HEIGHT;
+        a->keys_b[i].rect.width = KEY_B_WIDTH;
+        a->keys_b[i].rect.height = KEY_B_HEIGHT;
+        a->keys_b[i].draw = draw_key_b;
+        a->keys_b[i].tag1 = TAG_KEY_B;
+        a->keys_b[i].tag2 = i;
+        a->keys_b[i].press_on_move_in = 1;
+        a->keys_b[i].on_pointer_down = on_key_pointer_down;
+        a->keys_b[i].on_pointer_up = on_key_pointer_up;
+        a->keys_b[i].on_pointer_out = on_key_pointer_out;
+        gui_window_add_widget(&a->window, &a->keys_b[i]);
     }
 
     for (int i = 0; i < KEY_W_COUNT; i++) {
-        keys_w[i].rect.x = (i * KEY_W_WIDTH) - i;
-        keys_w[i].rect.y = TITLE_BAR_HEIGHT - 1;
-        keys_w[i].rect.width = KEY_W_WIDTH;
-        keys_w[i].rect.height = KEY_W_HEIGHT;
-        keys_w[i].draw = draw_key_w;
-        keys_w[i].tag1 = TAG_KEY_W;
-        keys_w[i].tag2 = i;
-        keys_w[i].press_on_move_in = 1;
-        keys_w[i].on_pointer_down = on_key_pointer_down;
-        keys_w[i].on_pointer_up = on_key_pointer_up;
-        keys_w[i].on_pointer_out = on_key_pointer_out;
-        gui_window_add_widget(&window, &keys_w[i]);
+        a->keys_w[i].rect.x = (i * KEY_W_WIDTH) - i;
+        a->keys_w[i].rect.y = TITLE_BAR_HEIGHT - 1;
+        a->keys_w[i].rect.width = KEY_W_WIDTH;
+        a->keys_w[i].rect.height = KEY_W_HEIGHT;
+        a->keys_w[i].draw = draw_key_w;
+        a->keys_w[i].tag1 = TAG_KEY_W;
+        a->keys_w[i].tag2 = i;
+        a->keys_w[i].press_on_move_in = 1;
+        a->keys_w[i].on_pointer_down = on_key_pointer_down;
+        a->keys_w[i].on_pointer_up = on_key_pointer_up;
+        a->keys_w[i].on_pointer_out = on_key_pointer_out;
+        gui_window_add_widget(&a->window, &a->keys_w[i]);
     }
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Sounds app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_keys();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_sounds.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_sounds = {
     .icon = &icon_sounds,
     .init = init_app,
-    .show = show_app,
 };

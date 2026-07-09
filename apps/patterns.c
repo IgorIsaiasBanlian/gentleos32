@@ -38,25 +38,30 @@ enum {
     WIDGETS_COUNT = PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
+    widget_st title_bar;
+    widget_st close_button;
 
-static widget_st pattern_buttons[PATTERN_COUNT];
-static widget_st color1_buttons[COLOR_COUNT];
-static widget_st color2_buttons[COLOR_COUNT];
+    widget_st pattern_buttons[PATTERN_COUNT];
+    widget_st color1_buttons[COLOR_COUNT];
+    widget_st color2_buttons[COLOR_COUNT];
 
-static widget_st *widgets[WIDGETS_COUNT];
+    widget_st *widgets[WIDGETS_COUNT];
 
-static grid_st pattern_grid;
-static grid_st color1_grid;
-static grid_st color2_grid;
+    grid_st pattern_grid;
+    grid_st color1_grid;
+    grid_st color2_grid;
 
-static widget_st *active_pattern_button;
-static widget_st *active_color1_button;
-static widget_st *active_color2_button;
+    widget_st *active_pattern_button;
+    widget_st *active_color1_button;
+    widget_st *active_color2_button;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static bitmap_st *patterns[] = {
     NULL,
@@ -72,9 +77,11 @@ static bitmap_st *patterns[] = {
 static void
 draw_pattern_button(widget_st *widget)
 {
+    app_state_st *a = app_state;
+
     rect_st rect = widget->rect;
     surface_st *sf = widget->window->surface;
-    int is_active = (widget == active_pattern_button);
+    int is_active = (widget == a->active_pattern_button);
 
     int idx = widget->tag1;
 
@@ -96,8 +103,10 @@ draw_pattern_button(widget_st *widget)
 static void
 on_pattern_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
-    widget_st *prev = active_pattern_button;
-    active_pattern_button = widget;
+    app_state_st *a = app_state;
+
+    widget_st *prev = a->active_pattern_button;
+    a->active_pattern_button = widget;
 
     gui_theme.desktop_pattern = patterns[widget->tag1];
 
@@ -113,10 +122,12 @@ on_pattern_button_press(widget_st *widget, event_st event _unsd, point_st pos _u
 static void
 draw_color_button(widget_st *widget)
 {
+    app_state_st *a = app_state;
+
     rect_st rect = widget->rect;
     surface_st *sf = widget->window->surface;
 
-    if (widget == active_color1_button || widget == active_color2_button) {
+    if (widget == a->active_color1_button || widget == a->active_color2_button) {
         gui_surface_draw_rect(sf, rect, COLOR_BORDER);
         rect = gui_rect_shrink(rect, 1);
     }
@@ -129,8 +140,10 @@ draw_color_button(widget_st *widget)
 static void
 on_color1_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
-    widget_st *prev = active_color1_button;
-    active_color1_button = widget;
+    app_state_st *a = app_state;
+
+    widget_st *prev = a->active_color1_button;
+    a->active_color1_button = widget;
 
     gui_theme.desktop = widget->tag2;
 
@@ -146,8 +159,10 @@ on_color1_button_press(widget_st *widget, event_st event _unsd, point_st pos _un
 static void
 on_color2_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
 {
-    widget_st *prev = active_color2_button;
-    active_color2_button = widget;
+    app_state_st *a = app_state;
+
+    widget_st *prev = a->active_color2_button;
+    a->active_color2_button = widget;
 
     gui_theme.desktop_alt = widget->tag2;
 
@@ -167,44 +182,59 @@ draw_window(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_patterns.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "Patterns pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "Patterns";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "Patterns";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_pattern_buttons(void)
 {
-    pattern_grid.cell_width = PATTERN_CELL_WIDTH;
-    pattern_grid.cell_height = PATTERN_CELL_HEIGHT;
-    pattern_grid.cols = PATTERN_COLS;
-    pattern_grid.rows = PATTERN_ROWS;
-    pattern_grid.x = PATTERN_GRID_X;
-    pattern_grid.y = PATTERN_GRID_Y;
+    app_state_st *a = app_state;
+
+    a->pattern_grid.cell_width = PATTERN_CELL_WIDTH;
+    a->pattern_grid.cell_height = PATTERN_CELL_HEIGHT;
+    a->pattern_grid.cols = PATTERN_COLS;
+    a->pattern_grid.rows = PATTERN_ROWS;
+    a->pattern_grid.x = PATTERN_GRID_X;
+    a->pattern_grid.y = PATTERN_GRID_Y;
 
     for (int i = 0; i < PATTERN_COUNT; i++) {
         int col = i % PATTERN_COLS;
         int row = i / PATTERN_COLS;
 
-        pattern_buttons[i].rect = gui_grid_cell_rect(&pattern_grid, col, row);
-        pattern_buttons[i].tag1 = i;
-        pattern_buttons[i].window = &window;
-        pattern_buttons[i].draw = draw_pattern_button;
-        pattern_buttons[i].on_pointer_down = on_pattern_button_press;
-        pattern_buttons[i].press_on_move_in = 1;
+        a->pattern_buttons[i].rect = gui_grid_cell_rect(&a->pattern_grid, col, row);
+        a->pattern_buttons[i].tag1 = i;
+        a->pattern_buttons[i].window = &a->window;
+        a->pattern_buttons[i].draw = draw_pattern_button;
+        a->pattern_buttons[i].on_pointer_down = on_pattern_button_press;
+        a->pattern_buttons[i].press_on_move_in = 1;
 
-        gui_window_add_widget(&window, &pattern_buttons[i]);
+        gui_window_add_widget(&a->window, &a->pattern_buttons[i]);
     }
 }
 
@@ -212,6 +242,8 @@ static void
 init_color_buttons(grid_st *grid, widget_st *buttons, int grid_x, int grid_y,
     void (*on_press)(widget_st *, event_st, point_st))
 {
+    app_state_st *a = app_state;
+
     grid->cell_width = COLOR_CELL_WIDTH;
     grid->cell_height = COLOR_CELL_HEIGHT;
     grid->cols = COLOR_COLS;
@@ -225,56 +257,63 @@ init_color_buttons(grid_st *grid, widget_st *buttons, int grid_x, int grid_y,
 
         buttons[i].rect = gui_grid_cell_rect(grid, col, row);
         buttons[i].tag2 = i;
-        buttons[i].window = &window;
+        buttons[i].window = &a->window;
         buttons[i].draw = draw_color_button;
         buttons[i].on_pointer_down = on_press;
         buttons[i].press_on_move_in = 1;
 
-        gui_window_add_widget(&window, &buttons[i]);
+        gui_window_add_widget(&a->window, &buttons[i]);
     }
 }
 
 static void
 select_active_buttons(void)
 {
+    app_state_st *a = app_state;
+
     for (int i = 0; i < PATTERN_COUNT; i++) {
         if (gui_theme.desktop_pattern == patterns[i]) {
-            active_pattern_button = &pattern_buttons[i];
+            a->active_pattern_button = &a->pattern_buttons[i];
             break;
         }
     }
 
     for (int i = 0; i < COLOR_COUNT; i++) {
         if (gui_theme.desktop == i) {
-            active_color1_button = &color1_buttons[i];
+            a->active_color1_button = &a->color1_buttons[i];
         }
 
         if (gui_theme.desktop_alt == i) {
-            active_color2_button = &color2_buttons[i];
+            a->active_color2_button = &a->color2_buttons[i];
         }
     }
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "Patterns app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     select_active_buttons();
     init_pattern_buttons();
-    init_color_buttons(&color1_grid, color1_buttons, COLOR1_GRID_X, COLOR1_GRID_Y,
-        on_color1_button_press);
-    init_color_buttons(&color2_grid, color2_buttons, COLOR2_GRID_X, COLOR2_GRID_Y,
-        on_color2_button_press);
-}
+    init_color_buttons(&app_state->color1_grid, app_state->color1_buttons,
+        COLOR1_GRID_X, COLOR1_GRID_Y, on_color1_button_press);
+    init_color_buttons(&app_state->color2_grid, app_state->color2_buttons,
+        COLOR2_GRID_X, COLOR2_GRID_Y, on_color2_button_press);
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_patterns.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_patterns = {
     .icon = &icon_patterns,
     .init = init_app,
-    .show = show_app,
 };

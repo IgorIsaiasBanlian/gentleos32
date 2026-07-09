@@ -38,29 +38,36 @@ enum {
     REFRESH_TICKS = TICK_FREQUENCY, /* 1s */
 };
 
-static surface_st window_surface;
-static window_st window;
+typedef struct {
+    uint8_t window_pixels[WINDOW_WIDTH * WINDOW_HEIGHT];
+    surface_st window_surface;
+    window_st window;
 
-static widget_st title_bar;
-static widget_st close_button;
-static widget_st *widgets[2];
+    widget_st title_bar;
+    widget_st close_button;
+    widget_st *widgets[2];
 
-static grid_st grid;
+    grid_st grid;
+} app_state_st;
+
+static app_state_st *app_state = NULL;
 
 static void
 draw_text_sm(int col, int row, const char *text)
 {
+    app_state_st *a = app_state;
+
     if (row >= GRID_COLS) {
         return;
     }
 
-    rect_st r = gui_grid_cell_rect(&grid, col, row);
+    rect_st r = gui_grid_cell_rect(&a->grid, col, row);
     r.width = strlen(text) * 8;
 
-    gui_surface_draw_str(window.surface, r.x, r.y, font_8x8,
+    gui_surface_draw_str(a->window.surface, r.x, r.y, font_8x8,
         text, COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
-    gui_wm_render_window_region(&window, r);
+    gui_wm_render_window_region(&a->window, r);
 }
 
 static void
@@ -87,42 +94,48 @@ draw_mem_usage(void)
 static void
 draw_top_bar(void)
 {
+    app_state_st *a = app_state;
+
     const char *text = "-=[ GENTLE OS / 32 ]=-";
     rect_st r = gui_rect_make(0, TOP_BAR_Y, WINDOW_WIDTH, TOP_BAR_HEIGHT);
 
-    gui_surface_draw_h_seg(window.surface, r.x, r.y + r.height, r.width, COLOR_BORDER);
+    gui_surface_draw_h_seg(a->window.surface, r.x, r.y + r.height, r.width, COLOR_BORDER);
 
     r = gui_rect_shrink(r, 1);
 
-    gui_surface_draw_str_centered(window.surface, r, font_8x16, text,
+    gui_surface_draw_str_centered(a->window.surface, r, font_8x16, text,
         COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 }
 
 static void
 draw_bottom_bar(void)
 {
+    app_state_st *a = app_state;
+
     const char *text = "   luke8086/gentleos32";
     rect_st r = gui_rect_make(0, BOTTOM_BAR_Y, WINDOW_WIDTH, BOTTOM_BAR_HEIGHT);
 
-    gui_surface_draw_h_seg(window.surface, r.x, r.y, r.width, COLOR_BORDER);
+    gui_surface_draw_h_seg(a->window.surface, r.x, r.y, r.width, COLOR_BORDER);
 
     r = gui_rect_shrink(r, 1);
 
-    gui_surface_draw_str_centered(window.surface, r, font_8x8, text,
+    gui_surface_draw_str_centered(a->window.surface, r, font_8x8, text,
         COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     r.x = (r.width - strlen(text) * 8) / 2;
     r.width = icon_github.size.width;
 
-    gui_surface_draw_bitmap_centered(window.surface, r, &icon_github,
+    gui_surface_draw_bitmap_centered(a->window.surface, r, &icon_github,
         COLOR_WIDGET_FG);
 }
 
 static void
 draw_info(void)
 {
+    app_state_st *a = app_state;
+
     system_info_st *si = &krn_system_info;
-    rect_st r = gui_grid_rect(&grid);
+    rect_st r = gui_grid_rect(&a->grid);
     static char buf[VALUE_LEN + 1];
     int line = 0;
 
@@ -145,7 +158,7 @@ draw_info(void)
     draw_top_bar();
     draw_bottom_bar();
 
-    gui_wm_render_window_region(&window, r);
+    gui_wm_render_window_region(&a->window, r);
 }
 
 static void
@@ -176,49 +189,69 @@ draw_window(window_st *window)
 }
 
 static void
+close_window(window_st *window _unsd)
+{
+    gui_wm_remove_window(window);
+    app_about.main_window = NULL;
+
+    krn_heap_free(app_state);
+    app_state = NULL;
+}
+
+static void
 init_window(void)
 {
-    window_surface.size.width = WINDOW_WIDTH;
-    window_surface.size.height = WINDOW_HEIGHT;
-    window_surface.pitch = WINDOW_WIDTH;
-    window_surface.pixels = krn_heap_alloc(WINDOW_WIDTH * WINDOW_HEIGHT, "About pixels", 1);
+    app_state_st *a = app_state;
 
-    window.surface = &window_surface;
-    window.title = "About";
-    window.widgets = widgets;
-    window.widgets_capacity = sizeof(widgets) / sizeof(widgets[0]);
-    window.draw = draw_window;
-    window.on_tick = on_tick;
+    a->window_surface.size.width = WINDOW_WIDTH;
+    a->window_surface.size.height = WINDOW_HEIGHT;
+    a->window_surface.pitch = WINDOW_WIDTH;
+    a->window_surface.pixels = a->window_pixels;
 
-    gui_window_init_frame(&window, &title_bar, &close_button);
+    a->window.surface = &a->window_surface;
+    a->window.title = "About";
+    a->window.widgets = a->widgets;
+    a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
+    a->window.draw = draw_window;
+    a->window.on_tick = on_tick;
+    a->window.on_close = close_window;
+
+    gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
 }
 
 static void
 init_grid(void)
 {
-    grid.cell_width = GRID_CELL_WIDTH;
-    grid.cell_height = GRID_CELL_HEIGHT;
-    grid.cols = GRID_COLS;
-    grid.rows = GRID_ROWS;
-    grid.x = GRID_X;
-    grid.y = GRID_Y;
+    app_state_st *a = app_state;
+
+    a->grid.cell_width = GRID_CELL_WIDTH;
+    a->grid.cell_height = GRID_CELL_HEIGHT;
+    a->grid.cols = GRID_COLS;
+    a->grid.rows = GRID_ROWS;
+    a->grid.x = GRID_X;
+    a->grid.y = GRID_Y;
 }
 
-static void
+static int
 init_app(void)
 {
+    ASSERT(!app_state);
+
+    app_state = krn_heap_alloc(sizeof(app_state_st), "About app", 0);
+
+    if (!app_state) {
+        return E_NOT_ENOUGH_MEMORY;
+    }
+
     init_window();
     init_grid();
-}
 
-static void
-show_app(void)
-{
-    (void)gui_wm_add_window(&window);
+    app_about.main_window = &app_state->window;
+
+    return E_OK;
 }
 
 global app_st app_about = {
     .icon = &icon_about,
     .init = init_app,
-    .show = show_app,
 };

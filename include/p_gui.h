@@ -50,7 +50,7 @@ extern void gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t c
 extern app_st *gui_apps[];
 extern unsigned gui_apps_count;
 extern bitmap_st *gui_load_bitmap(const char *name);
-extern void gui_run_app(app_st *app);
+extern void gui_launch_app(app_st *app);
 extern int gui_handle_key(event_st event);
 extern void gui_main(void);
 /* gui/panel.c */
@@ -126,6 +126,8 @@ extern rect_st gui_wm_container;
 extern bitmap_st *gui_wm_bg_bitmap;
 extern void gui_wm_toggle_window_active(window_st *w, int active);
 extern void gui_wm_raise_window(struct window *w);
+extern int gui_wm_has_window(struct window *w);
+extern int gui_wm_free_slots(void);
 extern int gui_wm_add_window(struct window *w);
 extern void gui_wm_remove_window(struct window *w);
 extern void gui_wm_render_window_surface(window_st *window, rect_st desktop_reg);

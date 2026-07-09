@@ -45,15 +45,40 @@ gui_load_bitmap(const char *name)
     return bitmap;
 }
 
-global void
-gui_run_app(app_st *app)
+static int
+gui_do_launch_app(app_st *app)
 {
-    if (app->init) {
-        app->init();
-        app->init = NULL;
+    int err;
+
+    if (app->main_window) {
+        return gui_wm_add_window(app->main_window);
     }
 
-    app->show();
+    if (gui_wm_free_slots() == 0) {
+        return E_TOO_MANY_WINDOWS;
+    }
+
+    err = app->init();
+
+    if (err != E_OK) {
+        return err;
+    }
+
+    ASSERT(app->main_window != 0);
+
+    return gui_wm_add_window(app->main_window);
+}
+
+global void
+gui_launch_app(app_st *app)
+{
+    int err;
+
+    err = gui_do_launch_app(app);
+
+    if (err != E_OK) {
+        gui_status_set_error(err);
+    }
 }
 
 global int
@@ -83,7 +108,7 @@ gui_main(void)
     krn_debug_status_cb = gui_status_set_alert;
 
 #ifdef DEV_AUTOSTART
-    gui_run_app(gui_apps[DEV_AUTOSTART]);
+    gui_launch_app(gui_apps[DEV_AUTOSTART]);
 #endif
 
     while (1) {
