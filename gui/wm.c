@@ -267,6 +267,5 @@ gui_wm_init(void)
     gui_wm_render_wallpaper(gui_wm_container);
 
     gui_status_init();
-
-    gui_run_app(&app_panel);
+    gui_panel_init();
 }

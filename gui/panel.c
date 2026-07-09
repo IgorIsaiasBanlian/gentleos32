@@ -2,7 +2,7 @@
  * Copyright (c) 2025-2026 luke8086
  * Distributed under the terms of GPL-2 License
  *
- * File: panel.c - Side panel app
+ * File: panel.c - Side panel
  */
 
 #include <gui.h>
@@ -170,21 +170,12 @@ init_nav_buttons(void)
     gui_window_add_widget(&window, &next_button);
 }
 
-static void
-init_app(void)
+global void
+gui_panel_init(void)
 {
     init_window();
     init_app_buttons();
     init_nav_buttons();
-}
 
-static void
-show_app(void)
-{
     gui_wm_set_panel_window(&window);
 }
-
-global app_st app_panel = {
-    .init = init_app,
-    .show = show_app,
-};
