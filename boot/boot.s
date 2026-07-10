@@ -1,34 +1,116 @@
 ;
-; Copyright (c) 2026 luke8086
-; Distributed under the terms of GPL-2 License
+; Copyright (c) 2019-2026 luke8086.
+; Distributed under the terms of GPL-2 License.
 ;
-; File: boot2.s - Stage 2 bootloader
+; File: boot.s - Combined 2-stage bootloader
 ;
 
+[org 0x7c00]
 [cpu 386]
 
 %ifndef KERNEL_SECTORS
 %define KERNEL_SECTORS 256
 %endif
 
-BOOT2_SEGMENT           equ 0x8000
-BOOT2_ADDR              equ (BOOT2_SEGMENT << 4)
+STAGE2_START_SECTOR equ 3
+STAGE2_SECTORS      equ 4
+LOAD_RETRY_COUNT    equ 3
+KERNEL_DEST         equ 0x00010000
+KERNEL_START_LBA    equ 6
 
-KERNEL_DEST             equ 0x00010000
-KERNEL_START_LBA        equ 6
 
-[bits 16]
-[org 0x00]
+;;
+;; Stage 1
+;;
 
-[section .text]
+
+    jmp 0x0000:.ensure_cs
+.ensure_cs:
+
+    ; Setup segments and stack
+    cli
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0xfff0
+    sti
+
+    ; Preserve disk number
+    mov [cs:drive_index], dl
+
+    ; Load stage 2 loader
+    mov di, LOAD_RETRY_COUNT
+.load_stage2:
+
+    ; Reset disk
+    xor ah, ah
+    int 0x13
+
+    ; Load from disk
+    mov ah, 0x02
+    mov al, STAGE2_SECTORS
+    mov bx, 0x7e00
+    mov dl, [cs:drive_index]
+    xor dh, dh                  ; Head 0
+    xor ch, ch                  ; Cylinder 0
+    mov cl, STAGE2_START_SECTOR
+    int 0x13
+
+    ; Load succeeded
+    jnc .load_success
+
+    ; Retry LOAD_RETRY_COUNT times
+    dec di
+    jnz .load_stage2
+    jmp .load_error
+
+    ; Jump to stage 2
+.load_success:
+    mov ah, 0x0e
+    mov al, '.'
+    xor bx, bx
+    int 0x10
+
+    mov al, [cs:drive_index]
+    push ax
+
+    jmp stage2_main
+
+    ; All retries failed
+.load_error:
+    mov ah, 0x0e
+    mov al, 'E'
+    xor bx, bx
+    int 0x10
+
+.halt:
+    cli
+    hlt
+    jmp .halt
+
+drive_index: db 0
 
 ;
-; Entry point
+; MBR partition table with a single bootable partition
 ;
 
-start_:
-    jmp main
+times 0x1be - ($ - $$) db 0
+db 0x80, 0x00, 0x02, 0x00
+db 0x01, 0x00, 0x3f, 0x00
+dd 0x01, 0x7f
 
+;
+; Boot-loader designator
+;
+
+times 0x1fe - ($ - $$) db 0
+dw 0b10101010_01010101
+
+
+;;
+;; Stage 2
+;;
 
 ;
 ; Halt the program
@@ -521,7 +603,7 @@ enable_a20:
 ; Main function
 ;
 
-main:
+stage2_main:
     mov byte [current_char], '.'
     call putc
 
@@ -545,7 +627,7 @@ main:
     or eax, 0x01
     mov cr0, eax
 
-    jmp dword 0x08:(BOOT2_ADDR + main_32)
+    jmp dword 0x08:main_32
 
 [bits 32]
 
@@ -556,9 +638,9 @@ main_32:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov esp, BOOT2_ADDR + 0xf000;
+    mov esp, 0xfff0;
 
-    mov ebx, BOOT2_ADDR + mboot_info
+    mov ebx, mboot_info
 
     jmp 0x08:KERNEL_DEST
 
@@ -569,13 +651,13 @@ main_32:
 ;
 
 mboot_info:
-    dd 0x205                            ; flags (mem | cmdline | bootloader)
-    dd 0                                ; mem_lower
-    dd 0                                ; mem_upper
-    dd 0                                ; boot_device (unused)
-    dd BOOT2_ADDR + mboot_cmdline       ; cmdline
-    times 11 dd 0                       ; unused
-    dd BOOT2_ADDR + mboot_loader_name   ; boot_loader_name
+    dd 0x205                ; flags (mem | cmdline | bootloader)
+    dd 0                    ; mem_lower
+    dd 0                    ; mem_upper
+    dd 0                    ; boot_device (unused)
+    dd mboot_cmdline        ; cmdline
+    times 11 dd 0           ; unused
+    dd mboot_loader_name    ; boot_loader_name
 
 mboot_cmdline:      db `\0`
 mboot_loader_name:  db `GentleBoot\0`
@@ -613,7 +695,7 @@ gdt:
 
 gdt_pointer:
     dw (3 * 8 - 1)          ; limit (3 descriptors * 8 bytes - 1)
-    dd BOOT2_ADDR + gdt     ; base (pointer to the GDT)
+    dd gdt     ; base (pointer to the GDT)
 
 
 ;
@@ -639,7 +721,7 @@ current_count       db 0
 
 
 ;
-; Padding to 2048 bytes (4 sectors)
+; Padding to 512 + 2048 bytes (5 sectors)
 ;
 
-times 2048 - ($ - $$) db 0
+times (512 + 2048) - ($ - $$) db 0

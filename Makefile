@@ -39,15 +39,14 @@ KERNEL_OBJS     := $(patsubst %.c,$(BUILDDIR)/%.o,$(KERNEL_C_SRCS)) \
                    $(BUILDDIR)/data.o
 KERNEL_DEPS     := $(KERNEL_OBJS:.o=.d)
 
-BOOT1_BIN       := $(BUILDDIR)/boot1.bin
-BOOT2_BIN       := $(BUILDDIR)/boot2.bin
+BOOT_BIN        := $(BUILDDIR)/boot.bin
 
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS))
 
 all: disks
 	./tools/chkcfg.pl
 
-disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT1_BIN) $(BOOT2_BIN)
+disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_HIMEM_BIN) ::
 	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
@@ -58,7 +57,8 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT1_BIN) $(BOOT2_BIN)
 	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.sample.lst ::boot/menu.lst
 	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
 
-	cat $(BOOT1_BIN) $(BOOT1_BIN) $(BOOT2_BIN) $(KERNEL_LOMEM_BIN) > gentleos32-lomem.img
+	dd if=$(BOOT_BIN) of=gentleos32-lomem.img bs=512 count=1
+	cat $(BOOT_BIN) $(KERNEL_LOMEM_BIN) >> gentleos32-lomem.img
 
 clean:
 	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(FLOPPY_IMAGE)
@@ -95,10 +95,7 @@ $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(KERNEL_ASFLAGS) -f elf32 $< -o $@
 
-$(BOOT1_BIN): boot/boot1.s
-	$(NASM) -o $@ $<
-
-$(BOOT2_BIN): boot/boot2.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
+$(BOOT_BIN): boot/boot.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
 	$(NASM) -o $@ $< -DKERNEL_SECTORS=$(shell ./tools/sectors.pl $(KERNEL_LOMEM_BIN))
 
 print:
