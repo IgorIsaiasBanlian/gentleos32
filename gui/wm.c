@@ -64,20 +64,6 @@ gui_wm_raise_window(struct window *w)
 }
 
 global int
-gui_wm_has_window(struct window *w)
-{
-    unsigned i;
-
-    for (i = 0; i < WINDOWS_COUNT_MAX; ++i) {
-        if (gui_wm_windows[i] == w) {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-global int
 gui_wm_free_slots(void)
 {
     unsigned i;

@@ -126,7 +126,6 @@ extern rect_st gui_wm_container;
 extern bitmap_st *gui_wm_bg_bitmap;
 extern void gui_wm_toggle_window_active(window_st *w, int active);
 extern void gui_wm_raise_window(struct window *w);
-extern int gui_wm_has_window(struct window *w);
 extern int gui_wm_free_slots(void);
 extern int gui_wm_add_window(struct window *w);
 extern void gui_wm_remove_window(struct window *w);
