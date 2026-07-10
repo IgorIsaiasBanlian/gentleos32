@@ -8,13 +8,15 @@
 #include <gui.h>
 
 enum {
+    PADDING = 12,
+    LABEL_HEIGHT = 8,
+    LABEL_SPACING = 3,
+
     PATTERN_COLS = 4,
     PATTERN_ROWS = 2,
     PATTERN_CELL_WIDTH = 49,
     PATTERN_CELL_HEIGHT = 32,
     PATTERN_COUNT = (PATTERN_COLS * PATTERN_ROWS),
-    PATTERN_GRID_X = 1,
-    PATTERN_GRID_Y = TITLE_BAR_HEIGHT,
     PATTERN_GRID_WIDTH = GRID_WIDTH_SPACED(PATTERN_CELL_WIDTH, PATTERN_COLS),
     PATTERN_GRID_HEIGHT = GRID_HEIGHT_SPACED(PATTERN_CELL_HEIGHT, PATTERN_ROWS),
 
@@ -26,14 +28,20 @@ enum {
     COLOR_GRID_WIDTH = GRID_WIDTH_SPACED(COLOR_CELL_WIDTH, COLOR_COLS),
     COLOR_GRID_HEIGHT = GRID_HEIGHT_SPACED(COLOR_CELL_HEIGHT, COLOR_ROWS),
 
-    COLOR1_GRID_X = 1,
-    COLOR1_GRID_Y = PATTERN_GRID_Y + PATTERN_GRID_HEIGHT + 1,
+    PATTERN_LABEL_Y = TITLE_BAR_HEIGHT + PADDING,
+    PATTERN_GRID_X = PADDING,
+    PATTERN_GRID_Y = PATTERN_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
 
-    COLOR2_GRID_X = 1,
-    COLOR2_GRID_Y = COLOR1_GRID_Y + COLOR_GRID_HEIGHT + 1,
+    COLOR1_LABEL_Y = PATTERN_GRID_Y + PATTERN_GRID_HEIGHT + PADDING,
+    COLOR1_GRID_X = PADDING,
+    COLOR1_GRID_Y = COLOR1_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
 
-    WINDOW_WIDTH = COLOR_GRID_WIDTH + 2,
-    WINDOW_HEIGHT = COLOR2_GRID_Y + COLOR_GRID_HEIGHT + 1,
+    COLOR2_LABEL_Y = COLOR1_GRID_Y + COLOR_GRID_HEIGHT + PADDING,
+    COLOR2_GRID_X = PADDING,
+    COLOR2_GRID_Y = COLOR2_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
+
+    WINDOW_WIDTH = PADDING + COLOR_GRID_WIDTH + PADDING,
+    WINDOW_HEIGHT = COLOR2_GRID_Y + COLOR_GRID_HEIGHT + PADDING,
 
     WIDGETS_COUNT = PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
 };
@@ -95,7 +103,6 @@ draw_pattern_button(widget_st *widget)
         gui_surface_draw_border(sf, rect, COLOR_BORDER);
         rect = gui_rect_shrink(rect, 1);
     }
-
 
     gui_wm_render_window_region(widget->window, widget->rect);
 }
@@ -178,7 +185,26 @@ on_color2_button_press(widget_st *widget, event_st event _unsd, point_st pos _un
 static void
 draw_window(window_st *window)
 {
-    gui_window_draw(window, COLOR_BORDER);
+    app_state_st *a = app_state;
+
+    gui_window_draw_frame(window, COLOR_WIDGET_BG);
+
+    gui_surface_draw_str(window->surface, PADDING - 1, PATTERN_LABEL_Y, font_8x8,
+        "Desktop pattern", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+    gui_surface_draw_str(window->surface, PADDING - 1, COLOR1_LABEL_Y, font_8x8,
+        "Desktop color 1", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+    gui_surface_draw_str(window->surface, PADDING - 1, COLOR2_LABEL_Y, font_8x8,
+        "Desktop color 2", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+
+    gui_grid_draw_outside_border(&a->pattern_grid, window, COLOR_BORDER);
+    gui_grid_draw_outside_border(&a->color1_grid, window, COLOR_BORDER);
+    gui_grid_draw_outside_border(&a->color2_grid, window, COLOR_BORDER);
+
+    gui_grid_draw_background(&a->pattern_grid, window, COLOR_BORDER);
+    gui_grid_draw_background(&a->color1_grid, window, COLOR_BORDER);
+    gui_grid_draw_background(&a->color2_grid, window, COLOR_BORDER);
+
+    gui_window_draw_widgets(window);
 }
 
 static void

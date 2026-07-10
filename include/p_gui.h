@@ -46,6 +46,7 @@ extern void gui_fb_init(void);
 extern rect_st gui_grid_rect(grid_st *grid);
 extern rect_st gui_grid_cell_rect(grid_st *grid, int col, int row);
 extern void gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t color);
+extern void gui_grid_draw_outside_border(grid_st *grid, window_st *window, uint8_t color);
 /* gui/main.c */
 extern app_st *gui_apps[];
 extern unsigned gui_apps_count;

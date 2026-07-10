@@ -36,3 +36,12 @@ gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t color)
     gui_surface_draw_rect(window->surface, grid_rect, color);
     gui_wm_render_window_region(window, grid_rect);
 }
+
+global void
+gui_grid_draw_outside_border(grid_st *grid, window_st *window, uint8_t color)
+{
+    rect_st rect = gui_grid_rect(grid);
+    rect = gui_rect_shrink(rect, -1);
+    gui_surface_draw_border(window->surface, rect, color);
+    gui_wm_render_window_region(window, rect);
+}
