@@ -235,6 +235,34 @@ gui_wm_top_window(void)
 }
 
 global void
+gui_wm_redraw_all(void)
+{
+    window_st *w;
+
+    for (int i = 0; i < WINDOWS_COUNT_MAX; ++i) {
+        w = gui_wm_windows[i];
+
+        if (w) {
+            w->draw(w);
+        }
+    }
+
+    gui_wm_render_desktop_region(gui_wm_container, NULL);
+
+    w = gui_wm_panel_window;
+    if (w) {
+        w->draw(w);
+        gui_wm_render_window_region(w, gui_window_area(w));
+    }
+
+    w = gui_wm_status_window;
+    if (w) {
+        w->draw(w);
+        gui_wm_render_window_region(w, gui_window_area(w));
+    }
+}
+
+global void
 gui_wm_on_tick(void)
 {
     for (size_t i = 0; i < WINDOWS_COUNT_MAX; ++i) {
