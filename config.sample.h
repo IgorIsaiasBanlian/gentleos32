@@ -1,5 +1,5 @@
 /*
- * The VESA_WIDTH, VESA_HEIGHT, VGA_MODE_12H, GUI_THEME, UART_MODE settings
+ * The VESA_WIDTH, VESA_HEIGHT, VGA_MODE_12H, UART_MODE settings
  * have been replaced with GRUB cmdline arguments. See misc/grub.cfg for details.
  */
 

@@ -108,12 +108,6 @@ krn_mboot_init(void)
     system_info_st *si = &krn_system_info;
 
     if (m->flags & MBOOT_FLAG_CMDLINE) {
-        if (cmdline_has_flag(m->cmdline, "theme=mono")) {
-            si->initial_theme = GUI_THEME_MONO;
-        } else if (cmdline_has_flag(m->cmdline, "theme=neon")) {
-            si->initial_theme = GUI_THEME_NEON;
-        }
-
         if (cmdline_has_flag(m->cmdline, "uart=mouse")) {
             si->uart_mode = UART_MODE_MOUSE;
         } else if (cmdline_has_flag(m->cmdline, "uart=debug")) {

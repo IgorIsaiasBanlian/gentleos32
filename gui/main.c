@@ -115,7 +115,7 @@ gui_main(void)
     gui_fb_init();
     gui_planar_init();
     gui_pointer_init();
-    gui_theme_set(krn_system_info.initial_theme);
+    gui_theme_set(GUI_THEME_DEFAULT);
     gui_wm_init();
     gui_fb_flush();
 
