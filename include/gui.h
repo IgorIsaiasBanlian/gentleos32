@@ -137,6 +137,8 @@ typedef struct {
 } app_st;
 
 typedef struct {
+    int index;
+
     /* base */
     uint8_t widget_bg;
     uint8_t widget_fg;

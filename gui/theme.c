@@ -12,6 +12,8 @@ global gui_theme_st gui_theme;
 global void
 gui_theme_set(int theme)
 {
+    gui_theme.index = theme;
+
     switch (theme) {
     case GUI_THEME_MONO:
         gui_theme.widget_bg = 0x0f;
