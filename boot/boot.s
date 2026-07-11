@@ -8,15 +8,15 @@
 [org 0x7c00]
 [cpu 386]
 
+STAGE2_DEST         equ 0x7e00
+STAGE2_START_LBA    equ 2
+STAGE2_SECTORS      equ 4
+
+KERNEL_DEST         equ 0x10000
+KERNEL_START_LBA    equ 6
 %ifndef KERNEL_SECTORS
 %define KERNEL_SECTORS 256
 %endif
-
-STAGE2_START_SECTOR equ 3
-STAGE2_SECTORS      equ 4
-LOAD_RETRY_COUNT    equ 3
-KERNEL_DEST         equ 0x00010000
-KERNEL_START_LBA    equ 6
 
 
 ;;
@@ -34,16 +34,16 @@ KERNEL_START_LBA    equ 6
 ; Global variables
 ;
 
-remaining_sectors   dw KERNEL_SECTORS
-
 current_char        db '.'
 
 boot_drive_index    db 0
 boot_drive_spt      db 9
 boot_drive_heads    db 2
 
-current_lba         dw KERNEL_START_LBA
-current_dest_seg    dw KERNEL_DEST >> 4
+remaining_sectors   dw STAGE2_SECTORS
+
+current_lba         dw STAGE2_START_LBA
+current_dest_seg    dw STAGE2_DEST >> 4
 current_cylinder    dw 0
 current_head        db 0
 current_sector      db 0
@@ -64,77 +64,15 @@ stage1_main:
     mov sp, 0xfff0
     sti
 
-    ; Save disk number
+    ; Initialize boot drive
     mov [boot_drive_index], dl
+    call reset_drive
+    call load_drive_geometry
 
     ; Load stage 2 loader
-    mov di, LOAD_RETRY_COUNT
-.load_stage2:
-
-    ; Reset disk
-    xor ah, ah
-    int 0x13
-
-    ; Load from disk
-    mov ah, 0x02
-    mov al, STAGE2_SECTORS
-    mov bx, 0x7e00
-    mov dl, [boot_drive_index]
-    xor dh, dh                  ; Head 0
-    xor ch, ch                  ; Cylinder 0
-    mov cl, STAGE2_START_SECTOR
-    int 0x13
-
-    ; Load succeeded
-    jnc .load_success
-
-    ; Retry LOAD_RETRY_COUNT times
-    dec di
-    jnz .load_stage2
-    jmp .load_error
-
-    ; Jump to stage 2
-.load_success:
-    mov ah, 0x0e
-    mov al, '.'
-    xor bx, bx
-    int 0x10
-
+    call safe_load_remaining_sectors
     jmp stage2_main
 
-    ; All retries failed
-.load_error:
-    mov ah, 0x0e
-    mov al, 'E'
-    xor bx, bx
-    int 0x10
-
-.halt:
-    cli
-    hlt
-    jmp .halt
-
-
-;
-; MBR partition table with a single bootable partition
-;
-
-times 0x1be - ($ - $$) db 0
-db 0x80, 0x00, 0x02, 0x00
-db 0x01, 0x00, 0x3f, 0x00
-dd 0x01, 0x7f
-
-;
-; Boot-loader designator
-;
-
-times 0x1fe - ($ - $$) db 0
-dw 0b10101010_01010101
-
-
-;;
-;; Stage 2
-;;
 
 ;
 ; Halt the program
@@ -170,39 +108,6 @@ putc:
     xor bx, bx
     int 0x10
 
-    popad
-    ret
-
-
-;
-; Load the amount of lower memory in KB (int 0x12)
-;
-
-load_lower_mem:
-    pushad
-
-    int 0x12
-    movzx eax, ax
-    mov [mboot_info + 4], eax
-
-    popad
-    ret
-
-
-;
-; Load the amount of upper memory in KB (int 0x15, ah=0x88)
-;
-
-load_upper_mem:
-    pushad
-
-    mov ah, 0x88
-    int 0x15
-    jc .done
-    movzx eax, ax
-    mov [mboot_info + 8], eax
-
-.done:
     popad
     ret
 
@@ -260,6 +165,30 @@ load_drive_geometry:
 
 .done:
     pop es
+    popad
+    ret
+
+
+;
+; Update current CHS using current LBA
+;
+
+update_current_chs:
+    pushad
+
+    movzx cx, byte [boot_drive_spt]
+    mov ax, [current_lba]
+    xor dx, dx
+    div cx                              ; AX = LBA / SPT, DX = LBA % SPT
+    inc dl
+    mov [current_sector], dl            ; sector = LBA % SPT + 1
+
+    movzx cx, byte [boot_drive_heads]
+    xor dx, dx
+    div cx                              ; AX = AX / heads, DX = AX % heads
+    mov [current_cylinder], ax          ; cylinder = (LBA / SPT) / heads
+    mov [current_head], dl              ; head = (LBA / SPT) % heads
+
     popad
     ret
 
@@ -337,13 +266,13 @@ safe_load_sectors:
 
 
 ;
-; Limit current sector count to not exceed:
-; - remaining sectors in the current tracks
+; Load current_count with remaining_sectors and limit it to not exceed:
+; - remaining sectors in the current track
 ; - remaining sectors to the 64KB boundary
 ; - the BIOS limit of 127
 ;
 
-limit_current_count:
+update_current_count:
     pushad
 
     mov ax, [remaining_sectors]
@@ -375,34 +304,10 @@ limit_current_count:
 
 
 ;
-; Update current CHS using current LBA
+; Keep loading sectors until remaining_sectors is 0
 ;
 
-update_current_chs:
-    pushad
-
-    movzx cx, byte [boot_drive_spt]
-    mov ax, [current_lba]
-    xor dx, dx
-    div cx                              ; AX = LBA / SPT, DX = LBA % SPT
-    inc dl
-    mov [current_sector], dl            ; sector = LBA % SPT + 1
-
-    movzx cx, byte [boot_drive_heads]
-    xor dx, dx
-    div cx                              ; AX = AX / heads, DX = AX % heads
-    mov [current_cylinder], ax          ; cylinder = (LBA / SPT) / heads
-    mov [current_head], dl              ; head = (LBA / SPT) % heads
-
-    popad
-    ret
-
-
-;
-; Load the kernel from disk
-;
-
-load_kernel:
+safe_load_remaining_sectors:
     pushad
 
 .loop:
@@ -410,7 +315,7 @@ load_kernel:
     je .done
 
     call update_current_chs
-    call limit_current_count
+    call update_current_count
     call safe_load_sectors
 
     mov cx, ax
@@ -427,6 +332,28 @@ load_kernel:
 
 
 ;
+; MBR partition table with a single bootable partition
+;
+
+times 0x1be - ($ - $$) db 0
+db 0x80, 0x00, 0x02, 0x00
+db 0x01, 0x00, 0x3f, 0x00
+dd 0x01, 0x7f
+
+;
+; Boot-loader designator
+;
+
+times 0x1fe - ($ - $$) db 0
+dw 0b10101010_01010101
+
+
+;;
+;; Stage 2
+;;
+
+
+;
 ; Stage 2 main function
 ;
 
@@ -434,17 +361,28 @@ stage2_main:
     mov byte [current_char], '.'
     call putc
 
+    ; Load memory stats
     call load_lower_mem
     call load_upper_mem
 
-    call reset_drive
-    call load_drive_geometry
-    call load_kernel
+    ; Load kernel
+    mov word [current_dest_seg], KERNEL_DEST >> 4
+    mov word [current_lba], KERNEL_START_LBA
+    mov word [remaining_sectors], KERNEL_SECTORS
+    call safe_load_remaining_sectors
 
     ; Try enabling A20 using BIOS
     mov ax, 0x2401
     int 0x15
 
+    ; Go to protected mode
+    jmp start_pmode
+
+
+;
+; Start 32-bit protected mode and jump to the kernel
+;
+start_pmode:
     cli
 
     lgdt [gdt_pointer]
@@ -453,11 +391,11 @@ stage2_main:
     or eax, 0x01
     mov cr0, eax
 
-    jmp dword 0x08:main_32
+    jmp dword 0x08:stage2_main_32
 
 [bits 32]
 
-main_32:
+stage2_main_32:
     mov ax, 0x10
     mov ds, ax
     mov es, ax
@@ -471,6 +409,40 @@ main_32:
     jmp 0x08:KERNEL_DEST
 
 [bits 16]
+
+
+;
+; Load the amount of lower memory in KB (int 0x12)
+;
+
+load_lower_mem:
+    pushad
+
+    int 0x12
+    movzx eax, ax
+    mov [mboot_info + 4], eax
+
+    popad
+    ret
+
+
+;
+; Load the amount of upper memory in KB (int 0x15, ah=0x88)
+;
+
+load_upper_mem:
+    pushad
+
+    mov ah, 0x88
+    int 0x15
+    jc .done
+    movzx eax, ax
+    mov [mboot_info + 8], eax
+
+.done:
+    popad
+    ret
+
 
 ;
 ; Multiboot info
