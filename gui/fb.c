@@ -151,7 +151,7 @@ gui_fb_init(void)
     if (!krn_system_info.fb_planar) {
         gui_fb_surface.size = gui_fb_screen_rect.size;
         gui_fb_surface.pitch = si->fb_width;
-        gui_fb_surface.pixels = krn_heap_alloc(si->fb_width * si->fb_height,
+        gui_fb_surface.pixels = heap_alloc(si->fb_width * si->fb_height,
             "linear pixels", 1);
     }
 }

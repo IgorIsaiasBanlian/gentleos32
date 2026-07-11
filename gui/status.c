@@ -145,7 +145,7 @@ gui_status_init(void)
     window_surface.size.width = width;
     window_surface.size.height = STATUS_HEIGHT;
     window_surface.pitch = width;
-    window_surface.pixels = krn_heap_alloc(width * STATUS_HEIGHT, "Status pixels", 1);
+    window_surface.pixels = heap_alloc(width * STATUS_HEIGHT, "Status pixels", 1);
 
     window.rect.x = 0;
     window.rect.y = si->fb_height - STATUS_HEIGHT;

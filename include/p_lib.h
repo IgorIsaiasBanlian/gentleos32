@@ -1,5 +1,12 @@
 /* lib/errors.c */
 extern const char *error_message_for(int code);
+/* lib/heap.c */
+extern void heap_dump(void);
+extern size_t heap_get_avail_mem(void);
+extern size_t heap_get_used_mem(void);
+extern void heap_add_region(uintptr_t start, uintptr_t end);
+extern void *heap_alloc(size_t size, const char *desc, int assert);
+extern void heap_free(void *ptr);
 /* lib/key.c */
 extern char key_char_for_code(uint8_t code, uint8_t mods);
 extern int key_number_for_code(uint8_t code);

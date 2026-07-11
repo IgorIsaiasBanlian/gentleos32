@@ -391,6 +391,6 @@ global void
 gui_planar_init(void)
 {
     if (krn_system_info.fb_planar) {
-        gui_planar_pixels = krn_heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
+        gui_planar_pixels = heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
     }
 }

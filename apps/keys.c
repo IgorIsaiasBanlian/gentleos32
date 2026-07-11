@@ -268,7 +268,7 @@ close_window(window_st *window _unsd)
     gui_wm_remove_window(window);
     app_keys.main_window = NULL;
 
-    krn_heap_free(app_state);
+    heap_free(app_state);
     app_state = NULL;
 }
 
@@ -299,7 +299,7 @@ init_app(void)
 {
     ASSERT(!app_state);
 
-    app_state = krn_heap_alloc(sizeof(app_state_st), "Keys app", 0);
+    app_state = heap_alloc(sizeof(app_state_st), "Keys app", 0);
 
     if (!app_state) {
         return E_NOT_ENOUGH_MEMORY;

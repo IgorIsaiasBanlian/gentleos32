@@ -9,13 +9,6 @@ extern int krn_event_ipush(event_st event);
 extern int krn_event_push(event_st event);
 extern int krn_event_pop(event_st *event);
 extern uint16_t krn_event_count(void);
-/* kernel/heap.c */
-extern void krn_heap_dump(void);
-extern size_t krn_heap_get_avail_mem(void);
-extern size_t krn_heap_get_used_mem(void);
-extern void *krn_heap_alloc(size_t size, const char *desc, int assert);
-extern void krn_heap_free(void *ptr);
-extern void krn_heap_init(void);
 /* kernel/initrd.c */
 extern initrd_entry_st *krn_initrd_lookup(const char *name);
 extern void krn_initrd_init(void);

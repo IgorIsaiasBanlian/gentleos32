@@ -93,7 +93,7 @@ gui_handle_key(event_st event)
     }
 
     if (key_code == KEY_M) {
-        krn_heap_dump();
+        heap_dump();
         return 1;
     }
 

@@ -110,7 +110,7 @@ init_window(void)
     window_surface.size.width = width;
     window_surface.size.height = height;
     window_surface.pitch = width;
-    window_surface.pixels = krn_heap_alloc(width * height, "Panel pixels", 1);
+    window_surface.pixels = heap_alloc(width * height, "Panel pixels", 1);
 
     window.rect.x = si->fb_width - width;
     window.rect.y = 0;
@@ -118,7 +118,7 @@ init_window(void)
     window.rect.height = height;
     window.surface = &window_surface;
     window.widgets_capacity = app_buttons_count + 2;
-    window.widgets = krn_heap_alloc(sizeof(widget_st *) * window.widgets_capacity,
+    window.widgets = heap_alloc(sizeof(widget_st *) * window.widgets_capacity,
         "Panel widgets", 1);
     window.visible = 1;
     window.draw = draw_window;
@@ -127,7 +127,7 @@ init_window(void)
 static void
 init_app_buttons(void)
 {
-    app_buttons = krn_heap_alloc(sizeof(widget_st) * app_buttons_count,
+    app_buttons = heap_alloc(sizeof(widget_st) * app_buttons_count,
         "Panel app buttons", 1);
 
     for (size_t i = 0; i < app_buttons_count; i++) {

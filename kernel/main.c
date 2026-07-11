@@ -20,7 +20,6 @@ krn_main(void)
     krn_debug_printf("Starting GentleOS/32\n");
     krn_mboot_dump();
     krn_mem_init();
-    krn_heap_init();
     krn_initrd_init();
     krn_vga_init();
     krn_timer_init();

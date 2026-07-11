@@ -7,6 +7,10 @@
 
 #include <kernel.h>
 
+enum {
+    MEM_UPPER_START = 0x100000,
+};
+
 /* FIXME: Check from time to time if the ignore is still needed */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -76,8 +80,60 @@ krn_mem_enable_a20(void)
     krn_debug_printf("failed to enable\n");
 }
 
+static void
+krn_mem_dump_system_regions(void)
+{
+    system_info_st *si = &krn_system_info;
+    uintptr_t krn_start = (uintptr_t)&krn_link_start;
+    uintptr_t krn_end = (uintptr_t)&krn_link_end;
+    uintptr_t initrd_end = si->initrd_start + si->initrd_size;
+
+    krn_debug_printf("System regions:\n");
+
+    krn_debug_printf("- Kernel:  %08x - %08x (%u KB)\n",
+        krn_start, krn_end, (krn_end - krn_start) >> 10);
+
+    krn_debug_printf("- Initrd:  %08x - %08x (%u KB)\n",
+        si->initrd_start, initrd_end, si->initrd_size >> 10);
+
+}
+
+static void
+krn_mem_init_heap(void)
+{
+    system_info_st *si = &krn_system_info;
+    uintptr_t krn_start = (uintptr_t)&krn_link_start;
+    uintptr_t krn_end = (uintptr_t)&krn_link_end;
+    uintptr_t initrd_end = si->initrd_start + si->initrd_size;
+    uintptr_t low_start = 0x10000;
+    uintptr_t low_end = MIN(si->mem_lower << 10, (uintptr_t)0xA0000);
+    uintptr_t high_start = MEM_UPPER_START;
+    uintptr_t high_end = MEM_UPPER_START + (si->mem_upper << 10);
+
+    krn_debug_printf("Initializing heap... ");
+
+    ASSERT(si->mem_fields_valid);
+
+    if (krn_start < MEM_UPPER_START) {
+        low_start = MAX(low_start, krn_end);
+        low_start = MAX(low_start, initrd_end);
+    }
+
+    high_start = MAX(high_start, krn_end);
+    high_start = MAX(high_start, initrd_end);
+
+    heap_add_region(low_start, low_end);
+    heap_add_region(high_start, high_end);
+
+    krn_debug_printf("ok\n");
+
+    heap_dump();
+}
+
 global void
 krn_mem_init(void)
 {
     krn_mem_enable_a20();
+    krn_mem_dump_system_regions();
+    krn_mem_init_heap();
 }
