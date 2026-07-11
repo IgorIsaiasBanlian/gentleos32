@@ -14,7 +14,7 @@ extern int key_number_for_code(uint8_t code);
 extern int vsnprintf(char *buf, size_t nbyte, const char *fmt, va_list va);
 extern int snprintf(char *buf, size_t nbyte, const char *fmt, ...);
 /* lib/rand.c */
-extern void rand_init(void);
+extern void rand_add_entropy(uint32_t seed);
 extern uint32_t rand(void);
 /* lib/sleep.c */
 extern void sleep(uint32_t msecs);

@@ -36,6 +36,7 @@ krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
 
     if (btn_left && !mouse_state.btn_left) {
         event.type = EVENT_POINTER_DOWN;
+        rand_add_entropy(krn_timer_get_counter_0());
     } else if (!btn_left && mouse_state.btn_left) {
         event.type = EVENT_POINTER_UP;
     } else if (btn_right && !mouse_state.btn_right) {

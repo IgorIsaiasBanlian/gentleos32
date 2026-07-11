@@ -52,6 +52,7 @@ extern uint32_t krn_system_get_avail_mem(void);
 /* kernel/timer.c */
 extern volatile uint8_t krn_timer_is_cpu_idle;
 extern uint32_t krn_timer_get_msecs(void);
+extern uint16_t krn_timer_get_counter_0(void);
 extern uint8_t krn_timer_get_cpu_usage(void);
 extern void krn_timer_init(void);
 /* kernel/uart.c */

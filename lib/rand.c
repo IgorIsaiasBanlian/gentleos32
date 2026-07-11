@@ -10,15 +10,11 @@
 static uint32_t rand_seed = 1;
 
 global void
-rand_init(void)
+rand_add_entropy(uint32_t seed)
 {
-    time_st t;
+    rand_seed ^= seed;
 
-    krn_rtc_get_time(&t);
-
-    rand_seed = (t.second << 24) | (t.minute << 16) | (t.hour << 8) | t.day;
-
-    if (rand_seed == 0) {
+    if (!rand_seed) {
         ++rand_seed;
     }
 }

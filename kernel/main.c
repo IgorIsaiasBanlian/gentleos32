@@ -27,7 +27,6 @@ krn_main(void)
     krn_keyboard_init();
     krn_ps2_init();
 
-    rand_init();
     gui_main();
 
     /* NOTREACHED */
