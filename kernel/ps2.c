@@ -17,7 +17,12 @@ enum {
     PS2_CMD_ENABLE_MOUSE        = 0xA8,
     PS2_CMD_DISABLE_KBD         = 0xAD,
     PS2_CMD_ENABLE_KBD          = 0xAE,
+    PS2_CMD_READ_OUTPUT         = 0xD0,
+    PS2_CMD_WRITE_OUTPUT        = 0xD1,
     PS2_CMD_SEND_MOUSE          = 0xD4,
+
+    PS2_OUTPUT_SYSTEM_RESET     = (1 << 0),
+    PS2_OUTPUT_A20              = (1 << 1),
     PS2_CMD_RESET               = 0xFF,
     PS2_CMD_SET_DEFAULT         = 0xF6,
     PS2_CMD_ENABLE_REPORTING    = 0xF4,
@@ -49,7 +54,7 @@ krn_ps2_has_data(void)
 }
 
 global uint16_t
-krn_ps2_read_data(size_t timeout)
+krn_ps2_read_data_with_timeout(size_t timeout)
 {
     uint32_t start = krn_timer_get_msecs();
     uint16_t ret = 0;
@@ -58,9 +63,25 @@ krn_ps2_read_data(size_t timeout)
         if (krn_ps2_has_data()) {
             ret = inb(PS2_PORT_DATA);
             ret = (ret << 8) | 1;
-            return ret;
+            break;
         }
     } while (krn_timer_get_msecs() - start < timeout);
+
+    return ret;
+}
+
+global uint16_t
+krn_ps2_read_data(void)
+{
+    uint16_t ret = 0;
+
+    for (volatile int i = 0; i < 1000000; ++i) {
+        if (krn_ps2_has_data()) {
+            ret = inb(PS2_PORT_DATA);
+            ret = (ret << 8) | 1;
+            break;
+        }
+    }
 
     return ret;
 }
@@ -68,7 +89,7 @@ krn_ps2_read_data(size_t timeout)
 static void
 krn_ps2_skip_data(size_t timeout)
 {
-    (void)krn_ps2_read_data(timeout);
+    (void)krn_ps2_read_data_with_timeout(timeout);
 }
 
 static void
@@ -84,7 +105,7 @@ krn_ps2_read_config(void)
 {
     krn_ps2_flush_data();
     krn_ps2_outb(PS2_CMD_READ_CONFIG, PS2_PORT_CMD);
-    return krn_ps2_read_data(100) >> 8;
+    return krn_ps2_read_data_with_timeout(100) >> 8;
 }
 
 static void
@@ -100,6 +121,24 @@ krn_ps2_reboot(void)
     outb(0xFE, PS2_PORT_CMD);
 }
 
+global void
+krn_ps2_enable_a20(void)
+{
+    uint8_t val;
+
+    krn_ps2_outb(PS2_CMD_DISABLE_KBD, PS2_PORT_CMD);
+
+    krn_ps2_outb(PS2_CMD_READ_OUTPUT, PS2_PORT_CMD);
+    val = krn_ps2_read_data() >> 8;
+
+    if (val & PS2_OUTPUT_SYSTEM_RESET) {
+        krn_ps2_outb(PS2_CMD_WRITE_OUTPUT, PS2_PORT_CMD);
+        krn_ps2_outb(val | PS2_OUTPUT_A20, PS2_PORT_DATA);
+    }
+
+    krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
+}
+
 static void
 krn_ps2_send_mouse(uint8_t cmd)
 {
@@ -110,7 +149,7 @@ krn_ps2_send_mouse(uint8_t cmd)
 static void
 krn_ps2_handle_intr(isr_stack_st *isr_stack _unsd)
 {
-    uint8_t data = krn_ps2_read_data(0) >> 8;
+    uint8_t data = krn_ps2_read_data_with_timeout(0) >> 8;
 
     krn_mouse_handle_ps2_data(data);
 }
@@ -127,7 +166,7 @@ krn_ps2_init(void)
     krn_ps2_flush_data();
 
     krn_ps2_send_mouse(PS2_CMD_RESET);
-    mouse_detected = krn_ps2_read_data(100) >> 8 == 0xfa; /* ACK */
+    mouse_detected = krn_ps2_read_data_with_timeout(100) >> 8 == 0xfa; /* ACK */
 
     if (mouse_detected) {
         krn_ps2_skip_data(750); /* self test */

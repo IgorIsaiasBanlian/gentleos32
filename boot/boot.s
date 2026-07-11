@@ -403,203 +403,6 @@ load_kernel:
 
 
 ;
-; Wait until the 8042 input buffer is empty for writing
-;
-
-kbd_wait_write:
-    push ecx
-    mov ecx, 0x100000
-
-.loop:
-    in al, 0x64
-    test al, 0x02
-    jz .done
-    dec ecx
-    jnz .loop
-
-.done:
-    pop ecx
-    ret
-
-
-;
-; Wait until the 8042 output buffer is ready for reading
-;
-
-kbd_wait_read:
-    push ecx
-    mov ecx, 0x100000
-
-.loop:
-    in al, 0x64
-    test al, 0x01
-    jnz .done
-    dec ecx
-    jnz .loop
-
-.done:
-    pop ecx
-    ret
-
-
-;
-; Enable the A20 line using 8042 keyboard controller
-;
-
-kbd_enable_a20:
-    pushad
-
-    ; Disable keyboard
-    call kbd_wait_write
-    mov al, 0xad
-    out 0x64, al
-
-    ; Send command: read controller output port
-    call kbd_wait_write
-    mov al, 0xd0
-    out 0x64, al
-
-    ; Get value of controller output port
-    call kbd_wait_read
-    in al, 0x60
-    mov bl, al
-
-    ; Verify the value by checking the system reset bit
-    test al, 0x01
-    jz .skip
-
-    ; Send command: write controller output port
-    call kbd_wait_write
-    mov al, 0xd1
-    out 0x64, al
-
-    ; Write new value of controller output port, with A20 bit enabled
-    call kbd_wait_write
-    mov al, bl
-    or al, 0x02
-    out 0x60, al
-
-.skip:
-    ; Re-enable keyboard
-    call kbd_wait_write
-    mov al, 0xae
-    out 0x64, al
-
-    ; Drain the buffer before returning
-    call kbd_wait_write
-
-    popad
-    ret
-
-
-;
-; Check if the A20 line is enabled
-;
-
-check_a20:
-    push es
-    push fs
-    pushad
-
-    ; ES:SI = 0000:0500 (0x500 linear)
-    xor ax, ax
-    mov es, ax
-    mov si, 0x0500
-
-    ; FS:DI = FFFF:0510 (0x100500 linear)
-    not ax
-    mov fs, ax
-    mov di, 0x0510
-
-    ; Preserve the original bytes
-    mov dl, [es:si]
-    mov dh, [fs:di]
-
-    ; Check 1
-    mov byte [es:si], 0xff
-    mov byte [fs:di], 0x00
-    cmp byte [es:si], 0x00
-    je .disabled
-
-    ; Check 2
-    mov byte [es:si], 0x00
-    mov byte [fs:di], 0xff
-    cmp byte [es:si], 0xff
-    je .disabled
-
-    ; A20 enabled
-    mov byte [a20_enabled], 1
-    jmp .restore
-
-.disabled:
-    ; A20 not enabled
-    mov byte [a20_enabled], 0
-
-.restore:
-    ; Restore the original bytes
-    mov [es:si], dl
-    mov [fs:di], dh
-
-    popad
-    pop fs
-    pop es
-    ret
-
-
-;
-; Enable the A20 line
-;
-
-enable_a20:
-    pushad
-
-    ; Check
-    call check_a20
-    cmp byte [a20_enabled], 0
-    jne .done
-
-    ; Try BIOS
-    mov ax, 0x2401
-    int 0x15
-
-    ; Check
-    call check_a20
-    cmp byte [a20_enabled], 0
-    jne .done
-
-    ; Try Fast A20 gate
-    in al, 0x92
-    test al, 0x02
-    jnz .skip_fast_a20_gate
-    or al, 0x02
-    and al, 0xFE
-    out 0x92, al
-.skip_fast_a20_gate:
-
-    ; Check
-    call check_a20
-    cmp byte [a20_enabled], 0
-    jne .done
-
-    ; Try keyboard controller
-    call kbd_enable_a20
-
-    ; Check
-    call check_a20
-    cmp byte [a20_enabled], 0
-    jne .done
-
-    ; Handle error
-    mov byte [current_char], 'A'
-    call putc
-    jmp halt
-
-.done:
-    popad
-    ret
-
-
-;
 ; Main function
 ;
 
@@ -617,7 +420,10 @@ stage2_main:
     call reset_drive
     call load_drive_geometry
     call load_kernel
-    call enable_a20
+
+    ; Try enabling A20 using BIOS
+    mov ax, 0x2401
+    int 0x15
 
     cli
 
@@ -703,8 +509,6 @@ gdt_pointer:
 ;
 
 current_char        db '.'
-
-a20_enabled         db 0
 
 boot_drive_index    db 0
 boot_drive_spt      db 9

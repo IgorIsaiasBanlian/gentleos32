@@ -31,6 +31,9 @@ extern void krn_main(void);
 /* kernel/mboot.c */
 extern void krn_mboot_dump(void);
 extern void krn_mboot_init(void);
+/* kernel/mem.c */
+extern int krn_mem_check_a20(void);
+extern void krn_mem_init(void);
 /* kernel/mouse.c */
 extern void krn_mouse_handle_uart_data(uint8_t data);
 extern void krn_mouse_handle_ps2_data(uint8_t data);
@@ -38,8 +41,10 @@ extern void krn_mouse_init(void);
 /* kernel/pic.c */
 extern void krn_pic_init(void);
 /* kernel/ps2.c */
-extern uint16_t krn_ps2_read_data(size_t timeout);
+extern uint16_t krn_ps2_read_data_with_timeout(size_t timeout);
+extern uint16_t krn_ps2_read_data(void);
 extern void krn_ps2_reboot(void);
+extern void krn_ps2_enable_a20(void);
 extern void krn_ps2_init(void);
 /* kernel/rtc.c */
 extern int krn_rtc_are_times_equal(time_st *t1, time_st *t2);
