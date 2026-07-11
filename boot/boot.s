@@ -23,10 +23,38 @@ KERNEL_START_LBA    equ 6
 ;; Stage 1
 ;;
 
+;
+; Entry point
+;
 
-    jmp 0x0000:.ensure_cs
-.ensure_cs:
+    jmp 0x0000:stage1_main
 
+
+;
+; Global variables
+;
+
+remaining_sectors   dw KERNEL_SECTORS
+
+current_char        db '.'
+
+boot_drive_index    db 0
+boot_drive_spt      db 9
+boot_drive_heads    db 2
+
+current_lba         dw KERNEL_START_LBA
+current_dest_seg    dw KERNEL_DEST >> 4
+current_cylinder    dw 0
+current_head        db 0
+current_sector      db 0
+current_count       db 0
+
+
+;
+; Stage 1 main function
+;
+
+stage1_main:
     ; Setup segments and stack
     cli
     xor ax, ax
@@ -36,8 +64,8 @@ KERNEL_START_LBA    equ 6
     mov sp, 0xfff0
     sti
 
-    ; Preserve disk number
-    mov [cs:drive_index], dl
+    ; Save disk number
+    mov [boot_drive_index], dl
 
     ; Load stage 2 loader
     mov di, LOAD_RETRY_COUNT
@@ -51,7 +79,7 @@ KERNEL_START_LBA    equ 6
     mov ah, 0x02
     mov al, STAGE2_SECTORS
     mov bx, 0x7e00
-    mov dl, [cs:drive_index]
+    mov dl, [boot_drive_index]
     xor dh, dh                  ; Head 0
     xor ch, ch                  ; Cylinder 0
     mov cl, STAGE2_START_SECTOR
@@ -72,9 +100,6 @@ KERNEL_START_LBA    equ 6
     xor bx, bx
     int 0x10
 
-    mov al, [cs:drive_index]
-    push ax
-
     jmp stage2_main
 
     ; All retries failed
@@ -89,7 +114,6 @@ KERNEL_START_LBA    equ 6
     hlt
     jmp .halt
 
-drive_index: db 0
 
 ;
 ; MBR partition table with a single bootable partition
@@ -403,16 +427,12 @@ load_kernel:
 
 
 ;
-; Main function
+; Stage 2 main function
 ;
 
 stage2_main:
     mov byte [current_char], '.'
     call putc
-
-    ; Retrieve disk number from stage 1
-    pop ax
-    mov [boot_drive_index], al
 
     call load_lower_mem
     call load_upper_mem
@@ -502,26 +522,6 @@ gdt:
 gdt_pointer:
     dw (3 * 8 - 1)          ; limit (3 descriptors * 8 bytes - 1)
     dd gdt     ; base (pointer to the GDT)
-
-
-;
-; Global variables
-;
-
-current_char        db '.'
-
-boot_drive_index    db 0
-boot_drive_spt      db 9
-boot_drive_heads    db 2
-
-remaining_sectors   dw KERNEL_SECTORS
-
-current_lba         dw KERNEL_START_LBA
-current_dest_seg    dw KERNEL_DEST >> 4
-current_cylinder    dw 0
-current_head        db 0
-current_sector      db 0
-current_count       db 0
 
 
 ;
