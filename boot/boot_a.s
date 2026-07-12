@@ -2,11 +2,11 @@
 ; Copyright (c) 2019-2026 luke8086.
 ; Distributed under the terms of GPL-2 License.
 ;
-; File: boot.s - Combined 2-stage bootloader
+; File: boot_a.s - Combined 2-stage bootloader, assembly parts
 ;
 
-[org 0x7c00]
 [cpu 386]
+[bits 16]
 
 STAGE2_DEST         equ 0x7e00
 STAGE2_START_LBA    equ 2
@@ -18,6 +18,9 @@ KERNEL_START_LBA    equ 6
 %define KERNEL_SECTORS 256
 %endif
 
+extern cmain
+
+[section .asm]
 
 ;;
 ;; Stage 1
@@ -33,8 +36,6 @@ KERNEL_START_LBA    equ 6
 ;
 ; Global variables
 ;
-
-current_char        db '.'
 
 boot_drive_index    db 0
 boot_drive_spt      db 9
@@ -61,16 +62,19 @@ stage1_main:
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov sp, 0xfff0
+    mov esp, 0xfff0
     sti
+
+    ; Clear direction flag just in case
+    cld
 
     ; Initialize boot drive
     mov [boot_drive_index], dl
-    call reset_drive
-    call load_drive_geometry
+    o32 call dword reset_drive
+    o32 call dword load_drive_geometry
 
     ; Load stage 2 loader
-    call safe_load_remaining_sectors
+    o32 call dword safe_load_remaining_sectors
     jmp stage2_main
 
 
@@ -93,23 +97,27 @@ get_min_word:
     jbe .done
     mov ax, bx
 .done:
-    ret
+    o32 ret
 
 
 ;
-; Print current character
+; Print a single character
 ;
 
+global putc:function
 putc:
+    push ebp
+    mov ebp, esp
     pushad
 
     mov ah, 0x0e
-    mov al, [current_char]
+    mov al, [ebp + 8]
     xor bx, bx
     int 0x10
 
     popad
-    ret
+    pop ebp
+    o32 ret
 
 
 ;
@@ -124,7 +132,7 @@ reset_drive:
     int 0x13
 
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -166,7 +174,7 @@ load_drive_geometry:
 .done:
     pop es
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -190,7 +198,7 @@ update_current_chs:
     mov [current_head], dl              ; head = (LBA / SPT) % heads
 
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -230,7 +238,7 @@ load_sectors:
 .done:
     pop es
     pop ebx
-    ret
+    o32 ret
 
 
 ;
@@ -243,26 +251,28 @@ safe_load_sectors:
     mov ebx, 3
 
 .retry:
-    call load_sectors
+    o32 call dword load_sectors
 
     test eax, eax
     jnz .success
 
-    call reset_drive
+    o32 call dword reset_drive
     dec ebx
     jnz .retry
 
-    mov byte [current_char], 'E'
-    call putc
+    push dword 'E'
+    o32 call dword putc
+    add esp, 4
 
     jmp halt
 
 .success:
-    mov byte [current_char], '.'
-    call putc
+    push dword '.'
+    o32 call dword putc
+    add esp, 4
 
     pop ebx
-    ret
+    o32 ret
 
 
 ;
@@ -282,7 +292,7 @@ update_current_count:
     movzx dx, byte [current_sector]
     sub bx, dx
     inc bx
-    call get_min_word
+    o32 call dword get_min_word
 
     ; AX = min(AX, (0x1000 - (dest_segment & 0xfff)) / 32)
     ; 64KB = 0x1000 paragraphs, one sector = 32 paragraphs
@@ -291,16 +301,16 @@ update_current_count:
     mov bx, 0x1000
     sub bx, dx
     shr bx, 5
-    call get_min_word
+    o32 call dword get_min_word
 
     ; AX = min(AX, 127)
     mov bx, 127
-    call get_min_word
+    o32 call dword get_min_word
 
     mov [current_count], al
 
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -314,9 +324,9 @@ safe_load_remaining_sectors:
     cmp word [remaining_sectors], 0
     je .done
 
-    call update_current_chs
-    call update_current_count
-    call safe_load_sectors
+    o32 call dword update_current_chs
+    o32 call dword update_current_count
+    o32 call dword safe_load_sectors
 
     mov cx, ax
     sub [remaining_sectors], cx     ; remaining_sectors -= count
@@ -328,7 +338,7 @@ safe_load_remaining_sectors:
 
 .done:
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -358,22 +368,26 @@ dw 0b10101010_01010101
 ;
 
 stage2_main:
-    mov byte [current_char], '.'
-    call putc
+    push dword '.'
+    o32 call dword putc
+    add esp, 4
 
     ; Load memory stats
-    call load_lower_mem
-    call load_upper_mem
+    o32 call dword load_lower_mem
+    o32 call dword load_upper_mem
 
     ; Load kernel
     mov word [current_dest_seg], KERNEL_DEST >> 4
     mov word [current_lba], KERNEL_START_LBA
     mov word [remaining_sectors], KERNEL_SECTORS
-    call safe_load_remaining_sectors
+    o32 call dword safe_load_remaining_sectors
 
     ; Try enabling A20 using BIOS
     mov ax, 0x2401
     int 0x15
+
+    ; Call C code
+    o32 call dword cmain
 
     ; Go to protected mode
     jmp start_pmode
@@ -423,7 +437,7 @@ load_lower_mem:
     mov [mboot_info + 4], eax
 
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -441,7 +455,7 @@ load_upper_mem:
 
 .done:
     popad
-    ret
+    o32 ret
 
 
 ;
@@ -495,9 +509,3 @@ gdt_pointer:
     dw (3 * 8 - 1)          ; limit (3 descriptors * 8 bytes - 1)
     dd gdt     ; base (pointer to the GDT)
 
-
-;
-; Padding to 512 + 2048 bytes (5 sectors)
-;
-
-times (512 + 2048) - ($ - $$) db 0

@@ -39,9 +39,26 @@ KERNEL_OBJS     := $(patsubst %.c,$(BUILDDIR)/%.o,$(KERNEL_C_SRCS)) \
                    $(BUILDDIR)/data.o
 KERNEL_DEPS     := $(KERNEL_OBJS:.o=.d)
 
+
+BOOT_CFLAGS     := -std=c11 -m16 -march=i386 -Os \
+                   -ffreestanding -fno-stack-protector -fno-pic \
+                   -fno-asynchronous-unwind-tables \
+                   -Wall -Wextra -pedantic \
+                   -I$(BASEDIR)/include
+
+BOOT_LDFLAGS    := -m elf_i386 -nostdlib -z nodefaultlib \
+                   -z noexecstack --no-warn-rwx-segments \
+                   --orphan-handling=warn
+
+BOOT_SUBDIRS    := boot
+BOOT_LD         := misc/boot.ld
+BOOT_OBJS       := $(BUILDDIR)/boot/boot_a.o $(BUILDDIR)/boot/boot_c.o
+BOOT_DEPS       := $(BOOT_OBJS:.o=.d)
+BOOT_ELF        := $(BUILDDIR)/boot/boot.elf
 BOOT_BIN        := $(BUILDDIR)/boot.bin
 
-OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS))
+OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS)) \
+           $(addprefix $(BUILDDIR)/,$(BOOT_SUBDIRS))
 
 all: disks
 	./tools/chkcfg.pl
@@ -95,8 +112,18 @@ $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(KERNEL_ASFLAGS) -f elf32 $< -o $@
 
-$(BOOT_BIN): boot/boot.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
-	$(NASM) -o $@ $< -DKERNEL_SECTORS=$(shell ./tools/sectors.pl $(KERNEL_LOMEM_BIN))
+$(BUILDDIR)/boot/boot_a.o: boot/boot_a.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
+	$(NASM) -f elf32 -o $@ $< -DKERNEL_SECTORS=$(shell ./tools/sectors.pl $(KERNEL_LOMEM_BIN))
+
+$(BUILDDIR)/boot/boot_c.o: boot/boot_c.c | $(OBJDIRS) $(CONFIG_H)
+	$(CC) $(BOOT_CFLAGS) -MMD -MP -c $< -o $@
+
+$(BOOT_ELF): $(BOOT_OBJS) $(BOOT_LD)
+	$(LD) $(BOOT_LDFLAGS) -T$(BOOT_LD) $(BOOT_OBJS) -o $@
+
+$(BOOT_BIN): $(BOOT_ELF)
+	$(OBJCOPY) -O binary $< $@
+	test $$(wc -c < $@) -eq $$((512 * 5))
 
 print:
 	@echo "KERNEL_SUBDIRS=$(KERNEL_SUBDIRS)"
@@ -106,4 +133,4 @@ print:
 .PHONY: all clean kernel print check-config
 
 # Include auto-generated dependency files if they exist
--include $(KERNEL_DEPS)
+-include $(KERNEL_DEPS) $(BOOT_DEPS)
