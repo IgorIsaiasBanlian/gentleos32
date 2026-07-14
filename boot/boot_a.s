@@ -379,6 +379,10 @@ stage2_main:
     o32 call dword print_char
     add esp, 4
 
+    ; Save timer ticks
+    o32 call dword get_ticks
+    mov [boot_start_ticks], eax
+
     ; Call C code
     o32 call dword stage2_cmain
 
@@ -430,6 +434,63 @@ stage2_main:
     jmp 0x08:KERNEL_DEST
 
 [bits 16]
+
+
+;
+; Read a 16-bit word from the given far pointer
+;
+
+global get_far_word:function
+get_far_word:
+    push ebp
+    mov ebp, esp
+    push ds
+    push esi
+
+    mov si, [ebp + 12]
+    mov ax, [ebp + 8]
+    mov ds, ax
+    movzx eax, word [si]
+
+    pop esi
+    pop ds
+    pop ebp
+    o32 ret
+
+
+;
+; Return BIOS timer tick count
+;
+
+global get_ticks:function
+get_ticks:
+    push ecx
+    push edx
+
+    xor ah, ah
+    int 0x1a
+
+    mov ax, cx
+    shl eax, 16
+    mov ax, dx
+
+    pop edx
+    pop ecx
+    o32 ret
+
+
+;
+; Return ticks elapsed since start of stage 2
+;
+
+global get_elapsed_ticks:function
+get_elapsed_ticks:
+    o32 call dword get_ticks
+    cmp eax, [boot_start_ticks]
+    jb .done ; In case of rollover, don't subtract start ticks
+    sub eax, [boot_start_ticks]
+.done:
+    o32 ret
 
 
 ;
@@ -540,20 +601,127 @@ load_kernel:
 
 
 ;
+; Load the VBE controller info to the given buffer
+; Return 1 on success, 0 on failure
+;
+
+global vbe_load_ctrl_info:function
+vbe_load_ctrl_info:
+    push ebp
+    mov ebp, esp
+    pushad
+    push es
+
+    ; ES:DI = dest buffer
+    xor ax, ax
+    mov es, ax
+    mov di, [ebp + 8]
+
+    ; Load VBE 2.0 information
+    mov dword [es:di], 'VBE2'
+    mov ax, 0x4f00
+    int 0x10
+
+    ; Set return value in the EAX slot saved by pushad
+    cmp ax, 0x004f
+    sete al
+    movzx eax, al
+    mov [ebp - 4], eax
+
+    pop es
+    popad
+    pop ebp
+    o32 ret
+
+
+;
+; Load info of the given VBE mode to the given buffer
+; Return 1 on success, 0 on failure
+;
+
+global vbe_load_mode_info:function
+vbe_load_mode_info:
+    push ebp
+    mov ebp, esp
+    pushad
+    push es
+
+    ; ES:DI = destination buffer
+    xor ax, ax
+    mov es, ax
+    mov di, [ebp + 12]
+
+    ; Load info
+    mov cx, [ebp + 8]
+    mov ax, 0x4f01
+    int 0x10
+
+    ; Set return value in the EAX slot saved by pushad
+    cmp ax, 0x004f
+    sete al
+    movzx eax, al
+    mov [ebp - 4], eax
+
+    pop es
+    popad
+    pop ebp
+    o32 ret
+
+
+;
+; Set the given video mode with a linear framebuffer
+; Return 1 on success, 0 on failure
+;
+
+global vbe_set_mode:function
+vbe_set_mode:
+    push ebp
+    mov ebp, esp
+    pushad
+    push es
+
+    ; Set mode
+    mov bx, [ebp + 8]
+    or bx, (1 << 14) ; Request linear fb
+    mov ax, 0x4f02
+    int 0x10
+
+    ; Set return value in the EAX slot saved by pushad
+    cmp ax, 0x004f
+    sete al
+    movzx eax, al
+    mov [ebp - 4], eax
+
+    pop es
+    popad
+    pop ebp
+    o32 ret
+
+
+;
+; Global variables
+;
+
+global boot_start_ticks:data
+boot_start_ticks: dd 0
+
+
+;
 ; Multiboot info
 ;
 
 global mboot_info:data
 mboot_info:
-    dd 0x205                ; flags (mem | cmdline | bootloader)
+    dd 0x201                ; flags (mem | bootloader)
     dd 0                    ; mem_lower
     dd 0                    ; mem_upper
     dd 0                    ; boot_device (unused)
-    dd mboot_cmdline        ; cmdline
+    dd 0                    ; cmdline
     times 11 dd 0           ; unused
     dd mboot_loader_name    ; boot_loader_name
+    times 5 dd 0            ; unused
+    times 7 dd 0            ; framebuffer
 
-mboot_cmdline:      db `\0`
 mboot_loader_name:  db `GentleBoot\0`
 
 

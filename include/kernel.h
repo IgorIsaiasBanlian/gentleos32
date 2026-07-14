@@ -9,6 +9,7 @@
 #define _KERNEL_H_
 
 #include <lib.h>
+#include <boot.h>
 
 typedef struct {
     uint32_t edi;
@@ -46,10 +47,6 @@ enum {
     UART_MCR  = 4, /* Modem Control */
     UART_LSR  = 5, /* Line Status */
     UART_SR   = 7, /* Scratch Register */
-
-    UART_MODE_NONE  = 0,
-    UART_MODE_MOUSE = 1,
-    UART_MODE_DEBUG = 2,
 };
 
 typedef struct {

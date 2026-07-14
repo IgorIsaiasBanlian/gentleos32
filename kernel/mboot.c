@@ -7,45 +7,6 @@
 
 #include <kernel.h>
 
-typedef struct {
-    uint32_t flags;
-
-    uint32_t mem_lower;
-    uint32_t mem_upper;
-    uint32_t boot_device;
-    const char *cmdline;
-
-    uint32_t mods_count;
-    uint32_t mods_addr;
-    uint32_t unused_1[9];
-
-    const char *boot_loader_name;
-
-    uint32_t unused_2[5];
-
-    uint8_t *fb_addr;
-    uint32_t unused_4;
-    uint32_t fb_pitch;
-    uint32_t fb_width;
-    uint32_t fb_height;
-    uint8_t fb_bpp;
-} __attribute__ ((packed)) mboot_info_st;
-
-typedef struct {
-    uint32_t mod_start;
-    uint32_t mod_end;
-    uint32_t cmdline;
-    uint32_t reserved;
-} __attribute__((packed)) mboot_mod_st;
-
-enum {
-    MBOOT_FLAG_MEM         = 1 << 0,
-    MBOOT_FLAG_CMDLINE     = 1 << 2,
-    MBOOT_FLAG_MODS        = 1 << 3,
-    MBOOT_FLAG_BOOTLOADER  = 1 << 9,
-    MBOOT_FLAG_FRAMEBUFFER = 1 << 12,
-};
-
 /* Only access early on boot, later it gets overwritten */
 mboot_info_st *krn_core_mboot_info;
 
