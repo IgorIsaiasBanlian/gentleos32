@@ -345,17 +345,22 @@ safe_load_remaining_sectors:
 ; MBR partition table with a single bootable partition
 ;
 
-times 0x1be - ($ - $$) db 0
-db 0x80, 0x00, 0x02, 0x00
-db 0x01, 0x00, 0x3f, 0x00
-dd 0x01, 0x7f
+global mbr_partition_table:data
+mbr_partition_table:
+    times 0x1be - ($ - $$) db 0
+    db 0x80, 0x00, 0x02, 0x00
+    db 0x01, 0x00, 0x3f, 0x00
+    dd 0x01, 0x7f
+
 
 ;
 ; Boot-loader designator
 ;
 
-times 0x1fe - ($ - $$) db 0
-dw 0b10101010_01010101
+global mbr_designator:data
+mbr_designator:
+    times 0x1fe - ($ - $$) db 0
+    dw 0b10101010_01010101
 
 
 ;;
