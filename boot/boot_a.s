@@ -18,7 +18,7 @@ KERNEL_START_LBA    equ 6
 %define KERNEL_SECTORS 256
 %endif
 
-extern cmain
+extern stage2_cmain
 
 [section .asm]
 
@@ -372,49 +372,51 @@ mbr_designator:
 ; Stage 2 main function
 ;
 
+global stage2_main:function
 stage2_main:
+    ; Print progress dot
     push dword '.'
     o32 call dword print_char
     add esp, 4
 
-    ; Load memory stats
-    o32 call dword load_lower_mem
-    o32 call dword load_upper_mem
-
-    ; Load kernel
-    mov word [current_dest_seg], KERNEL_DEST >> 4
-    mov word [current_lba], KERNEL_START_LBA
-    mov word [remaining_sectors], KERNEL_SECTORS
-    o32 call dword safe_load_remaining_sectors
+    ; Call C code
+    o32 call dword stage2_cmain
 
     ; Try enabling A20 using BIOS
     mov ax, 0x2401
     int 0x15
 
-    ; Call C code
-    o32 call dword cmain
+    ; Load the amount of lower memory
+    int 0x12
+    movzx eax, ax
+    mov [mboot_info + 4], eax
 
-    ; Go to protected mode
-    jmp start_pmode
+    ; Load the amount of upper memory
+    mov ah, 0x88
+    int 0x15
+    jc .skip_upper_mem
+    movzx eax, ax
+    mov [mboot_info + 8], eax
+.skip_upper_mem:
 
-
-;
-; Start 32-bit protected mode and jump to the kernel
-;
-start_pmode:
+    ; Disable interrupts
     cli
 
+    ; Load GDT
     lgdt [gdt_pointer]
 
+    ; Enable protected mode
     mov eax, cr0
     or eax, 0x01
     mov cr0, eax
 
-    jmp dword 0x08:stage2_main_32
+    ; Jump to 32-bit code
+    jmp dword 0x08:.code32
 
 [bits 32]
 
-stage2_main_32:
+.code32:
+    ; Load 32-bit data segment selectors
     mov ax, 0x10
     mov ds, ax
     mov es, ax
@@ -423,11 +425,12 @@ stage2_main_32:
     mov ss, ax
     mov esp, 0xfff0;
 
+    ; Save pointer to mboot info and jump to the kernel
     mov ebx, mboot_info
-
     jmp 0x08:KERNEL_DEST
 
 [bits 16]
+
 
 ;
 ; Check if a keystroke is waiting
@@ -520,34 +523,18 @@ print_ushort:
 
 
 ;
-; Load the amount of lower memory in KB (int 0x12)
+; Load kernel to memory
 ;
 
-load_lower_mem:
+global load_kernel:function
+load_kernel:
     pushad
 
-    int 0x12
-    movzx eax, ax
-    mov [mboot_info + 4], eax
+    mov word [current_dest_seg], KERNEL_DEST >> 4
+    mov word [current_lba], KERNEL_START_LBA
+    mov word [remaining_sectors], KERNEL_SECTORS
+    o32 call dword safe_load_remaining_sectors
 
-    popad
-    o32 ret
-
-
-;
-; Load the amount of upper memory in KB (int 0x15, ah=0x88)
-;
-
-load_upper_mem:
-    pushad
-
-    mov ah, 0x88
-    int 0x15
-    jc .done
-    movzx eax, ax
-    mov [mboot_info + 8], eax
-
-.done:
     popad
     o32 ret
 
@@ -556,6 +543,7 @@ load_upper_mem:
 ; Multiboot info
 ;
 
+global mboot_info:data
 mboot_info:
     dd 0x205                ; flags (mem | cmdline | bootloader)
     dd 0                    ; mem_lower
@@ -574,6 +562,7 @@ mboot_loader_name:  db `GentleBoot\0`
 ;
 
 align 16
+global gdt:data
 gdt:
     ; Null segment
     dw 0x00       ; segment limit[15:0]

@@ -12,9 +12,11 @@ extern int get_key(void);
 extern void print_char(char);
 extern void print_str(const char *);
 extern void print_ushort(uint16_t);
+extern void load_kernel(void);
 
 void
-cmain(void)
+stage2_cmain(void)
 {
-    print_char('C');
+    print_str("\r\nLoading GentleOS");
+    load_kernel();
 }
