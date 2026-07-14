@@ -104,8 +104,8 @@ get_min_word:
 ; Print a single character
 ;
 
-global putc:function
-putc:
+global print_char:function
+print_char:
     push ebp
     mov ebp, esp
     pushad
@@ -261,14 +261,14 @@ safe_load_sectors:
     jnz .retry
 
     push dword 'E'
-    o32 call dword putc
+    o32 call dword print_char
     add esp, 4
 
     jmp halt
 
 .success:
     push dword '.'
-    o32 call dword putc
+    o32 call dword print_char
     add esp, 4
 
     pop ebx
@@ -369,7 +369,7 @@ dw 0b10101010_01010101
 
 stage2_main:
     push dword '.'
-    o32 call dword putc
+    o32 call dword print_char
     add esp, 4
 
     ; Load memory stats
@@ -423,6 +423,95 @@ stage2_main_32:
     jmp 0x08:KERNEL_DEST
 
 [bits 16]
+
+;
+; Check if a keystroke is waiting
+;
+
+global has_key:function
+has_key:
+    mov ah, 0x01
+    int 0x16
+    setnz al
+    movzx eax, al
+    o32 ret
+
+
+;
+; Wait for a keystroke and return ASCII code
+;
+
+global get_key:function
+get_key:
+    xor ah, ah
+    int 0x16
+    movzx eax, al
+    o32 ret
+
+
+;
+; Print a null-terminated string
+;
+
+global print_str:function
+print_str:
+    push ebp
+    mov ebp, esp
+    pushad
+
+    mov esi, [ebp + 8]
+
+.loop:
+    lodsb
+    test al, al
+    jz .done
+
+    mov ah, 0x0e
+    xor bx, bx
+    int 0x10
+
+    jmp .loop
+
+.done:
+    popad
+    pop ebp
+    o32 ret
+
+
+;
+; Print an unsigned 16-bit integer in decimal
+;
+
+global print_ushort:function
+print_ushort:
+    push ebp
+    mov ebp, esp
+    pushad
+
+    ; Push digits in reverse order, save count in CX
+    mov eax, [ebp + 8]
+    mov bx, 10
+    xor cx, cx
+.divide:
+    xor dx, dx
+    div bx
+    push dx
+    inc cx
+    test ax, ax
+    jnz .divide
+
+    ; Pop digits and print
+.print:
+    pop ax
+    add al, '0'
+    mov ah, 0x0e
+    xor bx, bx
+    int 0x10
+    loop .print
+
+    popad
+    pop ebp
+    o32 ret
 
 
 ;

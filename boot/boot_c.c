@@ -5,10 +5,16 @@
  * File: boot_c.c - Combined 2-stage bootloader, C parts
  */
 
-extern void putc(char);
+#include <stdint.h>
+
+extern int has_key(void);
+extern int get_key(void);
+extern void print_char(char);
+extern void print_str(const char *);
+extern void print_ushort(uint16_t);
 
 void
 cmain(void)
 {
-    putc('C');
+    print_char('C');
 }
