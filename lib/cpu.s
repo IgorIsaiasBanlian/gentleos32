@@ -84,3 +84,31 @@ outw:
     mov esp, ebp
     pop ebp
     ret
+
+global cpu_rep_movsd:function
+cpu_rep_movsd:
+    push esi
+    push edi
+
+    mov edi, [esp + 12]
+    mov esi, [esp + 16]
+    mov ecx, [esp + 20]
+    cld
+    rep movsd
+
+    pop edi
+    pop esi
+    ret
+
+global cpu_rep_stosd:function
+cpu_rep_stosd:
+    push edi
+
+    mov edi, [esp + 8]
+    mov eax, [esp + 12]
+    mov ecx, [esp + 16]
+    cld
+    rep stosd
+
+    pop edi
+    ret

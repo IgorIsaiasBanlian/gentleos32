@@ -10,22 +10,29 @@
 global void *
 memcpy(void *dest, const void *src, size_t n)
 {
-    uint8_t *srcb = (uint8_t *)src;
-    uint8_t *destb = (uint8_t *)dest;
+    uint8_t *srcb, *destb;
+    uint32_t *srcd, *destd;
+    size_t nd;
+
+    srcb = (uint8_t *)src;
+    destb = (uint8_t *)dest;
 
     for (; n > 0 && ((uintptr_t)destb % 4) != 0; --n) {
         *(destb++) = *(srcb++);
     }
 
-    uint32_t *srcq = (uint32_t *)srcb;
-    uint32_t *destq = (uint32_t *)destb;
+    srcd = (uint32_t *)srcb;
+    destd = (uint32_t *)destb;
+    nd = n / sizeof(*destd);
 
-    for (; n >= sizeof(*destq); n -= sizeof(*destq)) {
-        *(destq++) = *(srcq++);
-    }
+    cpu_rep_movsd(destd, srcd, nd);
+    srcd += nd;
+    destd += nd;
+    n -= nd * sizeof(*destd);
 
-    srcb = (uint8_t *)srcq;
-    destb = (uint8_t *)destq;
+    srcb = (uint8_t *)srcd;
+    destb = (uint8_t *)destd;
+
     for (; n > 0; --n) {
         *(destb++) = *(srcb++);
     }
@@ -36,23 +43,30 @@ memcpy(void *dest, const void *src, size_t n)
 global void *
 memset(void *dest, int c, size_t n)
 {
-    uint8_t *dest8 = (uint8_t *)dest;
-    uint8_t c8 = (unsigned char)c;
+    uint8_t cb;
+    uint8_t *destb;
+    uint32_t cd;
+    uint32_t *destd;
+    size_t nd;
 
-    for (; n > 0 && ((uintptr_t)dest8 % 4) != 0; --n) {
-        *(dest8++) = c8;
+    destb = (uint8_t *)dest;
+    cb = (unsigned char)c;
+
+    for (; n > 0 && ((uintptr_t)destb % 4) != 0; --n) {
+        *(destb++) = cb;
     }
 
-    uint32_t *dest32 = (uint32_t *)dest8;
-    uint32_t c32 = c8 | (c8 << 8) | (c8 << 16) | (c8 << 24);
+    destd = (uint32_t *)destb;
+    cd = cb | (cb << 8) | (cb << 16) | (cb << 24);
+    nd = n / sizeof(*destd);
 
-    for (; n >= sizeof(*dest32); n -= sizeof(*dest32)) {
-        *(dest32++) = c32;
-    }
+    cpu_rep_stosd(destd, cd, nd);
+    destd += nd;
+    n -= nd * sizeof(*destd);
 
-    dest8 = (uint8_t *)dest32;
+    destb = (uint8_t *)destd;
     for (; n > 0; --n) {
-        *(dest8++) = c8;
+        *(destb++) = cb;
     }
 
     return dest;
