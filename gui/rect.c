@@ -13,6 +13,22 @@ gui_rect_is_empty(rect_st r)
     return r.width <= 0 || r.height <= 0;
 }
 
+global int
+gui_rect_area(rect_st r)
+{
+    return r.width * r.height;
+}
+
+global int
+gui_rect_touches(rect_st a, rect_st b)
+{
+    return 1
+        && (a.x <= b.x + b.width)
+        && (b.x <= a.x + a.width)
+        && (a.y <= b.y + b.height)
+        && (b.y <= a.y + a.height);
+}
+
 global rect_st
 gui_rect_make(int x, int y, int width, int height)
 {

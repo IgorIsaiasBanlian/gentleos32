@@ -71,6 +71,8 @@ extern void gui_pointer_move(uint16_t x, uint16_t y);
 extern void gui_pointer_init(void);
 /* gui/rect.c */
 extern int gui_rect_is_empty(rect_st r);
+extern int gui_rect_area(rect_st r);
+extern int gui_rect_touches(rect_st a, rect_st b);
 extern rect_st gui_rect_make(int x, int y, int width, int height);
 extern rect_st gui_rect_translate(rect_st r, point_st v);
 extern rect_st gui_rect_translate_back(rect_st r, point_st v);

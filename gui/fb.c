@@ -12,7 +12,12 @@ global surface_st *gui_fb_vram_surface = &_gui_fb_vram_surface;
 static surface_st gui_fb_surface;
 global rect_st gui_fb_screen_rect = { 0 };
 
-static rect_st dirty_rect = { 0 };
+enum {
+    DIRTY_RECTS_MAX = 8,
+};
+
+static rect_st dirty_rects[DIRTY_RECTS_MAX];
+static int dirty_rects_count = 0;
 
 global void
 gui_fb_draw_start(void)
@@ -27,7 +32,52 @@ gui_fb_draw_end(void)
 global void
 gui_fb_mark_dirty(rect_st rect)
 {
-    dirty_rect = gui_rect_clip(gui_rect_enclose(dirty_rect, rect), gui_fb_screen_rect);
+    int i, absorbed, growth, min_growth, min_growth_idx;
+
+    rect = gui_rect_clip(rect, gui_fb_screen_rect);
+
+    if (gui_rect_is_empty(rect)) {
+        return;
+    }
+
+    while (1) {
+        /* Keep absorbing existing slots that the rect touches */
+        do {
+            absorbed = 0;
+
+            for (i = 0; i < dirty_rects_count; ++i) {
+                if (gui_rect_touches(rect, dirty_rects[i])) {
+                    rect = gui_rect_enclose(rect, dirty_rects[i]);
+                    dirty_rects[i] = dirty_rects[--dirty_rects_count];
+                    absorbed = 1;
+                }
+            }
+        } while (absorbed);
+
+        /* Break if there is an empty slot to use */
+        if (dirty_rects_count < DIRTY_RECTS_MAX) {
+            break;
+        }
+
+        /* Otherwise find slot that will cause minimal growth when absorbed */
+        min_growth_idx = 0;
+        min_growth = 0;
+        for (i = 0; i < dirty_rects_count; ++i) {
+            growth = gui_rect_area(gui_rect_enclose(dirty_rects[i], rect))
+                - gui_rect_area(dirty_rects[i]);
+
+            if (i == 0 || growth < min_growth) {
+                min_growth_idx = i;
+                min_growth = growth;
+            }
+        }
+
+        /* Absorb it and repeat the process in case the new rect touches existing ones */
+        rect = gui_rect_enclose(rect, dirty_rects[min_growth_idx]);
+        dirty_rects[min_growth_idx] = dirty_rects[--dirty_rects_count];
+    }
+
+    dirty_rects[dirty_rects_count++] = rect;
 }
 
 global void
@@ -115,19 +165,26 @@ gui_fb_draw_outline(rect_st rect)
 global void
 gui_fb_flush(void)
 {
-    if (gui_rect_is_empty(dirty_rect)) {
+    rect_st rects[DIRTY_RECTS_MAX];
+    int count = dirty_rects_count;
+
+    if (count == 0) {
         return;
     }
 
     gui_drag_clear_outline();
 
-    rect_st rect = dirty_rect;
-    dirty_rect = (rect_st) { 0 };
+    /* Reset the list before flushing - gui_status_set_alert() may re-enter */
+    memcpy(rects, dirty_rects, count * sizeof(rects[0]));
+    dirty_rects_count = 0;
 
-    if (krn_system_info.fb_planar) {
-        gui_planar_flush(rect);
-    } else {
-        gui_surface_copy(gui_fb_vram_surface, rect.x, rect.y, &gui_fb_surface, rect);
+    for (int i = 0; i < count; ++i) {
+        if (krn_system_info.fb_planar) {
+            gui_planar_flush(rects[i]);
+        } else {
+            gui_surface_copy(gui_fb_vram_surface, rects[i].x, rects[i].y,
+                &gui_fb_surface, rects[i]);
+        }
     }
 
     gui_pointer_draw();
