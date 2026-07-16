@@ -396,6 +396,7 @@ stage2_main:
     mov [mboot_info + 4], eax
 
     ; Load the amount of upper memory
+    clc
     mov ah, 0x88
     int 0x15
     jc .skip_upper_mem
