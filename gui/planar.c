@@ -87,48 +87,59 @@ gui_planar_draw_rect(rect_st rect, uint8_t color)
 global void
 gui_planar_draw_pattern_abs(rect_st dst_rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
-    int pat_w = pattern->size.width;
-    int pat_h = pattern->size.height;
+    int plane, y, l_x, r_x, l_byte, r_byte, byte;
+    int pat_h, pat_bytes, pat_byte;
+    uint8_t mask, l_mask, r_mask, c1_mask, c2_mask;
+    uint8_t *dst_plane, *dst_row, val;
+    const uint8_t *pat_row;
 
-    uint8_t tile_pixels[pat_h * pat_w];
+    /* Pattern bytes must align with plane bytes */
+    ASSERT(pattern->size.width % 8 == 0);
 
-    surface_st tile = {
-        .size = pattern->size,
-        .pitch = pat_w,
-        .pixels = tile_pixels,
-    };
+    l_x = dst_rect.x;
+    r_x = dst_rect.x + dst_rect.width - 1;
 
-    for (int row = 0; row < pat_h; ++row) {
-        for (int col = 0; col < pat_w; ++col) {
-            int byte_no = row * pattern->pitch + col / 8;
-            int bit_no = 7 - (col % 8);
-            int bit = (pattern->pixels[byte_no] >> bit_no) & 1;
-            tile_pixels[row * pat_w + col] = bit ? c1 : c2;
-        }
+    if (r_x < l_x) {
+        return;
     }
 
-    int ofs_x = dst_rect.x % pat_w;
-    int ofs_y = dst_rect.y % pat_h;
+    l_byte = l_x / 8;
+    r_byte = r_x / 8;
 
-    rect_st src_rect;
+    l_mask = 0xFF >> (l_x & 7);
+    r_mask = 0xFF << (7 - (r_x & 7));
 
-    for (int y = dst_rect.y; y < dst_rect.y + dst_rect.height; y += src_rect.height) {
-        src_rect.y = (y - dst_rect.y + ofs_y) % pat_h;
+    pat_bytes = pattern->size.width / 8;
+    pat_h = pattern->size.height;
 
-        src_rect.height = pat_h - src_rect.y;
-        if (src_rect.height + y > dst_rect.y + dst_rect.height) {
-            src_rect.height = dst_rect.y + dst_rect.height - y;
-        }
+    for (plane = 0; plane < 4; ++plane) {
+        c1_mask = ((c1 >> plane) & 1) ? 0xFF : 0x00;
+        c2_mask = ((c2 >> plane) & 1) ? 0xFF : 0x00;
+        dst_plane = gui_planar_pixels[plane];
 
-        for (int x = dst_rect.x; x < dst_rect.x + dst_rect.width; x += src_rect.width) {
-            src_rect.x = (x - dst_rect.x + ofs_x) % pat_w;
+        for (y = dst_rect.y; y < dst_rect.y + dst_rect.height; ++y) {
+            pat_row = pattern->pixels + (y % pat_h) * pattern->pitch;
+            dst_row = dst_plane + y * FB_PITCH;
 
-            src_rect.width = pat_w - src_rect.x;
-            if (x + src_rect.width > dst_rect.x + dst_rect.width) {
-                src_rect.width = dst_rect.x + dst_rect.width - x;
+            pat_byte = l_byte % pat_bytes;
+            val = (pat_row[pat_byte] & c1_mask) | (~pat_row[pat_byte] & c2_mask);
+            if (l_byte == r_byte) {
+                mask = l_mask & r_mask;
+                dst_row[l_byte] = (dst_row[l_byte] & ~mask) | (val & mask);
+                continue;
+            }
+            dst_row[l_byte] = (dst_row[l_byte] & ~l_mask) | (val & l_mask);
+
+            for (byte = l_byte + 1; byte < r_byte; ++byte) {
+                /* Avoid modulo in the hot path */
+                pat_byte = (pat_byte + 1 == pat_bytes) ? 0 : (pat_byte + 1);
+                val = (pat_row[pat_byte] & c1_mask) | (~pat_row[pat_byte] & c2_mask);
+                dst_row[byte] = val;
             }
 
-            gui_planar_draw_surface(x, y, &tile, src_rect);
+            pat_byte = r_byte % pat_bytes;
+            val = (pat_row[pat_byte] & c1_mask) | (~pat_row[pat_byte] & c2_mask);
+            dst_row[r_byte] = (dst_row[r_byte] & ~r_mask) | (val & r_mask);
         }
     }
 }
