@@ -191,8 +191,12 @@ gui_wm_render_window_region(window_st *window, rect_st window_reg)
 {
     rect_st desktop_reg;
 
-    if (!window->visible) {
+    if (!window->visible || gui_rect_is_empty(window_reg)) {
         return;
+    }
+
+    if (krn_system_info.fb_planar) {
+        window_reg = gui_rect_snap_window_reg(window_reg);
     }
 
     desktop_reg = gui_rect_translate(window_reg, window->rect.pos);

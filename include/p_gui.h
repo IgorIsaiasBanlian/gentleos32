@@ -77,6 +77,8 @@ extern rect_st gui_rect_translate_back(rect_st r, point_st v);
 extern int gui_rect_contains_point(rect_st r, point_st p);
 extern rect_st gui_rect_center(rect_st r, rect_st container);
 extern rect_st gui_rect_limit(rect_st r, rect_st container);
+extern rect_st gui_rect_snap_window_pos(rect_st r);
+extern rect_st gui_rect_snap_window_reg(rect_st r);
 extern rect_st gui_rect_shrink(rect_st r, int amount);
 extern rect_st gui_rect_enclose(rect_st a, rect_st b);
 extern rect_st gui_rect_clip(rect_st r, rect_st clipper);

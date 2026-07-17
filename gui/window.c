@@ -29,7 +29,9 @@ gui_window_init_frame(window_st *window, widget_st *title_bar, widget_st *close_
     };
     window->rect = gui_rect_center(window->rect, gui_wm_container);
 
-    // gui_window_draw_frame(window);
+    if (krn_system_info.fb_planar) {
+        window->rect = gui_rect_snap_window_pos(window->rect);
+    }
 
     gui_title_bar_init(title_bar, window);
     gui_window_add_widget(window, title_bar);

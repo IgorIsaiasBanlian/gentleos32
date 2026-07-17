@@ -80,6 +80,35 @@ gui_rect_limit(rect_st r, rect_st container)
     return r;
 }
 
+/* Snap window position to 8px grid */
+global rect_st
+gui_rect_snap_window_pos(rect_st r)
+{
+    r.x &= ~7;
+    r.y &= ~7;
+    return r;
+}
+
+/*
+ * Expand rendered window region horizontally to 8px grid, for improved
+ * rendering performance in planar mode. This makes sense only if window
+ * position is also snapped to 8px. Note, the new region may exceed window
+ * area, it's assumed to be clipped later.
+ */
+global rect_st
+gui_rect_snap_window_reg(rect_st r)
+{
+    int lx, rx;
+
+    lx = r.x & ~7;
+    rx = (r.x + r.width + 7) & ~7;
+
+    r.x = lx;
+    r.width = rx - lx;
+
+    return r;
+}
+
 global rect_st
 gui_rect_shrink(rect_st r, int amount)
 {

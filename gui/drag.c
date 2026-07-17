@@ -28,7 +28,13 @@ drag_target_rect(void)
     };
 
     rect_st r = gui_rect_translate(drag_origin_rect, dpos);
-    return gui_rect_limit(r, gui_wm_container);
+    r = gui_rect_limit(r, gui_wm_container);
+
+    if (krn_system_info.fb_planar) {
+        r = gui_rect_snap_window_pos(r);
+    }
+
+    return r;
 }
 
 global void
