@@ -16,6 +16,13 @@ enum {
 
 static uint8_t (*gui_planar_pixels)[FB_PLANE_SIZE];
 
+/*
+ * Map of colors to their 4 planar bits.
+ * Store 256 values instead of 16 so it can be safely
+ * indexed by any byte value without error checking
+ */
+static uint32_t gui_planar_lut[256];
+
 global void
 gui_planar_flush(rect_st rect)
 {
@@ -152,85 +159,84 @@ gui_planar_draw_surface(int dst_x, int dst_y, surface_st *src, rect_st src_rect)
         int dst_row_ofs = (dst_y + row) * FB_PITCH;
 
         if (dst_l_byte == dst_r_byte) {
-            uint8_t p[4] = { 0, 0, 0, 0 };
             uint8_t dst_mask = dst_l_mask & dst_r_mask;
             int dst_ofs = dst_row_ofs + dst_l_byte;
+            uint32_t acc = 0;
 
             for (int bit = 0; bit < 8; ++bit) {
                 int src_x = dst_l_byte * 8 - dst_x + bit;
 
-                if (src_x >= 0 && src_x < src_rect.width) {
-                    uint8_t c = src_row[src_x];
-                    uint8_t s = 7 - bit;
+                acc <<= 1;
 
-                    p[0] |= ((c     ) & 1) << s;
-                    p[1] |= ((c >> 1) & 1) << s;
-                    p[2] |= ((c >> 2) & 1) << s;
-                    p[3] |= ((c >> 3) & 1) << s;
+                if (src_x >= 0 && src_x < src_rect.width) {
+                    acc |= gui_planar_lut[src_row[src_x]];
                 }
             }
 
             for (int i = 0; i < 4; ++i) {
-                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_mask) | p[i];
+                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_mask) | ((acc >> (i * 8)) & 0xFF);
             }
 
             continue;
         }
 
         if (dst_l_byte < dst_l_full_byte) {
-            uint8_t p[4] = { 0, 0, 0, 0 };
             int dst_ofs = dst_row_ofs + dst_l_byte;
+            uint32_t acc = 0;
 
-            for (int bit = dst_l_x & 7; bit < 8; ++bit) {
-                uint8_t c = src_row[dst_l_byte * 8 - dst_x + bit];
-                uint8_t s = 7 - bit;
+            for (int bit = 0; bit < 8; ++bit) {
+                int src_x = dst_l_byte * 8 - dst_x + bit;
 
-                p[0] |= ((c     ) & 1) << s;
-                p[1] |= ((c >> 1) & 1) << s;
-                p[2] |= ((c >> 2) & 1) << s;
-                p[3] |= ((c >> 3) & 1) << s;
+                acc <<= 1;
+
+                if (src_x >= 0) {
+                    acc |= gui_planar_lut[src_row[src_x]];
+                }
             }
 
             for (int i = 0; i < 4; ++i) {
-                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_l_mask) | p[i];
+                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_l_mask) | ((acc >> (i * 8)) & 0xFF);
             }
         }
 
         for (int x = dst_l_full_byte; x < dst_r_full_byte; ++x) {
-            uint8_t p[4] = { 0, 0, 0, 0 };
+            uint8_t *sp = src_row + (x * 8 - dst_x);
             int dst_ofs = dst_row_ofs + x;
+            uint32_t acc;
 
-            for (int bit = 0; bit < 8; ++bit) {
-                uint8_t c = src_row[x * 8 - dst_x + bit];
-                uint8_t s = 7 - bit;
+            /* Loops are unrolled for performance in this most busy section */
 
-                p[0] |= ((c     ) & 1) << s;
-                p[1] |= ((c >> 1) & 1) << s;
-                p[2] |= ((c >> 2) & 1) << s;
-                p[3] |= ((c >> 3) & 1) << s;
-            }
+            acc = gui_planar_lut[sp[0]];
+            acc = (acc << 1) | gui_planar_lut[sp[1]];
+            acc = (acc << 1) | gui_planar_lut[sp[2]];
+            acc = (acc << 1) | gui_planar_lut[sp[3]];
+            acc = (acc << 1) | gui_planar_lut[sp[4]];
+            acc = (acc << 1) | gui_planar_lut[sp[5]];
+            acc = (acc << 1) | gui_planar_lut[sp[6]];
+            acc = (acc << 1) | gui_planar_lut[sp[7]];
 
-            for (int i = 0; i < 4; ++i) {
-                dst[i][dst_ofs] = p[i];
-            }
+            dst[0][dst_ofs] = acc & 0xFF;
+            dst[1][dst_ofs] = (acc >> 8) & 0xFF;
+            dst[2][dst_ofs] = (acc >> 16) & 0xFF;
+            dst[3][dst_ofs] = acc >> 24;
         }
 
         if (dst_r_byte >= dst_r_full_byte) {
-            uint8_t p[4] = { 0, 0, 0, 0 };
             int dst_ofs = dst_row_ofs + dst_r_byte;
+            uint32_t acc = 0;
 
-            for (int bit = 0; bit <= (dst_r_x & 7); ++bit) {
-                uint8_t c = src_row[dst_r_byte * 8 - dst_x + bit];
-                uint8_t s = 7 - bit;
+            for (int bit = 0; bit < 8; ++bit) {
+                int src_x = dst_r_byte * 8 - dst_x + bit;
 
-                p[0] |= ((c     ) & 1) << s;
-                p[1] |= ((c >> 1) & 1) << s;
-                p[2] |= ((c >> 2) & 1) << s;
-                p[3] |= ((c >> 3) & 1) << s;
+                acc <<= 1;
+
+                if (src_x < src_rect.width) {
+                    acc |= gui_planar_lut[src_row[src_x]];
+                }
             }
 
             for (int i = 0; i < 4; ++i) {
-                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_r_mask) | p[i];
+                dst[i][dst_ofs] = (dst[i][dst_ofs] & ~dst_r_mask) | ((acc >> (i * 8)) & 0xFF);
             }
         }
     }
@@ -390,7 +396,19 @@ gui_planar_xor_corners(rect_st rect)
 global void
 gui_planar_init(void)
 {
-    if (krn_system_info.fb_planar) {
-        gui_planar_pixels = heap_alloc(4 * FB_PLANE_SIZE, "planar pixels", 1);
+    int c;
+
+    if (!krn_system_info.fb_planar) {
+        return;
+    }
+
+    gui_planar_pixels = heap_alloc(4 * FB_PLANE_SIZE, "Planar pixels", 1);
+
+    for (c = 0; c < 256; ++c) {
+        gui_planar_lut[c] = 0
+            | (((c >> 0) & 1) << 0)
+            | (((c >> 1) & 1) << 8)
+            | (((c >> 2) & 1) << 16)
+            | (((c >> 3) & 1) << 24);
     }
 }
