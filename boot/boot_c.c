@@ -201,8 +201,8 @@ show_uart_menu(void)
 static void
 show_boot_menu(void)
 {
-    show_uart_menu();
     show_vbe_menu();
+    show_uart_menu();
 }
 
 void
