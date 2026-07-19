@@ -133,6 +133,15 @@ krn_mem_init_heap(void)
 global void
 krn_mem_init(void)
 {
+    system_info_st *si = &krn_system_info;
+
+    /* TODO: Add support for proper detection if we don't get this info from multiboot */
+    if (!si->mem_fields_valid) {
+        si->mem_lower = 639;
+        si->mem_upper = 4096;
+        si->mem_fields_valid = 1;
+    }
+
     krn_mem_enable_a20();
     krn_mem_dump_system_regions();
     krn_mem_init_heap();
