@@ -151,6 +151,10 @@ krn_ps2_handle_intr(isr_stack_st *isr_stack _unsd)
 {
     uint8_t data = krn_ps2_read_data_with_timeout(0) >> 8;
 
+    if (krn_vmware_handle_mouse_intr()) {
+        return;
+    }
+
     krn_mouse_handle_ps2_data(data);
 }
 

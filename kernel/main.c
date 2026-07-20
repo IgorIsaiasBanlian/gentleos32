@@ -26,6 +26,7 @@ krn_main(void)
     krn_mouse_init();
     krn_keyboard_init();
     krn_ps2_init();
+    krn_vmware_init();
 
     gui_main();
 

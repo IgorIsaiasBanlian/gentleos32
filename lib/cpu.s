@@ -112,3 +112,29 @@ cpu_rep_stosd:
 
     pop edi
     ret
+
+global cpu_vmware_call:function
+cpu_vmware_call:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push esi
+
+    mov esi, [ebp + 8]
+    mov eax, [esi]
+    mov ebx, [esi + 4]
+    mov ecx, [esi + 8]
+    mov edx, [esi + 12]
+
+    in eax, dx
+
+    mov [esi], eax
+    mov [esi + 4], ebx
+    mov [esi + 8], ecx
+    mov [esi + 12], edx
+
+    pop esi
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret

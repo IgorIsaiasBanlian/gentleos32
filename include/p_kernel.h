@@ -28,6 +28,7 @@ extern void krn_mboot_init(void);
 extern int krn_mem_check_a20(void);
 extern void krn_mem_init(void);
 /* kernel/mouse.c */
+extern void krn_mouse_handle_abs_packet(int x, int y, int btn_left, int btn_right);
 extern void krn_mouse_handle_uart_data(uint8_t data);
 extern void krn_mouse_handle_ps2_data(uint8_t data);
 extern void krn_mouse_init(void);
@@ -62,3 +63,6 @@ extern void krn_uart_init(void);
 /* kernel/vga.c */
 extern void krn_vga_set_color(int index, uint32_t rgb);
 extern void krn_vga_init(void);
+/* kernel/vmware.c */
+extern int krn_vmware_handle_mouse_intr(void);
+extern void krn_vmware_init(void);

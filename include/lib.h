@@ -162,6 +162,13 @@ enum {
 };
 
 /* lib/cpu.s */
+typedef struct {
+    uint32_t eax;
+    uint32_t ebx;
+    uint32_t ecx;
+    uint32_t edx;
+} vmware_regs_st;
+
 void cpu_lidt(void *ptr);
 uint32_t cpu_get_eflags(void);
 void cpu_set_eflags(uint32_t eflags);
@@ -175,6 +182,7 @@ int cpu_has_cpuid(void);
 void cpu_cpuid(uint32_t eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx);
 void cpu_rep_movsd(uint32_t *dest, const uint32_t *src, size_t count);
 void cpu_rep_stosd(uint32_t *dest, uint32_t value, size_t count);
+void cpu_vmware_call(vmware_regs_st *regs);
 
 #include "p_lib.h"
 

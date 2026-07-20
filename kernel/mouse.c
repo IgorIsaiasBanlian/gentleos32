@@ -14,24 +14,18 @@ static struct {
     uint16_t btn_right;
 } mouse_state = { 0 };
 
-static void
-krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
+global void
+krn_mouse_handle_abs_packet(int x, int y, int btn_left, int btn_right)
 {
     system_info_st *si = &krn_system_info;
 
-    int32_t current_x = mouse_state.x + dx;
-    int32_t current_y = mouse_state.y - dy;
-
-    current_x = MIN(current_x, si->fb_width);
-    current_x = MAX(current_x, 0);
-
-    current_y = MIN(current_y, si->fb_height);
-    current_y = MAX(current_y, 0);
+    x = MAX(MIN(x, si->fb_width - 1), 0);
+    y = MAX(MIN(y, si->fb_height - 1), 0);
 
     event_st event = {
         .type = EVENT_POINTER_MOVE,
-        .pointer_x = current_x,
-        .pointer_y = current_y,
+        .pointer_x = x,
+        .pointer_y = y,
     };
 
     if (btn_left && !mouse_state.btn_left) {
@@ -50,12 +44,18 @@ krn_mouse_handle_packet(int dx, int dy, int btn_left, int btn_right)
         return;
     }
 
-    mouse_state.x = current_x;
-    mouse_state.y = current_y;
+    mouse_state.x = x;
+    mouse_state.y = y;
     mouse_state.btn_left = btn_left;
     mouse_state.btn_right = btn_right;
 
     (void)krn_event_ipush(event);
+}
+
+static void
+krn_mouse_handle_rel_packet(int dx, int dy, int btn_left, int btn_right)
+{
+    krn_mouse_handle_abs_packet(mouse_state.x + dx, mouse_state.y - dy, btn_left, btn_right);
 }
 
 global void
@@ -84,7 +84,7 @@ krn_mouse_handle_uart_data(uint8_t data)
     uint8_t btn_left = p[0] & 0x20 ? 1 : 0;
     uint8_t btn_right = p[0] & 0x10 ? 1 : 0;
 
-    krn_mouse_handle_packet(dx, dy, btn_left, btn_right);
+    krn_mouse_handle_rel_packet(dx, dy, btn_left, btn_right);
 }
 
 global void
@@ -117,7 +117,7 @@ krn_mouse_handle_ps2_data(uint8_t data)
     btn_left = p[0] & 0x01 ? 1 : 0;
     btn_right = p[0] & 0x02 ? 1 : 0;
 
-    krn_mouse_handle_packet(dx, dy, btn_left, btn_right);
+    krn_mouse_handle_rel_packet(dx, dy, btn_left, btn_right);
 }
 
 global void
