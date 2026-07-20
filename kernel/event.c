@@ -63,12 +63,13 @@ global int
 krn_event_ipush(event_st event)
 {
     uint16_t next_head = (krn_event_queue.head + 1) % EVENT_QUEUE_SIZE;
+    uint16_t last_head = (krn_event_queue.head + EVENT_QUEUE_SIZE - 1) % EVENT_QUEUE_SIZE;
 
     if (event.type == EVENT_TIMER_TICK &&
         krn_event_queue.head != krn_event_queue.tail &&
-        krn_event_queue.events[krn_event_queue.head].type == EVENT_TIMER_TICK) {
+        krn_event_queue.events[last_head].type == EVENT_TIMER_TICK) {
 
-        krn_event_queue.events[krn_event_queue.head].timer_msecs = event.timer_msecs;
+        krn_event_queue.events[last_head].timer_msecs = event.timer_msecs;
 
         if (EVENT_QUEUE_DEBUG) {
             krn_debug_printf("%s: squashed %s\n", krn_event_format_queue(),
@@ -80,10 +81,10 @@ krn_event_ipush(event_st event)
 
     if (event.type == EVENT_POINTER_MOVE &&
         krn_event_queue.head != krn_event_queue.tail &&
-        krn_event_queue.events[krn_event_queue.head].type == EVENT_POINTER_MOVE) {
+        krn_event_queue.events[last_head].type == EVENT_POINTER_MOVE) {
 
-        krn_event_queue.events[krn_event_queue.head].pointer_x = event.pointer_x;
-        krn_event_queue.events[krn_event_queue.head].pointer_y = event.pointer_y;
+        krn_event_queue.events[last_head].pointer_x = event.pointer_x;
+        krn_event_queue.events[last_head].pointer_y = event.pointer_y;
 
         if (EVENT_QUEUE_DEBUG) {
             krn_debug_printf("%s: squashed %s\n", krn_event_format_queue(),
