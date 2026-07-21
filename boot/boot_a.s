@@ -14,9 +14,6 @@ STAGE2_SECTORS      equ 4
 
 KERNEL_DEST         equ 0x10000
 KERNEL_START_LBA    equ 6
-%ifndef KERNEL_SECTORS
-%define KERNEL_SECTORS 256
-%endif
 
 extern stage2_cmain
 
@@ -369,6 +366,14 @@ mbr_designator:
 
 
 ;
+; Number of kernel sectors, filled in by mkdisk.pl
+;
+
+global kernel_sectors:data
+kernel_sectors: dw 0
+
+
+;
 ; Stage 2 main function
 ;
 
@@ -594,7 +599,8 @@ load_kernel:
 
     mov word [current_dest_seg], KERNEL_DEST >> 4
     mov word [current_lba], KERNEL_START_LBA
-    mov word [remaining_sectors], KERNEL_SECTORS
+    mov ax, [kernel_sectors]
+    mov [remaining_sectors], ax
     o32 call dword safe_load_remaining_sectors
 
     popad

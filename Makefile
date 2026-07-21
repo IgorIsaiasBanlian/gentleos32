@@ -69,8 +69,7 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
 	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
-	dd if=$(BOOT_BIN) of=$(DISK_IMAGE) bs=512 count=1
-	cat $(BOOT_BIN) $(KERNEL_LOMEM_BIN) >> $(DISK_IMAGE)
+	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(DISK_IMAGE)
 
 clean:
 	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(GRUB_IMAGE)
@@ -106,9 +105,6 @@ $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(KERNEL_ASFLAGS) -f elf32 $< -o $@
-
-$(BUILDDIR)/boot/boot_a.o: boot/boot_a.s $(KERNEL_LOMEM_BIN) | $(OBJDIRS)
-	$(NASM) -f elf32 -o $@ $< -DKERNEL_SECTORS=$(shell ./tools/sectors.pl $(KERNEL_LOMEM_BIN))
 
 $(BUILDDIR)/boot/boot_c.o: boot/boot_c.c | $(OBJDIRS) $(CONFIG_H)
 	$(CC) $(BOOT_CFLAGS) -MMD -MP -c $< -o $@
