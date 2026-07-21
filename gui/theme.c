@@ -63,7 +63,7 @@ gui_theme_set(int theme)
         gui_theme.title_sel_fg = gui_theme.widget_sel_fg;
         gui_theme.alert_fg = 0x04;
         gui_theme.border = gui_theme.widget_fg;
-        gui_theme.desktop = 0x03;
+        gui_theme.desktop = 0x09;
         gui_theme.desktop_alt = 0x01;
         gui_theme.desktop_pattern = NULL;
         gui_theme.card_front_bg = 0x0f;
