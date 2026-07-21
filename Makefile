@@ -11,8 +11,8 @@ KERNEL_HIMEM_BIN    := gentleos.bin
 KERNEL_LOMEM_ELF    := $(BUILDDIR)/kernel-lomem.elf
 KERNEL_LOMEM_BIN    := $(BUILDDIR)/kernel-lomem.bin
 
-FLOPPY_IMAGE    := gentleos32-floppy.img
 DISK_IMAGE      := gentleos32-disk.img
+GRUB_IMAGE      := gentleos32-grub.img
 DISK_FS_OFFSET  := 1048576
 
 CONFIG_H        := $(BASEDIR)/config.h
@@ -64,21 +64,16 @@ all: disks
 	./tools/chkcfg.pl
 
 disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
-	zcat $(BASEDIR)/misc/empty-disk.img > $(DISK_IMAGE)
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_HIMEM_BIN) ::
-	mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
-	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(DISK_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
+	zcat $(BASEDIR)/misc/empty-disk.img > $(GRUB_IMAGE)
+	mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_HIMEM_BIN) ::
+	mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
+	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
 
-	cp $(BASEDIR)/misc/grub-floppy.img $(FLOPPY_IMAGE)
-	mcopy -D o -i $(FLOPPY_IMAGE) $(KERNEL_HIMEM_BIN) ::
-	mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.sample.lst ::boot/menu.lst
-	[ -f $(BASEDIR)/misc/menu.lst ] && mcopy -D o -i $(FLOPPY_IMAGE) $(BASEDIR)/misc/menu.lst ::boot/menu.lst || true
-
-	dd if=$(BOOT_BIN) of=gentleos32-lomem.img bs=512 count=1
-	cat $(BOOT_BIN) $(KERNEL_LOMEM_BIN) >> gentleos32-lomem.img
+	dd if=$(BOOT_BIN) of=$(DISK_IMAGE) bs=512 count=1
+	cat $(BOOT_BIN) $(KERNEL_LOMEM_BIN) >> $(DISK_IMAGE)
 
 clean:
-	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(FLOPPY_IMAGE)
+	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(GRUB_IMAGE)
 
 $(OBJDIRS):
 	@mkdir -p $@
