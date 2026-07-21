@@ -5,7 +5,7 @@ set -e
 BUILD_DIR="./build"
 MOUNT_DIR="./tmp/mnt"
 LOOP_DEVICE="/dev/loop20"
-EMPTY_DISK_IMAGE="./misc/empty-disk.img"
+EMPTY_DISK_IMAGE="./misc/grub-disk.img"
 
 # Clean up
 mkdir -p "$MOUNT_DIR"
