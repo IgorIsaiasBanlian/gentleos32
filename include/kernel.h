@@ -34,6 +34,11 @@ typedef struct {
 } __attribute__((packed)) initrd_entry_st;
 
 enum {
+    DEBUG_BUFFER_ROWS = 34,
+    DEBUG_BUFFER_COLS = 60,
+};
+
+enum {
     UART_COM1 = 0x3F8,
     UART_BASE = UART_COM1,
 

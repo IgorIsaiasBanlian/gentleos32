@@ -9,9 +9,70 @@
 
 global void (*krn_debug_status_cb)(const char *, ...) = (void (*)(const char *, ...))NULL;
 
+global char krn_debug_buffer[DEBUG_BUFFER_ROWS][DEBUG_BUFFER_COLS];
+global uint32_t krn_debug_buffer_gen = 0;
+static int krn_debug_buffer_row = 0;
+static int krn_debug_buffer_col = 0;
+
+static void
+krn_debug_buffer_scroll(void)
+{
+    int i;
+
+    for (i = 0; i < DEBUG_BUFFER_ROWS - 1; ++i) {
+        memcpy(krn_debug_buffer[i], krn_debug_buffer[i + 1], DEBUG_BUFFER_COLS);
+    }
+
+    memset(krn_debug_buffer[DEBUG_BUFFER_ROWS - 1], ' ', DEBUG_BUFFER_COLS);
+}
+
+static void
+krn_debug_buffer_newline(void)
+{
+    krn_debug_buffer_col = 0;
+    ++krn_debug_buffer_row;
+
+    if (krn_debug_buffer_row == DEBUG_BUFFER_ROWS) {
+        krn_debug_buffer_scroll();
+        krn_debug_buffer_row = DEBUG_BUFFER_ROWS - 1;
+    }
+}
+
+static void
+krn_debug_buffer_putc(char c)
+{
+    if (c == '\t') {
+        c = ' ';
+    }
+
+    if (c == '\n') {
+        krn_debug_buffer_newline();
+        return;
+    }
+
+    if (c == '\r') {
+        krn_debug_buffer_col = 0;
+        return;
+    }
+
+    if (c < 0x20) {
+        return;
+    }
+
+    krn_debug_buffer[krn_debug_buffer_row][krn_debug_buffer_col] = c;
+    krn_debug_buffer_col++;
+
+    if (krn_debug_buffer_col == DEBUG_BUFFER_COLS) {
+        krn_debug_buffer_newline();
+    }
+}
+
 global void
 krn_debug_putc(char c)
 {
+    krn_debug_buffer_putc(c);
+    ++krn_debug_buffer_gen;
+
     if (krn_system_info.uart_mode == UART_MODE_DEBUG) {
         krn_uart_write_data(c);
     } else {

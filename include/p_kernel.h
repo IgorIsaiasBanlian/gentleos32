@@ -1,5 +1,7 @@
 /* kernel/debug.c */
 extern void (*krn_debug_status_cb)(const char *, ...);
+extern char krn_debug_buffer[DEBUG_BUFFER_ROWS][DEBUG_BUFFER_COLS];
+extern uint32_t krn_debug_buffer_gen;
 extern void krn_debug_putc(char c);
 extern void krn_debug_printf(const char *fmt, ...);
 extern void krn_debug_assert(int expr, const char *file, unsigned line);
