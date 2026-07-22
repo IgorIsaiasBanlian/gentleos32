@@ -97,6 +97,11 @@ gui_handle_key(event_st event)
         return 1;
     }
 
+    if (key_code == KEY_D) {
+        gui_launch_app(&app_logview);
+        return 1;
+    }
+
     if (key_code == KEY_S) {
         ok = krn_uart_set_mode(UART_MODE_MOUSE);
         gui_status_set(ok ? "Serial mouse activated" : "Serial port unavailable");
