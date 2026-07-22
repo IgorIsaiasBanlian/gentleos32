@@ -41,8 +41,9 @@ extern void krn_ps2_reboot(void);
 extern void krn_ps2_enable_a20(void);
 extern void krn_ps2_init(void);
 /* kernel/rtc.c */
-extern int krn_rtc_are_times_equal(time_st *t1, time_st *t2);
-extern void krn_rtc_get_time(time_st *t);
+extern int krn_rtc_get_time(time_st *t);
+extern void krn_rtc_set_time(time_st *t);
+extern void krn_rtc_init(void);
 /* kernel/speaker.c */
 extern void krn_speaker_stop(void);
 extern void krn_speaker_play(unsigned hz);

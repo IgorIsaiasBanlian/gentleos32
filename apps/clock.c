@@ -71,9 +71,9 @@ draw_time(void)
 {
     app_state_st *a = app_state;
     time_st t;
-    krn_rtc_get_time(&t);
+    time_get(&t);
 
-    if (krn_rtc_are_times_equal(&t, &a->last_time)) {
+    if (time_equals(&t, &a->last_time)) {
         return;
     }
 

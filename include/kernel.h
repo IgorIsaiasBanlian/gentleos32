@@ -49,15 +49,6 @@ enum {
     UART_SR   = 7, /* Scratch Register */
 };
 
-typedef struct {
-    uint8_t second;
-    uint8_t minute;
-    uint8_t hour;
-    uint8_t day;
-    uint8_t month;
-    uint16_t year;
-} time_st;
-
 enum {
     EVENT_UNKNOWN = 0,
     EVENT_POINTER_MOVE = 1,

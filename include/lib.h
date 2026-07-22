@@ -63,6 +63,15 @@ typedef struct {
     int debug_keyboard;
 } system_info_st;
 
+typedef struct {
+    uint8_t second;
+    uint8_t minute;
+    uint8_t hour;
+    uint8_t day;
+    uint8_t month;
+    uint16_t year;
+} time_st;
+
 enum {
     KEY_UP = 0x48,
     KEY_DOWN = 0x50,

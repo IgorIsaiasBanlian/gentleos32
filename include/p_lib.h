@@ -26,3 +26,16 @@ extern int32_t strcmp(const char *s1, const char *s2);
 extern int32_t strncmp(const char *s1, const char *s2, size_t n);
 extern size_t strlen(const char *s1);
 extern char *strncpy(char *dest, const char *src, size_t n);
+/* lib/time.c */
+extern const char *TIME_MONTH_NAMES_SHORT[];
+extern const char *TIME_DAY_NAMES_SHORT[];
+extern const char *TIME_DAY_NAMES_LONG[];
+extern int time_get_day_of_week(int day, int month, int year);
+extern int time_get_days_in_month(int month, int year);
+extern int time_equals(time_st *t1, time_st *t2);
+extern void time_init(time_st *t, uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
+extern void time_clear(time_st *t);
+extern void time_copy(time_st *dst, time_st *src);
+extern void time_add_seconds(time_st *t, uint32_t secs);
+extern void time_get(time_st *t);
+extern void time_set(time_st *t, int set_rtc);

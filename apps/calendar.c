@@ -58,39 +58,13 @@ typedef struct {
 
 static app_state_st *app_state = NULL;
 
-static int
-get_day_of_week(int day, int month, int year)
-{
-    static int t[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
-
-    if (month < 3) {
-        --year;
-    }
-
-    return (year + year / 4 - year / 100 + year / 400 + t[month - 1] + day) % 7;
-}
-
-static int
-get_num_days_in_month(int month, int year)
-{
-    static int days_in_month[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-    int is_leap = (year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0));
-
-    return (is_leap && month == 2) ? 29 : days_in_month[month];
-}
-
 static void
 draw_month_label(void)
 {
-    static const char *month_names[] = {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-
     app_state_st *a = app_state;
 
     char buf[16];
-    snprintf(buf, sizeof(buf), "%s %d", month_names[a->selected_month - 1], a->selected_year);
+    snprintf(buf, sizeof(buf), "%s %d", TIME_MONTH_NAMES_SHORT[a->selected_month - 1], a->selected_year);
 
     rect_st rect = {
         .x = TOOL_BAR_HEIGHT - 1,
@@ -111,7 +85,7 @@ draw_day_button(widget_st *widget)
     app_state_st *a = app_state;
 
     int day = widget->tag1;
-    int num_days = get_num_days_in_month(a->selected_month, a->selected_year);
+    int num_days = time_get_days_in_month(a->selected_month, a->selected_year);
 
     int is_in_month = day >= 0 && day < num_days;
     int is_current = (day == a->current_day - 1 && a->selected_month == a->current_month
@@ -157,7 +131,7 @@ draw_selected_month(void)
 {
     app_state_st *a = app_state;
 
-    int day_of_week = get_day_of_week(1, a->selected_month, a->selected_year);
+    int day_of_week = time_get_day_of_week(1, a->selected_month, a->selected_year);
 
     for (size_t i = 0; i < GRID_CELLS_COUNT; ++i) {
         a->day_buttons[i].tag1 = i - day_of_week;
@@ -172,8 +146,6 @@ draw_week_bar(void)
 {
     app_state_st *a = app_state;
 
-    static const char *day_names[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-
     for (int y = 0; y < 7; y++) {
         rect_st rect = {
             .x = y * (GRID_CELL_WIDTH + 2) - y,
@@ -184,7 +156,7 @@ draw_week_bar(void)
 
         gui_surface_draw_border(a->window.surface, rect, COLOR_BORDER);
         gui_surface_draw_str_centered(a->window.surface, rect, font_8x16,
-            day_names[y], COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+            TIME_DAY_NAMES_SHORT[y], COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     }
 }
 
@@ -328,7 +300,7 @@ init_current_date(void)
     app_state_st *a = app_state;
 
     time_st t;
-    krn_rtc_get_time(&t);
+    time_get(&t);
 
     a->current_month = t.month;
     a->current_year = t.year;
