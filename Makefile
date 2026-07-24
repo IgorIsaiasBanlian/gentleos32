@@ -114,7 +114,6 @@ $(BOOT_ELF): $(BOOT_OBJS) $(BOOT_LD)
 
 $(BOOT_BIN): $(BOOT_ELF)
 	$(OBJCOPY) -O binary $< $@
-	test $$(wc -c < $@) -eq $$((512 * 5))
 
 print:
 	@echo "KERNEL_SUBDIRS=$(KERNEL_SUBDIRS)"

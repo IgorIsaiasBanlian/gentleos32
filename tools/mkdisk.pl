@@ -30,13 +30,18 @@ sub main {
 
     my $kernel = slurp($kernel_path);
     my $kernel_sectors = int((length($kernel) + 511) / 512);
-    my $padding = "\0" x ($kernel_sectors * 512 - length($kernel));
+    my $kernel_padding = "\0" x ($kernel_sectors * 512 - length($kernel));
 
-    my $stage2 = slurp($boot_path);
-    substr($stage2, 512, 2, pack("v", $kernel_sectors));
+    my $boot = slurp($boot_path);
+    my $boot_sectors = int((length($boot) + 511) / 512);
+    my $boot_padding = "\0" x ($boot_sectors * 512 - length($boot));
+    my $stage2_sectors = $boot_sectors - 1;
 
-    my $stage1 = substr($stage2, 0, 512);
-    my $image = $stage1 . $stage2 . $kernel . $padding;
+    substr($boot, 5, 2, pack("v", $stage2_sectors));
+    substr($boot, 512, 2, pack("v", $kernel_sectors));
+
+    my $stage1 = substr($boot, 0, 512);
+    my $image = $stage1 . $boot . $boot_padding . $kernel . $kernel_padding;
 
     spit($disk_path, $image);
 }

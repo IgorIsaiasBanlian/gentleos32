@@ -10,10 +10,8 @@
 
 STAGE2_DEST         equ 0x7e00
 STAGE2_START_LBA    equ 2
-STAGE2_SECTORS      equ 4
 
 KERNEL_DEST         equ 0x10000
-KERNEL_START_LBA    equ 6
 
 extern stage2_cmain
 
@@ -31,6 +29,14 @@ extern stage2_cmain
 
 
 ;
+; Global variables filled by mkdisk, must stay at fixed offset
+;
+
+global stage2_sectors:data
+stage2_sectors: dw 0
+
+
+;
 ; Global variables
 ;
 
@@ -38,7 +44,7 @@ boot_drive_index    db 0
 boot_drive_spt      db 9
 boot_drive_heads    db 2
 
-remaining_sectors   dw STAGE2_SECTORS
+remaining_sectors   dw 0
 
 current_lba         dw STAGE2_START_LBA
 current_dest_seg    dw STAGE2_DEST >> 4
@@ -71,6 +77,8 @@ stage1_main:
     o32 call dword load_drive_geometry
 
     ; Load stage 2 loader
+    mov ax, [stage2_sectors]
+    mov [remaining_sectors], ax
     o32 call dword safe_load_remaining_sectors
     jmp stage2_main
 
@@ -598,7 +606,9 @@ load_kernel:
     pushad
 
     mov word [current_dest_seg], KERNEL_DEST >> 4
-    mov word [current_lba], KERNEL_START_LBA
+    mov ax, [stage2_sectors]
+    add ax, STAGE2_START_LBA
+    mov [current_lba], ax
     mov ax, [kernel_sectors]
     mov [remaining_sectors], ax
     o32 call dword safe_load_remaining_sectors

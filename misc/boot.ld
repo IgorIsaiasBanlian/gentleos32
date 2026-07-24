@@ -12,9 +12,6 @@ SECTIONS {
         *(.rodata*)
         *(.bss*)
         *(COMMON)
-
-        . = 512 * 5 - 1;
-        BYTE(0)
     }
 
     .empty : {
