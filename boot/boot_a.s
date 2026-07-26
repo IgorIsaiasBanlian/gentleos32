@@ -374,11 +374,14 @@ mbr_designator:
 
 
 ;
-; Number of kernel sectors, filled in by mkdisk.pl
+; Global variables filled by mkdisk and mkinitrd, must stay at fixed offset
 ;
 
 global kernel_sectors:data
 kernel_sectors: dw 0
+
+global initrd_sectors:data
+initrd_sectors: dw 0
 
 
 ;
@@ -598,22 +601,78 @@ print_ushort:
 
 
 ;
-; Load kernel to memory
+; C interface to safe_load_remaining_sectors (FIXME: which should be refactored)
 ;
 
-global load_kernel:function
-load_kernel:
+global safe_load_remaining_sectors_c:function
+safe_load_remaining_sectors_c:
+    push ebp
+    mov ebp, esp
     pushad
 
-    mov word [current_dest_seg], KERNEL_DEST >> 4
-    mov ax, [stage2_sectors]
-    add ax, STAGE2_START_LBA
+    mov ax, [ebp + 8]
+    mov [current_dest_seg], ax
+    mov ax, [ebp + 12]
     mov [current_lba], ax
-    mov ax, [kernel_sectors]
+    mov ax, [ebp + 16]
     mov [remaining_sectors], ax
     o32 call dword safe_load_remaining_sectors
 
     popad
+    pop ebp
+    o32 ret
+
+
+;
+; Copy given number of words to upper memory using BIOS interrupt 15h/87h
+;
+
+global copy_ext_mem:function
+copy_ext_mem:
+    push ebp
+    mov ebp, esp
+    pushad
+    push es
+
+    ; Fill the source descriptor base
+    mov eax, [ebp + 12]
+    mov [copy_ext_mem_gdt + 16 + 2], ax
+    shr eax, 16
+    mov [copy_ext_mem_gdt + 16 + 4], al
+    mov [copy_ext_mem_gdt + 16 + 7], ah
+
+    ; Fill the target descriptor base
+    mov eax, [ebp + 8]
+    mov [copy_ext_mem_gdt + 24 + 2], ax
+    shr eax, 16
+    mov [copy_ext_mem_gdt + 24 + 4], al
+    mov [copy_ext_mem_gdt + 24 + 7], ah
+
+    ; ES:SI = descriptor table, CX = word count
+    xor ax, ax
+    mov es, ax
+    mov si, copy_ext_mem_gdt
+    mov cx, [ebp + 16]
+    mov ah, 0x87
+    int 0x15
+
+    ; Some buggy BIOSes may leave interrupts disabled
+    sti
+
+    jc .error
+    test ah, ah
+    jz .done
+
+.error:
+    push dword 'X'
+    o32 call dword print_char
+    add esp, 4
+    jmp halt
+
+.done:
+    pop es
+    popad
+    pop ebp
     o32 ret
 
 
@@ -740,6 +799,35 @@ mboot_info:
     times 7 dd 0            ; framebuffer
 
 mboot_loader_name:  db `GentleBoot\0`
+
+
+;
+; GDT for copy_ext_mem
+;
+
+align 16
+copy_ext_mem_gdt:
+    ; Zeros used by BIOS
+    times 16 db 0
+
+    ; Source segment (base addr filled by copy_ext_mem)
+    dw 0xFFFF     ; segment limit[15:0]
+    dw 0x0000     ; base addr[15:0]
+    db 0x00       ; base addr[23:16]
+    db 10010011b  ; P, DPL, 1, 0, E, W, A
+    db 00000000b  ; G, B, _, AVL, segment limit[19:16]
+    db 0x00       ; base addr[31:24]
+
+    ; Target segment (base addr filled by copy_ext_mem)
+    dw 0xFFFF     ; segment limit[15:0]
+    dw 0x0000     ; base addr[15:0]
+    db 0x00       ; base addr[23:16]
+    db 10010011b  ; P, DPL, 1, 0, E, W, A
+    db 00000000b  ; G, B, _, AVL, segment limit[19:16]
+    db 0x00       ; base addr[31:24]
+
+    ; Zeros used by BIOS to build CS and SS descriptors
+    times 16 db 0
 
 
 ;

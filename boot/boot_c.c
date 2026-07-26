@@ -10,6 +10,9 @@
 #include <boot.h>
 
 extern mboot_info_st mboot_info;
+extern uint16_t stage2_sectors;
+extern uint16_t kernel_sectors;
+extern uint16_t initrd_sectors;
 
 extern uint32_t get_elapsed_ticks(void);
 extern uint16_t get_far_word(uint16_t seg, uint16_t ofs);
@@ -18,7 +21,8 @@ extern int get_key(void);
 extern void print_char(char c);
 extern void print_str(const char *s);
 extern void print_ushort(uint16_t n);
-extern void load_kernel(void);
+extern void safe_load_remaining_sectors_c(uint16_t dest_seg, uint16_t lba, uint16_t count);
+extern void copy_ext_mem(uint32_t dest, uint32_t src, uint16_t words);
 extern int vbe_load_ctrl_info(vbe_ctrl_info_st *buf);
 extern int vbe_load_mode_info(uint16_t mode, vbe_mode_info_st *buf);
 extern int vbe_set_mode(uint16_t mode);
@@ -37,6 +41,12 @@ enum {
     VBE_MODE_NUMBERS_MAX = 255,
 };
 
+enum {
+    STAGE2_START_LBA = 2,
+    KERNEL_DEST = 0x10000,
+    INITRD_DEST = 0x100000,
+};
+
 static const char *UART_CMDLINES[UART_MODE_COUNT] = {
     "",
     "uart=mouse",
@@ -49,10 +59,38 @@ static uint16_t *vbe_mode_numbers = (uint16_t *)0x1200;
 static vbe_mode_info_st *vbe_mode_info = (vbe_mode_info_st *)0x1400;
 static vbe_mode_st *vbe_modes = (vbe_mode_st *)0x1600;
 
+static mboot_mod_st mboot_mod;
+
 static struct {
     int uart_mode;
     int video_mode;
 } kernel_config = { 0 };
+
+static void
+load_kernel(void)
+{
+    safe_load_remaining_sectors_c(KERNEL_DEST >> 4, STAGE2_START_LBA + stage2_sectors, kernel_sectors);
+}
+
+static void
+load_initrd(void)
+{
+    uint16_t lba = STAGE2_START_LBA + stage2_sectors + kernel_sectors;
+    uint16_t remaining = initrd_sectors;
+    uint32_t dest = INITRD_DEST;
+    uint16_t sectors;
+
+    while (remaining > 0) {
+        sectors = remaining < 128 ? remaining : 128;
+
+        safe_load_remaining_sectors_c(KERNEL_DEST >> 4, lba, sectors);
+        copy_ext_mem(dest, KERNEL_DEST, sectors * 512 / 2);
+
+        lba += sectors;
+        dest += sectors * 512;
+        remaining -= sectors;
+    }
+}
 
 static int
 select_menu_item(int count)
@@ -211,7 +249,21 @@ stage2_cmain(void)
     int key;
 
     print_str("\r\nLoading GentleOS. Press 'm' to show boot menu.");
+
+    if (initrd_sectors > 0) {
+        /* Must be called before load_kernel since it temporarily uses the same memory */
+        load_initrd();
+
+        mboot_mod.mod_start = INITRD_DEST;
+        mboot_mod.mod_end = INITRD_DEST + initrd_sectors * 512;
+
+        mboot_info.flags |= MBOOT_FLAG_MODS;
+        mboot_info.mods_count = 1;
+        mboot_info.mods_addr = (uint32_t)&mboot_mod;
+    }
+
     load_kernel();
+
     print_str("\r\n");
 
     do {

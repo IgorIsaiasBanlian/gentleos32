@@ -104,6 +104,7 @@ krn_mem_init_heap(void)
     system_info_st *si = &krn_system_info;
     uintptr_t krn_start = (uintptr_t)&krn_link_start;
     uintptr_t krn_end = (uintptr_t)&krn_link_end;
+    uintptr_t initrd_start = si->initrd_start;
     uintptr_t initrd_end = si->initrd_start + si->initrd_size;
     uintptr_t low_start = 0x10000;
     uintptr_t low_end = MIN(si->mem_lower << 10, (uintptr_t)0xA0000);
@@ -116,6 +117,9 @@ krn_mem_init_heap(void)
 
     if (krn_start < MEM_UPPER_START) {
         low_start = MAX(low_start, krn_end);
+    }
+
+    if (initrd_start < MEM_UPPER_START) {
         low_start = MAX(low_start, initrd_end);
     }
 

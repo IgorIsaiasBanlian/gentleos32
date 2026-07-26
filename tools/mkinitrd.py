@@ -19,8 +19,11 @@ HEADER_LEN   = 8                   # 4s magic + I count
 ENTRY_LEN    = NAME_LEN + 8        # 24s name + I offset + I size
 
 PALETTE_PATH = "misc/vga-256.gpl"
-PALETTE_REX = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
-INITRD_PATH = "gentleos.rd"
+PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
+INITRD_PATH  = "gentleos.rd"
+
+SECTOR_LEN    = 512
+FS_OFFSET     = 1048576
 
 
 def die(msg):
@@ -107,16 +110,72 @@ def build_initrd(inputs):
     return struct.pack("<4sI", MAGIC, count) + table + blobs
 
 
-def install_initrd(disk_image):
+def get_kernel_offset_in_image(image):
+    stage2_sectors_ofs = 5
+    stage2_sectors, = struct.unpack_from("<H", image, stage2_sectors_ofs)
+
+    return SECTOR_LEN * (2 + stage2_sectors)
+
+
+def is_native_image(image):
+    if len(image) < SECTOR_LEN:
+        return False
+
+    kernel_offset = get_kernel_offset_in_image(image)
+
+    if len(image) < kernel_offset + 32:
+        return False
+
+    magic, = struct.unpack_from("<I", image, kernel_offset + 4)
+
+    return magic == 0x1badb002
+
+
+def install_initrd_native(disk_image_path, image, initrd):
+    kernel_offset = get_kernel_offset_in_image(image)
+    kernel_sectors, = struct.unpack_from("<H", image, SECTOR_LEN * 2)
+    kernel_end = kernel_offset + kernel_sectors * SECTOR_LEN
+
+    if kernel_sectors == 0 or len(image) < kernel_end:
+        die("Error: no kernel found in the disk image")
+
+    initrd_sectors = (len(initrd) + SECTOR_LEN - 1) // SECTOR_LEN
+
+    if initrd_sectors * SECTOR_LEN > 15 * 1024 * 1024:
+        die("Error: initrd too big to fit in 15MB of RAM")
+
+    padding = b"\0" * (initrd_sectors * SECTOR_LEN - len(initrd))
+    image = bytearray(image[:kernel_end]) + initrd + padding
+
+    initrd_sectors_offset = SECTOR_LEN * 2 + 2
+    struct.pack_into("<H", image, initrd_sectors_offset, initrd_sectors)
+
+    with open(disk_image_path, "wb") as f:
+        f.write(image)
+
+    print("Initrd installed in %s" % disk_image_path)
+
+
+def install_initrd_grub(disk_image_path):
     if not shutil.which("mcopy"):
         die("Error: mkinitrd.py requires 'mtools' package to install initrd in a disk image")
 
-    if not os.path.exists(disk_image):
-        die("Error: disk image not found")
-
-    cmd = "mcopy -D o -i '%s@@1048576' %s ::" % (disk_image, INITRD_PATH)
+    cmd = "mcopy -D o -i '%s@@%d' %s ::" % (disk_image_path, FS_OFFSET, INITRD_PATH)
     print("Running %s" % cmd)
     os.system(cmd)
+
+
+def install_initrd(disk_image_path, initrd):
+    if not os.path.exists(disk_image_path):
+        die("Error: disk image not found")
+
+    with open(disk_image_path, "rb") as f:
+        image = f.read()
+
+    if is_native_image(image):
+        install_initrd_native(disk_image_path, image, initrd)
+    else:
+        install_initrd_grub(disk_image_path)
 
 
 def main():
@@ -143,7 +202,7 @@ def main():
     print("Initrd saved to %s" % INITRD_PATH)
 
     if args.disk_image is not None:
-        install_initrd(args.disk_image)
+        install_initrd(args.disk_image, image)
 
 
 if __name__ == "__main__":
