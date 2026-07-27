@@ -46,9 +46,10 @@ To create the initrd and install it in the disk image, run:
 ./tools/mkinitrd.py --wallpaper /path/to/image.png --disk-image gentleos32-disk.img
 ```
 
-Note: the wallpaper will only be shown in 256-color video modes.
-In GIMP you can import the provided [VGA palette](misc/vga-256.gpl)
-and use indexed mode for best results.
+Note: the wallpaper size must match the screen resolution.
+For best results, save the image using an indexed mode, using
+only standard EGA/VGA colors. In GIMP you can use the provided
+[VGA palette](misc/vga-256.gpl).
 
 ## Attributions
 

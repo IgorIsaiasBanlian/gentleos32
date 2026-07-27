@@ -36,9 +36,9 @@ extern void gui_fb_draw_start(void);
 extern void gui_fb_draw_end(void);
 extern void gui_fb_mark_dirty(rect_st rect);
 extern void gui_fb_draw_rect(rect_st rect, uint8_t color);
-extern void gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap, uint8_t color);
 extern void gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2);
 extern void gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect);
+extern void gui_fb_draw_wallpaper(rect_st rect, bitmap_st *bitmap);
 extern void gui_fb_draw_outline(rect_st rect);
 extern void gui_fb_flush(void);
 extern void gui_fb_init(void);
@@ -128,7 +128,6 @@ extern void gui_window_on_pointer_alt(window_st *window, event_st event);
 extern void gui_window_on_active_change(window_st *window);
 /* gui/wm.c */
 extern rect_st gui_wm_container;
-extern bitmap_st *gui_wm_bg_bitmap;
 extern void gui_wm_toggle_window_active(window_st *w, int active);
 extern void gui_wm_raise_window(struct window *w);
 extern int gui_wm_free_slots(void);

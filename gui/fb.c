@@ -93,42 +93,6 @@ gui_fb_draw_rect(rect_st rect, uint8_t color)
 }
 
 global void
-gui_fb_draw_bitmap(rect_st rect, bitmap_st *bitmap, uint8_t color)
-{
-    if (krn_system_info.fb_planar) {
-        /* Unsupported */
-        return;
-    }
-
-    int copy_w = 0;
-    if (rect.x < bitmap->size.width) {
-        copy_w = bitmap->size.width - rect.x;
-
-        if (copy_w > rect.width) {
-            copy_w = rect.width;
-        }
-    }
-
-    for (uint16_t i = 0; i < rect.height; ++i) {
-        int y = rect.y + i;
-        size_t fb_off = y * gui_fb_surface.pitch + rect.x;
-        int row_copy_w = (y < bitmap->size.height) ? copy_w : 0;
-        int row_color_w = (row_copy_w < rect.width) ? rect.width - row_copy_w : 0;
-
-        if (row_copy_w > 0) {
-            size_t bm_off = y * bitmap->pitch + rect.x;
-            memcpy(&gui_fb_surface.pixels[fb_off], &bitmap->pixels[bm_off], row_copy_w);
-        }
-
-        if (row_color_w) {
-            memset(&gui_fb_surface.pixels[fb_off + row_copy_w], color, row_color_w);
-        }
-    }
-
-    gui_fb_mark_dirty(rect);
-}
-
-global void
 gui_fb_draw_pattern(rect_st rect, bitmap_st *pattern, uint8_t c1, uint8_t c2)
 {
     if (krn_system_info.fb_planar) {
@@ -150,6 +114,18 @@ gui_fb_draw_surface(int dst_x, int dst_y, surface_st *src_sf, rect_st src_rect)
     }
 
     gui_fb_mark_dirty(gui_rect_make(dst_x, dst_y, src_rect.width, src_rect.height));
+}
+
+global void
+gui_fb_draw_wallpaper(rect_st rect, bitmap_st *bitmap)
+{
+    surface_st surface;
+
+    surface.size = bitmap->size;
+    surface.pitch = bitmap->pitch;
+    surface.pixels = (uint8_t *)bitmap->pixels;
+
+    gui_fb_draw_surface(rect.x, rect.y, &surface, rect);
 }
 
 global void
