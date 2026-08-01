@@ -84,6 +84,28 @@ typedef struct {
     };
 } event_st;
 
+typedef struct {
+    uint16_t pitch;
+    uint16_t duration;
+} note_st;
+
+enum {
+    SPEAKER_STATE_STOPPED = 0,
+    SPEAKER_STATE_PLAYING = 1,
+    SPEAKER_STATE_PAUSED = 2,
+};
+
+typedef struct {
+    uint8_t state;
+
+    const note_st *song;
+    void *song_owner;
+    uint32_t song_elapsed_ticks;
+
+    const note_st *note;
+    unsigned note_ticks_left;
+} speaker_state_st;
+
 extern void *krn_link_start;
 extern void *krn_link_end;
 

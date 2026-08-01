@@ -117,7 +117,7 @@ global void
 krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
 {
     for (unsigned i = 0; i < count; i++) {
-        krn_speaker_play(hz);
+        krn_speaker_play_freq(hz, NULL);
         sleep(msecs);
         krn_speaker_stop();
         sleep(msecs);

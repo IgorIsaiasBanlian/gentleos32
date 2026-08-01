@@ -96,7 +96,7 @@ key_frequency(widget_st *widget)
 static void
 on_key_pointer_down(widget_st *widget, event_st event, point_st pos)
 {
-    krn_speaker_play(key_frequency(widget));
+    krn_speaker_play_freq(key_frequency(widget), &app_sounds);
 
     gui_button_on_pointer_down(widget, event, pos);
 }
