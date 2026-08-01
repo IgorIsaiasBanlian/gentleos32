@@ -168,7 +168,7 @@ krn_event_count(void)
 
     lock = krn_lock();
 
-    uint16_t ret = (krn_event_queue.head - krn_event_queue.tail) % EVENT_QUEUE_SIZE;
+    uint16_t ret = (krn_event_queue.head + EVENT_QUEUE_SIZE - krn_event_queue.tail) % EVENT_QUEUE_SIZE;
 
     krn_unlock(lock);
 
