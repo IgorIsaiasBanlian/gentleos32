@@ -117,18 +117,17 @@ krn_vmware_handle_mouse_intr(void)
 global void
 krn_vmware_init(void)
 {
-    uint32_t eflags;
+    krn_lock_t lock;
 
     krn_debug_printf("Initializing VMware mouse... ");
 
-    eflags = cpu_get_eflags();
-    cpu_cli();
+    lock = krn_lock();
 
     if (krn_vmware_detect()) {
         krn_vmware_abspointer_active = krn_vmware_enable_abspointer();
     }
 
-    cpu_set_eflags(eflags);
+    krn_unlock(lock);
 
     krn_debug_printf("ok (%s)\n", krn_vmware_abspointer_active ? "detected" : "not detected");
 }

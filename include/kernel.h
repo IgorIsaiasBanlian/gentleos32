@@ -27,6 +27,8 @@ typedef struct {
 
 typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 
+typedef uint32_t krn_lock_t;
+
 typedef struct {
     char name[24];
     void *addr;

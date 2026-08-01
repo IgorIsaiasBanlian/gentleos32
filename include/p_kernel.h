@@ -20,6 +20,9 @@ extern void krn_intr_set_handler(uint8_t int_no, isr_handler_fn handler);
 extern void krn_intr_init(void);
 /* kernel/keyboard.c */
 extern void krn_keyboard_init(void);
+/* kernel/lock.c */
+extern krn_lock_t krn_lock(void);
+extern void krn_unlock(krn_lock_t lock);
 /* kernel/main.c */
 extern system_info_st krn_system_info;
 extern void krn_main(void);

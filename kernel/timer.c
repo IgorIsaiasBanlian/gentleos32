@@ -58,15 +58,16 @@ krn_timer_get_counter_0(void)
 global uint8_t
 krn_timer_get_cpu_usage(void)
 {
-    uint32_t eflags = cpu_get_eflags();
-    cpu_cli();
+    krn_lock_t lock;
+
+    lock = krn_lock();
 
     uint32_t idle = idle_ticks;
     uint32_t total = total_ticks;
     idle_ticks = 0;
     total_ticks = 0;
 
-    cpu_set_eflags(eflags);
+    krn_unlock(lock);
 
     if (total == 0) {
         return 0;
