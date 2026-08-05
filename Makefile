@@ -98,7 +98,7 @@ $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 ALWAYS_REBUILD:
 
 $(BUILDDIR)/data.c: ALWAYS_REBUILD | $(OBJDIRS)
-	./tools/mkdata.pl
+	python3 ./tools/mkdata.py
 
 $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
 	$(CC) $(KERNEL_CFLAGS) -MMD -MP -c $< -o $@

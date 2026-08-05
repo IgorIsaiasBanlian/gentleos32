@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+#
+# Copyright (c) 2026 luke8086
+# Distributed under the terms of GPL-2 License.
+#
+# File: mkdata.py - Convert bitmaps and fonts to hardcoded C data
+#
+
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pillow>=10,<12",
+# ]
+# ///
+
+import argparse
+import glob
+import os
+import sys
+
+from PIL import Image, ImageOps
+
+TARGET = "build/data.c"
+FONT_MAX_CHARS = 256
+DEBUG = 0
+
+FONTS = [
+    {
+        "path": "vendor/int10h/pc-8x16.pbm",
+        "name": "PC 8x16",
+        "width": 8,
+        "height": 16,
+        "pitch": 8,
+    },
+    {
+        "path": "vendor/int10h/pc-8x8.pbm",
+        "name": "PC 8x8",
+        "width": 8,
+        "height": 8,
+        "pitch": 8,
+    },
+    {
+        "path": "vendor/int10h/evxme58.pbm",
+        "name": "Evx ME 5x8",
+        "width": 5,
+        "height": 8,
+        "pitch": 8,
+    },
+]
+
+PREFIXES = {
+    "assets/icons": "icon_",
+    "vendor/icons8": "icon_",
+    "assets/sprites": "sprite_",
+    "assets/mahjong": "sprite_mj_",
+    "vendor/mona": "glyph_mn_",
+}
+
+
+def hex_str(data):
+    return "".join("\\x%02x" % b for b in data)
+
+
+def load_pbm(path):
+    img = Image.open(path)
+
+    if img.mode != "1":
+        raise SystemExit("%s: not a 1-bit PBM file" % path)
+
+    if DEBUG:
+        print("- %-32s  size: %dx%d" % (path, img.size[0], img.size[1]), end="")
+
+    return ImageOps.invert(img)
+
+
+def process_pbm(path):
+    name = os.path.splitext(os.path.basename(path))[0]
+    prefix = PREFIXES.get(os.path.dirname(path), "bitmap_")
+
+    img = load_pbm(path)
+    width, height = img.size
+    pitch = (width + 7) // 8
+
+    if DEBUG:
+        print()
+
+    img_bytes = img.tobytes()
+
+    pixel_lines = [
+        '        "%s" \\' % hex_str(img_bytes[y * pitch:(y + 1) * pitch])
+        for y in range(height)
+    ]
+
+    lines = [
+        "global bitmap_st %s%s = {" % (prefix, name),
+        "    .size = { .width = %d, .height = %d }," % (width, height),
+        "    .bpp = 1,",
+        "    .pitch = %d," % pitch,
+        "    .pixels = (uint8_t *)",
+        *pixel_lines,
+        "};",
+        "",
+    ]
+
+    return "\n".join(lines)
+
+
+def process_bitmaps():
+    pbm_files = sorted([]
+        + glob.glob("assets/*/*.pbm")
+        + glob.glob("vendor/icons8/*.pbm")
+        + glob.glob("vendor/mona/*.pbm")
+    )
+
+    return "\n".join(process_pbm(f) for f in pbm_files)
+
+
+def load_font(font):
+    height = font["height"]
+    pitch = font["pitch"]
+
+    img = load_pbm(font["path"])
+
+    cols = img.size[0] // pitch
+    rows = img.size[1] // height
+    num_chars = min(cols * rows, FONT_MAX_CHARS)
+    max_bytes = FONT_MAX_CHARS * height
+
+    if DEBUG:
+        print("  grid: %dx%d  chars: %d" % (cols, rows, cols * rows))
+
+    img_bytes = bytearray()
+
+    for ch in range(num_chars):
+        x = (ch % cols) * pitch
+        y = (ch // cols) * height
+        img_bytes += img.crop((x, y, x + pitch, y + height)).tobytes()
+
+    img_bytes += bytes(max_bytes - len(img_bytes))
+
+    return img_bytes
+
+
+def process_font(font):
+    width = font["width"]
+    height = font["height"]
+    name = font["name"]
+
+    img_bytes = load_font(font)
+
+    pixel_lines = [
+        '            "%s" \\' % hex_str(img_bytes[i:i + height])
+        for i in range(0, len(img_bytes), height)
+    ]
+
+    lines = [
+        "    {",
+        "        .size = { .width = %d, .height = %d }," % (width, height),
+        '        .name = "%s",' % name,
+        "        .pixels = (uint8_t *)",
+        *pixel_lines,
+        "    },",
+    ]
+
+    return lines
+
+
+def process_fonts():
+    lines = ["global font_st fonts[] = {"]
+
+    for font in FONTS:
+        lines += process_font(font)
+
+    lines.append("};")
+
+    return "\n".join(lines)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Convert bitmaps and fonts to C data")
+    parser.add_argument("-d", "--debug", action="store_true", help="debug output")
+    args = parser.parse_args()
+
+    global DEBUG
+    DEBUG = args.debug
+
+    content = "\n".join([
+        "#include <gui.h>",
+        "",
+        "#pragma GCC diagnostic push",
+        '#pragma GCC diagnostic ignored "-Woverlength-strings"',
+        "",
+        process_bitmaps(),
+        "",
+        process_fonts(),
+        "",
+        "#pragma GCC diagnostic pop",
+        "",
+    ])
+
+    try:
+        with open(TARGET) as f:
+            current_content = f.read()
+    except OSError:
+        current_content = ""
+
+    if current_content == content:
+        print("%s: %s unchanged" % (sys.argv[0], TARGET))
+        return
+
+    with open(TARGET, "w") as f:
+        f.write(content)
+
+    print("%s: %s updated" % (sys.argv[0], TARGET))
+
+
+main()
