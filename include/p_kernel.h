@@ -12,7 +12,6 @@ extern int krn_event_push(event_st event);
 extern int krn_event_pop(event_st *event);
 extern uint16_t krn_event_count(void);
 /* kernel/initrd.c */
-extern initrd_entry_st *krn_initrd_lookup(const char *name);
 extern void krn_initrd_init(void);
 /* kernel/intr.c */
 extern __attribute__((force_align_arg_pointer)) void krn_intr_handle(isr_stack_st *isr_stack);

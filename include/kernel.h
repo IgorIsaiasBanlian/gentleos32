@@ -29,12 +29,6 @@ typedef void (*isr_handler_fn)(isr_stack_st *isr_stack);
 
 typedef uint32_t krn_lock_t;
 
-typedef struct {
-    char name[24];
-    void *addr;
-    uint32_t size;
-} __attribute__((packed)) initrd_entry_st;
-
 enum {
     DEBUG_BUFFER_ROWS = 34,
     DEBUG_BUFFER_COLS = 60,

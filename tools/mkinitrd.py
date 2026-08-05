@@ -13,10 +13,13 @@ import shutil
 import struct
 
 MAGIC        = b"IRD1"
-NAME_LEN     = 24
+NAME_LEN     = 23
 ALIGN        = 4
 HEADER_LEN   = 8                   # 4s magic + I count
-ENTRY_LEN    = NAME_LEN + 8        # 24s name + I offset + I size
+ENTRY_LEN    = NAME_LEN + 9        # 23s name + B type + I offset + I size
+
+FILE_TYPE_UNKNOWN   = 0
+FILE_TYPE_BITMAP     = 1
 
 PALETTE_PATH = "misc/vga-256.gpl"
 PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
@@ -80,12 +83,12 @@ def load_inputs(args):
         name = os.path.basename(path)[:NAME_LEN - 1]
         with open(path, "rb") as f:
             data = f.read()
-        inputs.append({"name": name, "data": data})
+        inputs.append({"name": name, "type": FILE_TYPE_UNKNOWN, "data": data})
 
     if args.wallpaper is not None:
         palette = load_palette(PALETTE_PATH)
         data = process_wallpaper(args.wallpaper, palette)
-        inputs.append({"name": "wallpaper", "data": data})
+        inputs.append({"name": "wallpaper", "type": FILE_TYPE_BITMAP, "data": data})
 
     return inputs
 
@@ -103,7 +106,7 @@ def build_initrd(inputs):
         print("- %s: %x (%u B)" % (inp["name"], offset, size))
 
         name = inp["name"].encode("latin-1")[:NAME_LEN - 1]
-        table += struct.pack("<%dsII" % NAME_LEN, name, offset, size)
+        table += struct.pack("<%dsBII" % NAME_LEN, name, inp["type"], offset, size)
         blobs += inp["data"] + b"\0" * (padded_size - size)
         offset += padded_size
 

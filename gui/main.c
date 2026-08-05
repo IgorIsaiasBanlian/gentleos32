@@ -32,15 +32,15 @@ global unsigned gui_apps_count = (sizeof(gui_apps) / sizeof(gui_apps[0]));
 global bitmap_st *
 gui_load_bitmap(const char *name)
 {
-    initrd_entry_st *entry = krn_initrd_lookup(name);
+    file_st *file = file_lookup(name);
     bitmap_st *bitmap;
 
-    if (!entry) {
+    if (!file) {
         return NULL;
     }
 
-    bitmap = (bitmap_st *)entry->addr;
-    bitmap->pixels = (uint8_t *)((uint32_t)entry->addr + sizeof(bitmap_st));
+    bitmap = (bitmap_st *)file->addr;
+    bitmap->pixels = (uint8_t *)((uint32_t)file->addr + sizeof(bitmap_st));
 
     return bitmap;
 }

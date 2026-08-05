@@ -44,12 +44,28 @@ enum {
 };
 
 typedef struct {
+    char name[23];
+    uint8_t type;
+    void *addr;
+    uint32_t size;
+} __attribute__((packed)) file_st;
+
+enum {
+    FILE_TYPE_UNKNOWN,
+    FILE_TYPE_BITMAP,
+    FILE_TYPE_COUNT,
+};
+
+typedef struct {
     int mem_fields_valid;
     uint32_t mem_lower;
     uint32_t mem_upper;
 
     uint32_t initrd_start;
     uint32_t initrd_size;
+
+    size_t initrd_files_count;
+    file_st *initrd_files;
 
     int fb_fields_valid;
     uint8_t *fb_addr;

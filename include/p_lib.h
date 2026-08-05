@@ -1,5 +1,8 @@
 /* lib/errors.c */
 extern const char *error_message_for(int code);
+/* lib/file.c */
+extern const char *file_type_names[FILE_TYPE_COUNT];
+extern file_st *file_lookup(const char *name);
 /* lib/heap.c */
 extern void heap_dump(void);
 extern size_t heap_get_avail_mem(void);
