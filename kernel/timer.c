@@ -28,6 +28,8 @@ krn_timer_handle_intr(isr_stack_st *isr_stack __attribute__((unused)))
         idle_ticks++;
     }
 
+    krn_speaker_on_tick();
+
     event_st event = {
         .type = EVENT_TIMER_TICK,
         .timer_msecs = timer_msecs,
