@@ -71,11 +71,17 @@ def load_palette(path):
     return [c if c is not None else (0, 0, 0) for c in rgb]
 
 
-def process_image(path, palette):
+def process_image(path):
     try:
         from PIL import Image
     except ImportError:
         die("Error: mkinitrd.py requires 'pillow' library for Python")
+
+    palette = getattr(process_image, "palette", None)
+
+    if palette is None:
+        palette = load_palette(PALETTE_PATH)
+        process_image.palette = palette
 
     print("Importing %s... " % path, end="")
 
@@ -95,38 +101,22 @@ def process_image(path, palette):
     return header + pixels
 
 
-def load_files(args):
-    palette = load_palette(PALETTE_PATH)
-    files = []
+def load_file(path):
+    [basename, ext] = split_ext(path)
 
-    for path in args.files:
-        [basename, ext] = split_ext(path)
+    if ext in  ["jpg", "jpeg", "png", "ppm", "gif", "bmp"]:
+        file_type = FILE_TYPE_BITMAP
+        data = process_image(path)
+    else:
+        file_type = FILE_TYPE_UNKNOWN
+        with open(path, "rb") as f:
+            data = f.read()
 
-        if ext in ["jpg", "jpeg", "png", "pbm", "gif", "bmp"]:
-            file_type = FILE_TYPE_BITMAP
-            name = basename
-            data = process_image(path, palette)
-        else:
-            file_type = FILE_TYPE_UNKNOWN
-            name = basename
-            with open(path, "rb") as f:
-                data = f.read()
-
-        files.append({
-            "name": name[:NAME_LEN - 1],
-            "type": file_type,
-            "data": data,
-        })
-
-    if args.wallpaper is not None:
-        data = process_image(args.wallpaper, palette)
-        files.append({
-            "name": "wallpaper",
-            "type": FILE_TYPE_BITMAP,
-            "data": data,
-        })
-
-    return files
+    return {
+        "name": basename[:NAME_LEN - 1],
+        "type": file_type,
+        "data": data,
+    }
 
 
 def build_initrd(files):
@@ -227,11 +217,22 @@ def main():
     parser.add_argument("--disk-image", metavar="PATH", help="disk image to install initrd into")
     args = parser.parse_args()
 
-    if not args.files and args.wallpaper is None:
+    files = []
+
+    for path in args.files:
+        files.append(load_file(path))
+
+    if args.wallpaper is not None:
+        data = process_image(args.wallpaper)
+        files.append({
+            "name": "wallpaper",
+            "type": FILE_TYPE_BITMAP,
+            "data": data,
+        })
+
+    if not files:
         parser.print_usage()
         raise SystemExit(1)
-
-    files = load_files(args)
 
     print("Generating initrd:")
     image = build_initrd(files)
