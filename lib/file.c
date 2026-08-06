@@ -13,6 +13,7 @@ extern size_t builtin_files_count;
 global const char *file_type_names[FILE_TYPE_COUNT] = {
     "unknown",
     "bitmap",
+    "song",
 };
 
 global size_t

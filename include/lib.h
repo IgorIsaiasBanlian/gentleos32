@@ -53,6 +53,7 @@ typedef struct {
 enum {
     FILE_TYPE_UNKNOWN,
     FILE_TYPE_BITMAP,
+    FILE_TYPE_SONG,
     FILE_TYPE_COUNT,
 };
 
