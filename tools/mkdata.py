@@ -20,6 +20,9 @@ import sys
 
 from PIL import Image, ImageOps
 
+import mkinitrd
+
+
 TARGET = "build/data.c"
 FONT_MAX_CHARS = 256
 DEBUG = 0
@@ -176,6 +179,56 @@ def process_fonts():
     return "\n".join(lines)
 
 
+def process_builtin_file_data(index, data):
+    data_lines = [
+        '    "%s" \\' % hex_str(data[i:i + 16])
+        for i in range(0, len(data), 16)
+    ]
+    if data_lines:
+        data_lines[-1] = data_lines[-1].rstrip(" \\") + ";"
+    else:
+        data_lines = ['    "";']
+
+    lines = [
+        "static uint8_t builtin_file_data_%d[] __attribute__((aligned(4))) =" % index,
+        *data_lines,
+        "",
+    ]
+
+    return lines
+
+
+def process_builtin_file_entry(index, f):
+    return [
+        "    {",
+        '        .name = "%s",' % f["name"],
+        "        .type = %s," % f["type"],
+        "        .addr = builtin_file_data_%d," % index,
+        "        .size = %d," % len(f["data"]),
+        "    },",
+    ]
+
+def process_builtin_files():
+    paths = ["/dev/null"]
+
+    data_lines = []
+    entry_lines = []
+
+    for i, path in enumerate(paths):
+        f = mkinitrd.load_file(path)
+        data_lines += process_builtin_file_data(i, f["data"])
+        entry_lines += process_builtin_file_entry(i, f)
+
+    return "\n".join([
+        *data_lines,
+        "global file_st builtin_files[] = {",
+        *entry_lines,
+        "};",
+        "",
+        "global size_t builtin_files_count = %d;" % len(paths),
+    ])
+
+
 def main():
     parser = argparse.ArgumentParser(description="Convert bitmaps and fonts to C data")
     parser.add_argument("-d", "--debug", action="store_true", help="debug output")
@@ -193,6 +246,8 @@ def main():
         process_bitmaps(),
         "",
         process_fonts(),
+        "",
+        process_builtin_files(),
         "",
         "#pragma GCC diagnostic pop",
         "",

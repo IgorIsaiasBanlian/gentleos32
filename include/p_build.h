@@ -86,3 +86,5 @@ extern bitmap_st glyph_mn_tulip_2x;
 extern bitmap_st glyph_mn_west;
 extern bitmap_st glyph_mn_white;
 extern font_st fonts[];
+extern file_st builtin_files[];
+extern size_t builtin_files_count;
