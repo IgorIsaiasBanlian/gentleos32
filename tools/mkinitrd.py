@@ -6,6 +6,13 @@
 # File: mkinitrd.py - Create initial RAM disk
 #
 
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pillow>=10,<12",
+# ]
+# ///
+
 import argparse
 import os
 import re
@@ -19,10 +26,16 @@ HEADER_LEN   = 8                   # 4s magic + I count
 ENTRY_LEN    = NAME_LEN + 9        # 23s name + B type + I offset + I size
 
 FILE_TYPE_UNKNOWN   = 0
-FILE_TYPE_BITMAP     = 1
+FILE_TYPE_BITMAP    = 1
+
+FILE_TYPE_NAMES = {
+    FILE_TYPE_UNKNOWN: "unknown",
+    FILE_TYPE_BITMAP:  "bitmap",
+}
 
 PALETTE_PATH = "misc/vga-256.gpl"
 PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
+
 INITRD_PATH  = "gentleos.rd"
 
 SECTOR_LEN    = 512
@@ -35,6 +48,12 @@ def die(msg):
 
 def align(n):
     return (n + ALIGN - 1) & ~(ALIGN - 1)
+
+
+def split_ext(path):
+    [base, ext] = os.path.splitext(os.path.basename(path))
+    ext = ext.lower()[1:]
+    return [base, ext]
 
 
 def load_palette(path):
@@ -52,7 +71,7 @@ def load_palette(path):
     return [c if c is not None else (0, 0, 0) for c in rgb]
 
 
-def process_wallpaper(path, palette):
+def process_image(path, palette):
     try:
         from PIL import Image
     except ImportError:
@@ -76,38 +95,56 @@ def process_wallpaper(path, palette):
     return header + pixels
 
 
-def load_inputs(args):
-    inputs = []
+def load_files(args):
+    palette = load_palette(PALETTE_PATH)
+    files = []
 
-    for path in args.inputs:
-        name = os.path.basename(path)[:NAME_LEN - 1]
-        with open(path, "rb") as f:
-            data = f.read()
-        inputs.append({"name": name, "type": FILE_TYPE_UNKNOWN, "data": data})
+    for path in args.files:
+        [basename, ext] = split_ext(path)
+
+        if ext in ["jpg", "jpeg", "png", "pbm", "gif", "bmp"]:
+            file_type = FILE_TYPE_BITMAP
+            name = basename
+            data = process_image(path, palette)
+        else:
+            file_type = FILE_TYPE_UNKNOWN
+            name = basename
+            with open(path, "rb") as f:
+                data = f.read()
+
+        files.append({
+            "name": name[:NAME_LEN - 1],
+            "type": file_type,
+            "data": data,
+        })
 
     if args.wallpaper is not None:
-        palette = load_palette(PALETTE_PATH)
-        data = process_wallpaper(args.wallpaper, palette)
-        inputs.append({"name": "wallpaper", "type": FILE_TYPE_BITMAP, "data": data})
+        data = process_image(args.wallpaper, palette)
+        files.append({
+            "name": "wallpaper",
+            "type": FILE_TYPE_BITMAP,
+            "data": data,
+        })
 
-    return inputs
+    return files
 
 
-def build_initrd(inputs):
-    count = len(inputs)
+def build_initrd(files):
+    count = len(files)
     offset = align(HEADER_LEN + count * ENTRY_LEN)
     table = b""
     blobs = b""
 
-    for inp in inputs:
-        size = len(inp["data"])
+    for f in files:
+        size = len(f["data"])
+        ftype = f["type"]
         padded_size = align(size)
 
-        print("- %s: %x (%u B)" % (inp["name"], offset, size))
+        print("- %s: %x (%u B, %s)" % (f["name"], offset, size, FILE_TYPE_NAMES[ftype]))
 
-        name = inp["name"].encode("latin-1")[:NAME_LEN - 1]
-        table += struct.pack("<%dsBII" % NAME_LEN, name, inp["type"], offset, size)
-        blobs += inp["data"] + b"\0" * (padded_size - size)
+        name = f["name"].encode("latin-1")[:NAME_LEN - 1]
+        table += struct.pack("<%dsBII" % NAME_LEN, name, ftype, offset, size)
+        blobs += f["data"] + b"\0" * (padded_size - size)
         offset += padded_size
 
     return struct.pack("<4sI", MAGIC, count) + table + blobs
@@ -185,19 +222,19 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create initial RAM disk for GentleOS/32 in %s" % INITRD_PATH,
     )
-    parser.add_argument("inputs", nargs="*", help="raw files to add")
+    parser.add_argument("files", nargs="*", help="files to add")
     parser.add_argument("--wallpaper", metavar="PATH", help="image to use as the wallpaper")
     parser.add_argument("--disk-image", metavar="PATH", help="disk image to install initrd into")
     args = parser.parse_args()
 
-    if not args.inputs and args.wallpaper is None:
+    if not args.files and args.wallpaper is None:
         parser.print_usage()
         raise SystemExit(1)
 
-    inputs = load_inputs(args)
+    files = load_files(args)
 
     print("Generating initrd:")
-    image = build_initrd(inputs)
+    image = build_initrd(files)
 
     with open(INITRD_PATH, "wb") as f:
         f.write(image)
