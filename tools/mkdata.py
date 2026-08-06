@@ -209,7 +209,9 @@ def process_builtin_file_entry(index, f):
     ]
 
 def process_builtin_files():
-    paths = ["/dev/null"]
+    paths = sorted([]
+        + glob.glob("assets/songs/*.spk")
+    )
 
     data_lines = []
     entry_lines = []

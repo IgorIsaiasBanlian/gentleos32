@@ -27,14 +27,21 @@ ENTRY_LEN    = NAME_LEN + 9        # 23s name + B type + I offset + I size
 
 FILE_TYPE_UNKNOWN   = 0
 FILE_TYPE_BITMAP    = 1
+FILE_TYPE_SONG      = 2
 
 FILE_TYPE_NAMES = {
     FILE_TYPE_UNKNOWN: "unknown",
     FILE_TYPE_BITMAP:  "bitmap",
+    FILE_TYPE_SONG:    "song",
 }
 
 PALETTE_PATH = "misc/vga-256.gpl"
 PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
+
+SPK_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+SPK_NOTE_REX   = re.compile(r"^\s*([A-G]#?)(\d)\s*,\s*(\d+)\s*$")
+SPK_PAUSE_REX  = re.compile(r"^\s*P\s*,\s*(\d+)\s*$")
+SPK_META_REX   = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
 
 INITRD_PATH  = "gentleos.rd"
 
@@ -101,19 +108,80 @@ def process_image(path):
     return header + pixels
 
 
+def read_spk(path):
+    meta = {}
+    segments = []
+
+    with open(path) as f:
+        lines = f.readlines()
+
+    for num, line in enumerate(lines, 1):
+        if not line.strip():
+            continue
+
+        if m := SPK_META_REX.match(line):
+            meta[m[1]] = m[2]
+            continue
+
+        if m := SPK_NOTE_REX.match(line):
+            note_idx = SPK_NOTE_NAMES.index(m[1]) + int(m[2]) * 12
+            duration = int(m[3])
+        elif m := SPK_PAUSE_REX.match(line):
+            note_idx = None
+            duration = int(m[1])
+        else:
+            die("Error: %s:%d: invalid syntax" % (path, num))
+
+        segments.append((note_idx, max(1, min(0xffff, duration))))
+
+    title = meta.get("title", "")
+    if not title:
+        die("Error: no title in %s" % path)
+
+    if not segments:
+        die("Error: no notes in %s" % path)
+
+    return [title, segments]
+
+
+def process_spk(path):
+    print("Importing %s... " % path, end="")
+
+    title, segments = read_spk(path)
+
+    data = b""
+
+    for note_idx, duration in segments:
+        pitch = 0
+        if note_idx is not None:
+            pitch = max(19, min(0xffff, round(16.3515978313 * 2.0 ** (note_idx / 12.0))))
+        data += struct.pack("<HH", pitch, duration)
+
+    data += struct.pack("<HH", 0, 0)
+
+    print("ok (\"%s\", %d notes, %d ms)" % (title, len(segments), sum(ms for _, ms in segments)))
+
+    return title, data
+
+
 def load_file(path):
     [basename, ext] = split_ext(path)
 
     if ext in  ["jpg", "jpeg", "png", "ppm", "gif", "bmp"]:
+        name = basename
         file_type = FILE_TYPE_BITMAP
         data = process_image(path)
+    elif ext == "spk":
+        file_type = FILE_TYPE_SONG
+        name, data = process_spk(path)
     else:
+        name = f"{basename}.{ext}"
         file_type = FILE_TYPE_UNKNOWN
         with open(path, "rb") as f:
             data = f.read()
 
     return {
-        "name": basename[:NAME_LEN - 1],
+        "name": name[:NAME_LEN - 1],
         "type": file_type,
         "data": data,
     }
