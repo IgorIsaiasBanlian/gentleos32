@@ -11,30 +11,31 @@ enum {
     PADDING = 12,
     LABEL_HEIGHT = 8,
     LABEL_SPACING = 3,
+    GRID_BORDER = 1,
 
     PATTERN_COLS = 4,
     PATTERN_ROWS = 2,
     PATTERN_CELL_WIDTH = 49,
     PATTERN_CELL_HEIGHT = 32,
     PATTERN_COUNT = (PATTERN_COLS * PATTERN_ROWS),
-    PATTERN_GRID_WIDTH = GRID_WIDTH_SPACED(PATTERN_CELL_WIDTH, PATTERN_COLS),
-    PATTERN_GRID_HEIGHT = GRID_HEIGHT_SPACED(PATTERN_CELL_HEIGHT, PATTERN_ROWS),
+    PATTERN_GRID_WIDTH = GRID_WIDTH_SPACED(PATTERN_CELL_WIDTH, PATTERN_COLS, GRID_BORDER),
+    PATTERN_GRID_HEIGHT = GRID_HEIGHT_SPACED(PATTERN_CELL_HEIGHT, PATTERN_ROWS, GRID_BORDER),
 
     COLOR_COLS = 8,
     COLOR_ROWS = 2,
     COLOR_CELL_WIDTH = 24,
     COLOR_CELL_HEIGHT = 18,
     COLOR_COUNT = (COLOR_COLS * COLOR_ROWS),
-    COLOR_GRID_WIDTH = GRID_WIDTH_SPACED(COLOR_CELL_WIDTH, COLOR_COLS),
-    COLOR_GRID_HEIGHT = GRID_HEIGHT_SPACED(COLOR_CELL_HEIGHT, COLOR_ROWS),
+    COLOR_GRID_WIDTH = GRID_WIDTH_SPACED(COLOR_CELL_WIDTH, COLOR_COLS, GRID_BORDER),
+    COLOR_GRID_HEIGHT = GRID_HEIGHT_SPACED(COLOR_CELL_HEIGHT, COLOR_ROWS, GRID_BORDER),
 
     THEME_COUNT = GUI_THEME_COUNT,
     THEME_COLS = 1,
     THEME_ROWS = THEME_COUNT,
     THEME_CELL_HEIGHT = 17,
-    THEME_CELL_WIDTH = COLOR_GRID_WIDTH,
-    THEME_GRID_WIDTH = GRID_WIDTH_SPACED(THEME_CELL_WIDTH, THEME_COLS),
-    THEME_GRID_HEIGHT = GRID_HEIGHT_SPACED(THEME_CELL_HEIGHT, THEME_ROWS),
+    THEME_CELL_WIDTH = COLOR_GRID_WIDTH - 2 * GRID_BORDER,
+    THEME_GRID_WIDTH = GRID_WIDTH_SPACED(THEME_CELL_WIDTH, THEME_COLS, GRID_BORDER),
+    THEME_GRID_HEIGHT = GRID_HEIGHT_SPACED(THEME_CELL_HEIGHT, THEME_ROWS, GRID_BORDER),
 
     THEME_LABEL_Y = TITLE_BAR_HEIGHT + PADDING,
     THEME_GRID_X = PADDING,
@@ -52,7 +53,7 @@ enum {
     COLOR2_GRID_X = PADDING,
     COLOR2_GRID_Y = COLOR2_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
 
-    WINDOW_WIDTH = PADDING + COLOR_GRID_WIDTH + PADDING,
+    WINDOW_WIDTH = THEME_GRID_X + THEME_GRID_WIDTH + PADDING,
     WINDOW_HEIGHT = COLOR2_GRID_Y + COLOR_GRID_HEIGHT + PADDING,
 
     WIDGETS_COUNT = THEME_COUNT + PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
@@ -276,24 +277,19 @@ draw_window(window_st *window)
 
     gui_window_draw_frame(window, COLOR_WIDGET_BG);
 
-    gui_surface_draw_str(window->surface, PADDING - 1, THEME_LABEL_Y, font_8x8,
+    gui_surface_draw_str(window->surface, THEME_GRID_X, THEME_LABEL_Y, font_8x8,
         "Theme", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
-    gui_surface_draw_str(window->surface, PADDING - 1, PATTERN_LABEL_Y, font_8x8,
+    gui_surface_draw_str(window->surface, PATTERN_GRID_X, PATTERN_LABEL_Y, font_8x8,
         "Desktop pattern", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
-    gui_surface_draw_str(window->surface, PADDING - 1, COLOR1_LABEL_Y, font_8x8,
+    gui_surface_draw_str(window->surface, COLOR1_GRID_X, COLOR1_LABEL_Y, font_8x8,
         "Desktop color 1", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
-    gui_surface_draw_str(window->surface, PADDING - 1, COLOR2_LABEL_Y, font_8x8,
+    gui_surface_draw_str(window->surface, COLOR2_GRID_X, COLOR2_LABEL_Y, font_8x8,
         "Desktop color 2", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
-    gui_grid_draw_outside_border(&a->theme_grid, window, COLOR_BORDER);
-    gui_grid_draw_outside_border(&a->pattern_grid, window, COLOR_BORDER);
-    gui_grid_draw_outside_border(&a->color1_grid, window, COLOR_BORDER);
-    gui_grid_draw_outside_border(&a->color2_grid, window, COLOR_BORDER);
-
-    gui_grid_draw_background(&a->theme_grid, window, COLOR_BORDER);
-    gui_grid_draw_background(&a->pattern_grid, window, COLOR_BORDER);
-    gui_grid_draw_background(&a->color1_grid, window, COLOR_BORDER);
-    gui_grid_draw_background(&a->color2_grid, window, COLOR_BORDER);
+    gui_grid_fill(&a->theme_grid, window, COLOR_BORDER);
+    gui_grid_fill(&a->pattern_grid, window, COLOR_BORDER);
+    gui_grid_fill(&a->color1_grid, window, COLOR_BORDER);
+    gui_grid_fill(&a->color2_grid, window, COLOR_BORDER);
 
     gui_window_draw_widgets(window);
 }
@@ -337,6 +333,7 @@ init_theme_buttons(void)
     a->theme_grid.cell_height = THEME_CELL_HEIGHT;
     a->theme_grid.cols = THEME_COLS;
     a->theme_grid.rows = THEME_ROWS;
+    a->theme_grid.border = GRID_BORDER;
     a->theme_grid.x = THEME_GRID_X;
     a->theme_grid.y = THEME_GRID_Y;
 
@@ -360,6 +357,7 @@ init_pattern_buttons(void)
     a->pattern_grid.cell_height = PATTERN_CELL_HEIGHT;
     a->pattern_grid.cols = PATTERN_COLS;
     a->pattern_grid.rows = PATTERN_ROWS;
+    a->pattern_grid.border = GRID_BORDER;
     a->pattern_grid.x = PATTERN_GRID_X;
     a->pattern_grid.y = PATTERN_GRID_Y;
 
@@ -388,6 +386,7 @@ init_color_buttons(grid_st *grid, widget_st *buttons, int grid_x, int grid_y,
     grid->cell_height = COLOR_CELL_HEIGHT;
     grid->cols = COLOR_COLS;
     grid->rows = COLOR_ROWS;
+    grid->border = GRID_BORDER;
     grid->x = grid_x;
     grid->y = grid_y;
 

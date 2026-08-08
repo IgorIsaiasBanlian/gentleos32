@@ -127,6 +127,7 @@ typedef struct {
     int cell_height;
     int cols;
     int rows;
+    int border;
     int x;
     int y;
 } grid_st;
@@ -227,8 +228,11 @@ enum {
     STATUS_HEIGHT = 24,
 };
 
-#define GRID_WIDTH_SPACED(cell_width, cols) ((cell_width) * (cols) + (cols) - 1)
-#define GRID_HEIGHT_SPACED(cell_height, rows) ((cell_height) * (rows) + (rows) - 1)
+#define GRID_WIDTH_SPACED(cell_width, cols, border) \
+    ((cell_width) * (cols) + (cols) - 1 + 2 * (border))
+
+#define GRID_HEIGHT_SPACED(cell_height, rows, border) \
+    ((cell_height) * (rows) + (rows) - 1 + 2 * (border))
 
 enum {
     CARD_RANK_COUNT = 13,

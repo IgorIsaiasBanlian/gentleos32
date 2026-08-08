@@ -14,18 +14,19 @@ enum {
     BUTTON_ROWS = 4,
     BUTTONS_COUNT = BUTTON_COLS * BUTTON_ROWS,
 
+    DISPLAY_X = 0,
+    DISPLAY_Y = TITLE_BAR_HEIGHT - 1,
     DISPLAY_HEIGHT = BUTTON_HEIGHT,
 
-    GRID_X = 1,
-    GRID_Y = TITLE_BAR_HEIGHT + DISPLAY_HEIGHT + 1,
-    GRID_WIDTH = GRID_WIDTH_SPACED(BUTTON_WIDTH, BUTTON_COLS),
-    GRID_HEIGHT = GRID_HEIGHT_SPACED(BUTTON_HEIGHT, BUTTON_ROWS),
+    GRID_BORDER = 1,
+    GRID_X = 0,
+    GRID_Y = DISPLAY_Y + DISPLAY_HEIGHT - 1,
+    GRID_WIDTH = GRID_WIDTH_SPACED(BUTTON_WIDTH, BUTTON_COLS, GRID_BORDER),
+    GRID_HEIGHT = GRID_HEIGHT_SPACED(BUTTON_HEIGHT, BUTTON_ROWS, GRID_BORDER),
 
-    WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
-    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
+    WINDOW_WIDTH = GRID_X + GRID_WIDTH,
+    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT,
 
-    DISPLAY_X = GRID_X,
-    DISPLAY_Y = TITLE_BAR_HEIGHT,
     DISPLAY_WIDTH = GRID_WIDTH,
 };
 
@@ -152,6 +153,7 @@ update_display(void)
     }
 
     rect_st rect = gui_rect_make(DISPLAY_X, DISPLAY_Y, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    rect = gui_rect_shrink(rect, 1);
 
     gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_BG);
 
@@ -269,6 +271,7 @@ init_buttons(void)
     a->grid.cell_height = BUTTON_HEIGHT;
     a->grid.cols = BUTTON_COLS;
     a->grid.rows = BUTTON_ROWS;
+    a->grid.border = GRID_BORDER;
     a->grid.x = GRID_X;
     a->grid.y = GRID_Y;
 

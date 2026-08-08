@@ -20,13 +20,14 @@ enum {
     GRID_ROWS = 6,
     GRID_COLS = 7,
     GRID_CELLS_COUNT = GRID_ROWS * GRID_COLS,
-    GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS),
-    GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS),
-    GRID_X = 1,
-    GRID_Y = WEEK_BAR_Y + WEEK_BAR_HEIGHT,
+    GRID_BORDER = 1,
+    GRID_WIDTH = GRID_WIDTH_SPACED(GRID_CELL_WIDTH, GRID_COLS, GRID_BORDER),
+    GRID_HEIGHT = GRID_HEIGHT_SPACED(GRID_CELL_HEIGHT, GRID_ROWS, GRID_BORDER),
+    GRID_X = 0,
+    GRID_Y = WEEK_BAR_Y + WEEK_BAR_HEIGHT - 1,
 
-    WINDOW_WIDTH = GRID_X + GRID_WIDTH + 1,
-    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT + 1,
+    WINDOW_WIDTH = GRID_X + GRID_WIDTH,
+    WINDOW_HEIGHT = GRID_Y + GRID_HEIGHT,
 };
 
 enum {
@@ -166,7 +167,7 @@ draw_window(window_st *window)
     app_state_st *a = app_state;
 
     gui_window_draw(window, COLOR_WIDGET_BG);
-    gui_grid_draw_background(&a->grid, window, COLOR_BORDER);
+    gui_grid_fill(&a->grid, window, COLOR_BORDER);
     draw_week_bar();
     draw_selected_month();
 }
@@ -275,10 +276,9 @@ init_day_buttons(void)
     a->grid.cell_height = GRID_CELL_HEIGHT;
     a->grid.cols = GRID_COLS;
     a->grid.rows = GRID_ROWS;
+    a->grid.border = GRID_BORDER;
     a->grid.x = GRID_X;
     a->grid.y = GRID_Y;
-
-    gui_grid_draw_background(&a->grid, &a->window, COLOR_BORDER);
 
     for (size_t i = 0; i < GRID_CELLS_COUNT; ++i) {
         int col = i % GRID_COLS;

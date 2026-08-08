@@ -13,8 +13,8 @@ gui_grid_rect(grid_st *grid)
     return (rect_st) {
         .x = grid->x,
         .y = grid->y,
-        .width = GRID_WIDTH_SPACED(grid->cell_width, grid->cols),
-        .height = GRID_HEIGHT_SPACED(grid->cell_height, grid->rows),
+        .width = GRID_WIDTH_SPACED(grid->cell_width, grid->cols, grid->border),
+        .height = GRID_HEIGHT_SPACED(grid->cell_height, grid->rows, grid->border),
     };
 }
 
@@ -22,26 +22,17 @@ global rect_st
 gui_grid_cell_rect(grid_st *grid, int col, int row)
 {
     return (rect_st) {
-        .x = grid->x + col * grid->cell_width + col,
-        .y = grid->y + row * grid->cell_height + row,
+        .x = grid->x + grid->border + col * grid->cell_width + col,
+        .y = grid->y + grid->border + row * grid->cell_height + row,
         .width = grid->cell_width,
         .height = grid->cell_height,
     };
 }
 
 global void
-gui_grid_draw_background(grid_st *grid, window_st *window, uint8_t color)
+gui_grid_fill(grid_st *grid, window_st *window, uint8_t color)
 {
     rect_st grid_rect = gui_grid_rect(grid);
     gui_surface_draw_rect(window->surface, grid_rect, color);
     gui_wm_render_window_region(window, grid_rect);
-}
-
-global void
-gui_grid_draw_outside_border(grid_st *grid, window_st *window, uint8_t color)
-{
-    rect_st rect = gui_grid_rect(grid);
-    rect = gui_rect_shrink(rect, -1);
-    gui_surface_draw_border(window->surface, rect, color);
-    gui_wm_render_window_region(window, rect);
 }
