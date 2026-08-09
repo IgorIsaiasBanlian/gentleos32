@@ -94,7 +94,7 @@ def load_palette(path):
 
 def process_image(path):
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
     except ImportError:
         die("Error: mkinitrd.py requires 'pillow' library for Python")
 
@@ -107,17 +107,27 @@ def process_image(path):
     print("Importing %s... " % path, end="")
 
     img = Image.open(path).convert("RGB")
-
     width, height = img.size
+    colors = img.getcolors(maxcolors=2)
+    is_bw = colors and all(c in [(0, 0, 0), (255, 255, 255)] for (_, c) in colors)
 
-    pal = Image.new("P", (1, 1))
-    pal.putpalette([c for color in palette for c in color])
-    quantized = img.quantize(palette=pal, dither=Image.Dither.FLOYDSTEINBERG)
-    pixels = quantized.tobytes()
+    if is_bw:
+        bpp = 1
+        alpha = 0
+        pitch = (width + 7) // 8
+        img = ImageOps.invert(img.convert("1"))
+    else:
+        bpp = 8
+        alpha = 0xfd
+        pitch = width
+        pal = Image.new("P", (1, 1))
+        pal.putpalette([c for color in palette for c in color])
+        img = img.quantize(palette=pal, dither=Image.Dither.FLOYDSTEINBERG)
 
-    header = struct.pack("<7I", width, height, 8, width, 0, 0xfd, 0)
+    header = struct.pack("<7I", width, height, bpp, pitch, 0, alpha, 0)
+    pixels = img.tobytes()
 
-    print("ok (%dx%d)" % (width, height))
+    print("ok (%dx%d, %d bpp)" % (width, height, bpp))
 
     return header + pixels
 
