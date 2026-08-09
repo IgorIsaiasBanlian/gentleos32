@@ -14,6 +14,7 @@
 # ///
 
 import argparse
+import glob
 import os
 import re
 import shutil
@@ -61,6 +62,19 @@ def split_ext(path):
     [base, ext] = os.path.splitext(os.path.basename(path))
     ext = ext.lower()[1:]
     return [base, ext]
+
+
+def expand_paths(paths):
+    ret = []
+
+    for path in paths:
+        if not glob.has_magic(path):
+            ret.append(path)
+            continue
+
+        ret.extend(p for p in glob.glob(path, recursive=True) if os.path.isfile(p))
+
+    return sorted(ret)
 
 
 def load_palette(path):
@@ -287,7 +301,7 @@ def main():
 
     files = []
 
-    for path in args.files:
+    for path in expand_paths(args.files):
         files.append(load_file(path))
 
     if args.wallpaper is not None:
