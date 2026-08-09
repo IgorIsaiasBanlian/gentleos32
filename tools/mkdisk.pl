@@ -6,6 +6,11 @@
 # File: mkdisk.pl - Make bootable disk image
 #
 
+my %BOOT_FLAGS = (
+    "no-menu"    => 1 << 0,
+    "uart-debug" => 1 << 1,
+);
+
 sub slurp {
     my ($path) = @_;
     open(my $f, $path) or die "Cannot read $path\n";
@@ -25,8 +30,15 @@ sub spit {
 }
 
 sub main {
-    my ($boot_path, $kernel_path, $disk_path) = @ARGV;
-    die "Usage: mkdisk.pl <boot-bin> <kernel-bin> <disk-image>\n" unless defined $disk_path;
+    my ($boot_path, $kernel_path, $disk_path, @flag_names) = @ARGV;
+    die "Usage: mkdisk.pl <boot-bin> <kernel-bin> <disk-image> [flag ...]\n" unless defined $disk_path;
+
+    my $boot_flags = 0;
+
+    for my $name (@flag_names) {
+        die "Unknown boot flag: $name\n" unless exists $BOOT_FLAGS{$name};
+        $boot_flags |= $BOOT_FLAGS{$name};
+    }
 
     my $kernel = slurp($kernel_path);
     my $kernel_sectors = int((length($kernel) + 511) / 512);
@@ -39,6 +51,7 @@ sub main {
 
     substr($boot, 5, 2, pack("v", $stage2_sectors));
     substr($boot, 512, 2, pack("v", $kernel_sectors));
+    substr($boot, 516, 2, pack("v", $boot_flags));
 
     my $stage1 = substr($boot, 0, 512);
     my $image = $stage1 . $boot . $boot_padding . $kernel . $kernel_padding;

@@ -383,6 +383,9 @@ kernel_sectors: dw 0
 global initrd_sectors:data
 initrd_sectors: dw 0
 
+global boot_flags:data
+boot_flags: dw 0
+
 
 ;
 ; Stage 2 main function

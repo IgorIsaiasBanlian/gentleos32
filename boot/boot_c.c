@@ -13,6 +13,7 @@ extern mboot_info_st mboot_info;
 extern uint16_t stage2_sectors;
 extern uint16_t kernel_sectors;
 extern uint16_t initrd_sectors;
+extern uint16_t boot_flags;
 
 extern uint32_t get_elapsed_ticks(void);
 extern uint16_t get_far_word(uint16_t seg, uint16_t ofs);
@@ -45,6 +46,11 @@ enum {
     STAGE2_START_LBA = 2,
     KERNEL_DEST = 0x10000,
     INITRD_DEST = 0x100000,
+};
+
+enum {
+    BOOT_FLAG_NO_MENU    = 1 << 0,
+    BOOT_FLAG_UART_DEBUG = 1 << 1,
 };
 
 static const char *UART_CMDLINES[UART_MODE_COUNT] = {
@@ -248,7 +254,11 @@ stage2_cmain(void)
 {
     int key;
 
-    print_str("\r\nLoading GentleOS. Press 'm' to show boot menu.");
+    print_str("\r\nLoading GentleOS.");
+
+    if (!(boot_flags & BOOT_FLAG_NO_MENU)) {
+        print_str(" Press 'm' to show boot menu.");
+    }
 
     if (initrd_sectors > 0) {
         /* Must be called before load_kernel since it temporarily uses the same memory */
@@ -266,14 +276,20 @@ stage2_cmain(void)
 
     print_str("\r\n");
 
-    do {
-        key = has_key() ? get_key() : 0;
+    if (boot_flags & BOOT_FLAG_UART_DEBUG) {
+        kernel_config.uart_mode = UART_MODE_DEBUG;
+    }
 
-        if (key == 'm' || key == 'M') {
-            show_boot_menu();
-            break;
-        }
-    } while (has_key() || get_elapsed_ticks() < MENU_WAIT_TICKS);
+    if (!(boot_flags & BOOT_FLAG_NO_MENU)) {
+        do {
+            key = has_key() ? get_key() : 0;
+
+            if (key == 'm' || key == 'M') {
+                show_boot_menu();
+                break;
+            }
+        } while (has_key() || get_elapsed_ticks() < MENU_WAIT_TICKS);
+    }
 
     mboot_info.flags |= MBOOT_FLAG_CMDLINE;
     mboot_info.cmdline = UART_CMDLINES[kernel_config.uart_mode];
