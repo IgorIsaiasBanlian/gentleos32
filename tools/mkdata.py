@@ -111,7 +111,11 @@ def process_pbm(path):
 
 def process_bitmaps():
     pbm_files = sorted([]
-        + glob.glob("assets/*/*.pbm")
+        + glob.glob("assets/icons/*.pbm")
+        + glob.glob("assets/mahjong/*.pbm")
+        + glob.glob("assets/patterns/*.pbm")
+        + glob.glob("assets/player/*.pbm")
+        + glob.glob("assets/sprites/*.pbm")
         + glob.glob("vendor/icons8/*.pbm")
         + glob.glob("vendor/mona/*.pbm")
     )
