@@ -47,6 +47,13 @@ extern rect_st gui_grid_rect(grid_st *grid);
 extern rect_st gui_grid_cell_rect(grid_st *grid, int col, int row);
 extern grid_pos_st gui_grid_cell_at(grid_st *grid, point_st pos);
 extern void gui_grid_fill(grid_st *grid, window_st *window, uint8_t color);
+/* gui/listwgt.c */
+extern void gui_list_widget_init(list_widget_st *list);
+extern void gui_list_widget_set_item_count(list_widget_st *list, int item_count);
+extern void gui_list_widget_set_page(list_widget_st *list, int page);
+extern void gui_list_widget_set_index(list_widget_st *list, int index);
+extern void gui_list_widget_draw(widget_st *widget);
+extern void gui_list_widget_on_pointer_down(widget_st *widget, event_st event, point_st pos);
 /* gui/main.c */
 extern app_st *gui_apps[];
 extern unsigned gui_apps_count;

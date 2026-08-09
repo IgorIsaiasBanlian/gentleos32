@@ -79,6 +79,7 @@ struct widget {
 
     int tag1;
     int tag2;
+    void *data;
 
     int active;
     int press_on_move_in;
@@ -136,6 +137,23 @@ typedef struct {
     int col;
     int row;
 } grid_pos_st;
+
+struct list_widget;
+typedef struct list_widget list_widget_st;
+
+struct list_widget {
+    widget_st widget;
+    grid_st grid;
+
+    int item_count;
+    int page_size;
+    int page_count;
+    int cur_page;
+    int cur_index;
+
+    const char *(*get_label)(list_widget_st *list, int index);
+    void (*on_select)(list_widget_st *list, int index);
+};
 
 typedef struct {
     bitmap_st *icon;
