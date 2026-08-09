@@ -73,7 +73,7 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(DISK_IMAGE)
 
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(WEB_IMAGE) no-menu uart-debug
-	./tools/mkinitrd.py vendor/wallpapers/* -o $(BUILDDIR)/gentleos-web.rd --disk-image $(WEB_IMAGE)
+	./tools/mkinitrd.py vendor/wallpapers/*.png -o $(BUILDDIR)/gentleos-web.rd --disk-image $(WEB_IMAGE)
 	./tools/padfile.py $(WEB_IMAGE) 1048576
 
 clean:
