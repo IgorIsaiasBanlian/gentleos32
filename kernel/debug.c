@@ -116,10 +116,12 @@ krn_debug_assert(int expr, const char *file, unsigned line)
 global void
 krn_debug_beep(unsigned hz, unsigned msecs, unsigned count)
 {
+    static int beep_owner = 0;
+
     for (unsigned i = 0; i < count; i++) {
-        krn_speaker_play_freq(hz, NULL);
+        krn_speaker_play_freq(hz, &beep_owner);
         sleep(msecs);
-        krn_speaker_stop();
+        krn_speaker_stop(&beep_owner);
         sleep(msecs);
     }
 }

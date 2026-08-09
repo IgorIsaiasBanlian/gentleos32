@@ -104,7 +104,7 @@ on_key_pointer_down(widget_st *widget, event_st event, point_st pos)
 static void
 on_key_pointer_up(widget_st *widget, event_st event, point_st pos)
 {
-    krn_speaker_stop();
+    krn_speaker_stop(&app_sounds);
 
     gui_button_on_pointer_up(widget, event, pos);
 }
@@ -112,7 +112,7 @@ on_key_pointer_up(widget_st *widget, event_st event, point_st pos)
 static void
 on_key_pointer_out(widget_st *widget, event_st event, point_st pos)
 {
-    krn_speaker_stop();
+    krn_speaker_stop(&app_sounds);
 
     gui_button_on_pointer_out(widget, event, pos);
 }

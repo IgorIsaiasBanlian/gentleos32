@@ -121,11 +121,16 @@ krn_speaker_play_freq(unsigned hz, void *owner)
 }
 
 global void
-krn_speaker_pause(void)
+krn_speaker_pause(void *owner)
 {
     krn_lock_t lock;
 
     lock = krn_lock();
+
+    if (krn_speaker_state.song_owner != owner) {
+        krn_unlock(lock);
+        return;
+    }
 
     if (krn_speaker_state.state == SPEAKER_STATE_PLAYING) {
         krn_speaker_state.state = SPEAKER_STATE_PAUSED;
@@ -136,11 +141,16 @@ krn_speaker_pause(void)
 }
 
 global void
-krn_speaker_resume(void)
+krn_speaker_resume(void *owner)
 {
     krn_lock_t lock;
 
     lock = krn_lock();
+
+    if (krn_speaker_state.song_owner != owner) {
+        krn_unlock(lock);
+        return;
+    }
 
     if (krn_speaker_state.state == SPEAKER_STATE_PAUSED) {
         krn_speaker_state.state = SPEAKER_STATE_PLAYING;
@@ -153,11 +163,16 @@ krn_speaker_resume(void)
 }
 
 global void
-krn_speaker_stop(void)
+krn_speaker_stop(void *owner)
 {
     krn_lock_t lock;
 
     lock = krn_lock();
+
+    if (krn_speaker_state.song_owner != owner) {
+        krn_unlock(lock);
+        return;
+    }
 
     /* Keep song, owner and elapsed msecs for inspection */
     krn_speaker_state.state = SPEAKER_STATE_STOPPED;
