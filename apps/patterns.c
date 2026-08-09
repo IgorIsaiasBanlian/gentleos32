@@ -56,7 +56,7 @@ enum {
     WINDOW_WIDTH = THEME_GRID_X + THEME_GRID_WIDTH + PADDING,
     WINDOW_HEIGHT = COLOR2_GRID_Y + COLOR_GRID_HEIGHT + PADDING,
 
-    WIDGETS_COUNT = THEME_COUNT + PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
+    WIDGETS_COUNT = 1 + PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
 };
 
 typedef struct {
@@ -67,19 +67,17 @@ typedef struct {
     widget_st title_bar;
     widget_st close_button;
 
-    widget_st theme_buttons[THEME_COUNT];
+    list_widget_st theme_list;
     widget_st pattern_buttons[PATTERN_COUNT];
     widget_st color1_buttons[COLOR_COUNT];
     widget_st color2_buttons[COLOR_COUNT];
 
     widget_st *widgets[WIDGETS_COUNT];
 
-    grid_st theme_grid;
     grid_st pattern_grid;
     grid_st color1_grid;
     grid_st color2_grid;
 
-    widget_st *active_theme_button;
     widget_st *active_pattern_button;
     widget_st *active_color1_button;
     widget_st *active_color2_button;
@@ -109,10 +107,6 @@ select_active_buttons(void)
 {
     app_state_st *a = app_state;
 
-    if (gui_theme.index >= 0 && gui_theme.index < THEME_COUNT) {
-        a->active_theme_button = &a->theme_buttons[gui_theme.index];
-    }
-
     for (int i = 0; i < PATTERN_COUNT; i++) {
         if (gui_theme.desktop_pattern == patterns[i]) {
             a->active_pattern_button = &a->pattern_buttons[i];
@@ -131,39 +125,20 @@ select_active_buttons(void)
     }
 }
 
-static void
-draw_theme_button(widget_st *widget)
+static const char *
+get_theme_label(list_widget_st *list _unsd, int index)
 {
-    app_state_st *a = app_state;
-
-    rect_st rect = widget->rect;
-    surface_st *sf = widget->window->surface;
-    int is_active = (widget == a->active_theme_button);
-
-    gui_surface_draw_rect(sf, rect, COLOR_WIDGET_BG);
-
-    if (is_active) {
-        gui_surface_draw_border(sf, rect, COLOR_BORDER);
-    }
-
-    gui_surface_draw_str(sf, rect.x + 5, rect.y + 5, font_8x8, theme_names[widget->tag1],
-        COLOR_WIDGET_FG, COLOR_WIDGET_BG);
-
-    gui_wm_render_window_region(widget->window, widget->rect);
+    return theme_names[index];
 }
 
 static void
-on_theme_button_press(widget_st *widget, event_st event _unsd, point_st pos _unsd)
+on_theme_select(list_widget_st *list _unsd, int index)
 {
-    app_state_st *a = app_state;
-
-    if (widget->tag1 == gui_theme.index) {
+    if (index == gui_theme.index) {
         return;
     }
 
-    a->active_theme_button = widget;
-
-    gui_theme_set(widget->tag1);
+    gui_theme_set(index);
 
     select_active_buttons();
 
@@ -286,7 +261,6 @@ draw_window(window_st *window)
     gui_surface_draw_str(window->surface, COLOR2_GRID_X, COLOR2_LABEL_Y, font_8x8,
         "Desktop color 2", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
-    gui_grid_fill(&a->theme_grid, window, COLOR_BORDER);
     gui_grid_fill(&a->pattern_grid, window, COLOR_BORDER);
     gui_grid_fill(&a->color1_grid, window, COLOR_BORDER);
     gui_grid_fill(&a->color2_grid, window, COLOR_BORDER);
@@ -325,27 +299,26 @@ init_window(void)
 }
 
 static void
-init_theme_buttons(void)
+init_theme_list(void)
 {
     app_state_st *a = app_state;
 
-    a->theme_grid.cell_width = THEME_CELL_WIDTH;
-    a->theme_grid.cell_height = THEME_CELL_HEIGHT;
-    a->theme_grid.cols = THEME_COLS;
-    a->theme_grid.rows = THEME_ROWS;
-    a->theme_grid.border = GRID_BORDER;
-    a->theme_grid.x = THEME_GRID_X;
-    a->theme_grid.y = THEME_GRID_Y;
+    a->theme_list.grid.cell_width = THEME_CELL_WIDTH;
+    a->theme_list.grid.cell_height = THEME_CELL_HEIGHT;
+    a->theme_list.grid.cols = THEME_COLS;
+    a->theme_list.grid.rows = THEME_ROWS;
+    a->theme_list.grid.border = GRID_BORDER;
+    a->theme_list.grid.x = THEME_GRID_X;
+    a->theme_list.grid.y = THEME_GRID_Y;
 
-    for (int i = 0; i < THEME_COUNT; i++) {
-        a->theme_buttons[i].rect = gui_grid_cell_rect(&a->theme_grid, 0, i);
-        a->theme_buttons[i].tag1 = i;
-        a->theme_buttons[i].window = &a->window;
-        a->theme_buttons[i].draw = draw_theme_button;
-        a->theme_buttons[i].on_pointer_down = on_theme_button_press;
+    a->theme_list.get_label = get_theme_label;
+    a->theme_list.on_select = on_theme_select;
 
-        gui_window_add_widget(&a->window, &a->theme_buttons[i]);
-    }
+    gui_list_widget_init(&a->theme_list);
+    gui_list_widget_set_item_count(&a->theme_list, THEME_COUNT);
+    gui_list_widget_set_index(&a->theme_list, gui_theme.index);
+
+    gui_window_add_widget(&a->window, &a->theme_list.widget);
 }
 
 static void
@@ -418,7 +391,7 @@ init_app(void)
 
     init_window();
     select_active_buttons();
-    init_theme_buttons();
+    init_theme_list();
     init_pattern_buttons();
     init_color_buttons(&app_state->color1_grid, app_state->color1_buttons,
         COLOR1_GRID_X, COLOR1_GRID_Y, on_color1_button_press);
