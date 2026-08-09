@@ -108,6 +108,7 @@ def process_mid(mid, track):
             prev_idx = None
             prev_ms = cur_ms
 
+    notes.append((None, 2000))
     notes = merge_rests(notes)
     notes = close_micro_rests(notes)
     notes = [(idx, min(ms, 0xffff)) for (idx, ms) in notes]
