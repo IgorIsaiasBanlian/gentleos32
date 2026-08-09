@@ -13,6 +13,7 @@ KERNEL_LOMEM_BIN    := $(BUILDDIR)/kernel-lomem.bin
 
 DISK_IMAGE      := gentleos32-disk.img
 GRUB_IMAGE      := gentleos32-grub.img
+WEB_IMAGE       := gentleos32-web.img
 DISK_FS_OFFSET  := 1048576
 
 CONFIG_H        := $(BASEDIR)/config.h
@@ -71,8 +72,12 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(DISK_IMAGE)
 
+	cp $(DISK_IMAGE) $(WEB_IMAGE)
+	./tools/mkinitrd.py vendor/wallpapers/* -o $(BUILDDIR)/gentleos-web.rd --disk-image $(WEB_IMAGE)
+	./tools/padfile.py $(WEB_IMAGE) 655360
+
 clean:
-	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(GRUB_IMAGE)
+	rm -rf $(BUILDDIR) $(KERNEL_HIMEM_BIN) $(DISK_IMAGE) $(GRUB_IMAGE) $(WEB_IMAGE)
 
 $(OBJDIRS):
 	@mkdir -p $@
