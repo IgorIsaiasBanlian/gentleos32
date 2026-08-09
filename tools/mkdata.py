@@ -54,6 +54,7 @@ FONTS = [
 PREFIXES = {
     "assets/icons": "icon_",
     "vendor/icons8": "icon_",
+    "assets/player": "icon_player_",
     "assets/sprites": "sprite_",
     "assets/mahjong": "sprite_mj_",
     "vendor/mona": "glyph_mn_",
