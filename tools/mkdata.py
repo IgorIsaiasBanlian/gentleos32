@@ -214,6 +214,9 @@ def process_builtin_files():
         + glob.glob("assets/songs/*.spk")
     )
 
+    if not paths:
+        paths = ["/dev/null"]
+
     data_lines = []
     entry_lines = []
 
