@@ -13,6 +13,10 @@ enum {
     PPI_PB       = 0x61, /* Port B of 8255A-5 PPI */
 };
 
+enum {
+    REST_PITCH = 59659, /* Used instead of silence to prevent glitching in QEMU */
+};
+
 static volatile speaker_state_st krn_speaker_state = {
     .state = SPEAKER_STATE_STOPPED,
 
@@ -65,7 +69,7 @@ krn_speaker_start_note(void)
 
     krn_speaker_state.note_ticks_left = (note->duration * TICK_FREQUENCY + 999) / 1000;
 
-    krn_speaker_set_freq(note->pitch);
+    krn_speaker_set_freq(note->pitch ? note->pitch : REST_PITCH);
 }
 
 global void
@@ -125,7 +129,7 @@ krn_speaker_pause(void)
 
     if (krn_speaker_state.state == SPEAKER_STATE_PLAYING) {
         krn_speaker_state.state = SPEAKER_STATE_PAUSED;
-        krn_speaker_set_freq(0);
+        krn_speaker_set_freq(REST_PITCH);
     }
 
     krn_unlock(lock);
@@ -141,9 +145,8 @@ krn_speaker_resume(void)
     if (krn_speaker_state.state == SPEAKER_STATE_PAUSED) {
         krn_speaker_state.state = SPEAKER_STATE_PLAYING;
 
-        if (krn_speaker_state.note->pitch != 0) {
-            krn_speaker_set_freq(krn_speaker_state.note->pitch);
-        }
+        krn_speaker_set_freq(krn_speaker_state.note->pitch
+            ? krn_speaker_state.note->pitch : REST_PITCH);
     }
 
     krn_unlock(lock);
