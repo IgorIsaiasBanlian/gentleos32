@@ -37,11 +37,23 @@ enum {
     THEME_GRID_WIDTH = GRID_WIDTH_SPACED(THEME_CELL_WIDTH, THEME_COLS, GRID_BORDER),
     THEME_GRID_HEIGHT = GRID_HEIGHT_SPACED(THEME_CELL_HEIGHT, THEME_ROWS, GRID_BORDER),
 
+    WALLPAPER_MAX_COUNT = 3,
+    WALLPAPER_COLS = 1,
+    WALLPAPER_ROWS = WALLPAPER_MAX_COUNT + 1,
+    WALLPAPER_CELL_HEIGHT = THEME_CELL_HEIGHT,
+    WALLPAPER_CELL_WIDTH = THEME_CELL_WIDTH,
+    WALLPAPER_GRID_WIDTH = GRID_WIDTH_SPACED(WALLPAPER_CELL_WIDTH, WALLPAPER_COLS, GRID_BORDER),
+    WALLPAPER_GRID_HEIGHT = GRID_HEIGHT_SPACED(WALLPAPER_CELL_HEIGHT, WALLPAPER_ROWS, GRID_BORDER),
+
     THEME_LABEL_Y = TITLE_BAR_HEIGHT + PADDING,
     THEME_GRID_X = PADDING,
     THEME_GRID_Y = THEME_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
 
-    PATTERN_LABEL_Y = THEME_GRID_Y + THEME_GRID_HEIGHT + PADDING,
+    WALLPAPER_LABEL_Y = THEME_GRID_Y + THEME_GRID_HEIGHT + PADDING,
+    WALLPAPER_GRID_X = PADDING,
+    WALLPAPER_GRID_Y = WALLPAPER_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
+
+    PATTERN_LABEL_Y = WALLPAPER_GRID_Y + WALLPAPER_GRID_HEIGHT + PADDING,
     PATTERN_GRID_X = PADDING,
     PATTERN_GRID_Y = PATTERN_LABEL_Y + LABEL_HEIGHT + LABEL_SPACING,
 
@@ -56,7 +68,7 @@ enum {
     WINDOW_WIDTH = THEME_GRID_X + THEME_GRID_WIDTH + PADDING,
     WINDOW_HEIGHT = COLOR2_GRID_Y + COLOR_GRID_HEIGHT + PADDING,
 
-    WIDGETS_COUNT = 1 + PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
+    WIDGETS_COUNT = 2 + PATTERN_COUNT + COLOR_COUNT + COLOR_COUNT + 2,
 };
 
 typedef struct {
@@ -68,6 +80,7 @@ typedef struct {
     widget_st close_button;
 
     list_widget_st theme_list;
+    list_widget_st wallpaper_list;
     widget_st pattern_buttons[PATTERN_COUNT];
     widget_st color1_buttons[COLOR_COUNT];
     widget_st color2_buttons[COLOR_COUNT];
@@ -81,6 +94,10 @@ typedef struct {
     widget_st *active_pattern_button;
     widget_st *active_color1_button;
     widget_st *active_color2_button;
+
+    bitmap_st *wallpapers[WALLPAPER_ROWS];
+    const char *wallpaper_names[WALLPAPER_ROWS];
+    int wallpaper_count;
 } app_state_st;
 
 static app_state_st *app_state = NULL;
@@ -125,6 +142,42 @@ select_active_buttons(void)
     }
 }
 
+static void
+load_wallpapers(void)
+{
+    app_state_st *a = app_state;
+    system_info_st *si = &krn_system_info;
+
+    a->wallpapers[0] = NULL;
+    a->wallpaper_names[0] = "None";
+    a->wallpaper_count = 1;
+
+    for (size_t i = 0; i < file_count(); ++i) {
+        file_st *file = file_get(i);
+        bitmap_st *bitmap;
+
+        if (a->wallpaper_count >= WALLPAPER_ROWS) {
+            break;
+        }
+
+        if (!file || file->type != FILE_TYPE_BITMAP) {
+            continue;
+        }
+
+        bitmap = gui_load_bitmap(file->name);
+
+        if (bitmap
+            && bitmap->bpp == 8
+            && bitmap->size.width == si->fb_width
+            && bitmap->size.height == si->fb_height
+        ) {
+            a->wallpapers[a->wallpaper_count] = bitmap;
+            a->wallpaper_names[a->wallpaper_count] = file->name;
+            ++a->wallpaper_count;
+        }
+    }
+}
+
 static const char *
 get_theme_label(list_widget_st *list _unsd, int index)
 {
@@ -143,6 +196,25 @@ on_theme_select(list_widget_st *list _unsd, int index)
     select_active_buttons();
 
     gui_wm_redraw_all();
+}
+
+static const char *
+get_wallpaper_label(list_widget_st *list _unsd, int index)
+{
+    return app_state->wallpaper_names[index];
+}
+
+static void
+on_wallpaper_select(list_widget_st *list _unsd, int index)
+{
+    app_state_st *a = app_state;
+
+    if (a->wallpapers[index] == gui_wm_wallpaper) {
+        return;
+    }
+
+    gui_wm_wallpaper = a->wallpapers[index];
+    gui_wm_render_desktop_region(gui_wm_container, NULL);
 }
 
 static void
@@ -254,6 +326,8 @@ draw_window(window_st *window)
 
     gui_surface_draw_str(window->surface, THEME_GRID_X, THEME_LABEL_Y, font_8x8,
         "Theme", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
+    gui_surface_draw_str(window->surface, WALLPAPER_GRID_X, WALLPAPER_LABEL_Y, font_8x8,
+        "Wallpaper", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     gui_surface_draw_str(window->surface, PATTERN_GRID_X, PATTERN_LABEL_Y, font_8x8,
         "Desktop pattern", COLOR_WIDGET_FG, COLOR_WIDGET_BG);
     gui_surface_draw_str(window->surface, COLOR1_GRID_X, COLOR1_LABEL_Y, font_8x8,
@@ -319,6 +393,37 @@ init_theme_list(void)
 
     gui_list_widget_set_item_count(&a->theme_list, THEME_COUNT);
     gui_list_widget_set_index(&a->theme_list, gui_theme.index);
+}
+
+static void
+init_wallpaper_list(void)
+{
+    app_state_st *a = app_state;
+    int index = 0;
+
+    a->wallpaper_list.grid.cell_width = WALLPAPER_CELL_WIDTH;
+    a->wallpaper_list.grid.cell_height = WALLPAPER_CELL_HEIGHT;
+    a->wallpaper_list.grid.cols = WALLPAPER_COLS;
+    a->wallpaper_list.grid.rows = WALLPAPER_ROWS;
+    a->wallpaper_list.grid.border = GRID_BORDER;
+    a->wallpaper_list.grid.x = WALLPAPER_GRID_X;
+    a->wallpaper_list.grid.y = WALLPAPER_GRID_Y;
+
+    a->wallpaper_list.get_label = get_wallpaper_label;
+    a->wallpaper_list.on_select = on_wallpaper_select;
+
+    for (int i = 1; i < a->wallpaper_count; i++) {
+        if (a->wallpapers[i] == gui_wm_wallpaper) {
+            index = i;
+            break;
+        }
+    }
+
+    gui_list_widget_init(&a->wallpaper_list);
+    gui_window_add_widget(&a->window, &a->wallpaper_list.widget);
+
+    gui_list_widget_set_item_count(&a->wallpaper_list, a->wallpaper_count);
+    gui_list_widget_set_index(&a->wallpaper_list, index);
 }
 
 static void
@@ -389,9 +494,12 @@ init_app(void)
         return E_NOT_ENOUGH_MEMORY;
     }
 
+    load_wallpapers();
+
     init_window();
     select_active_buttons();
     init_theme_list();
+    init_wallpaper_list();
     init_pattern_buttons();
     init_color_buttons(&app_state->color1_grid, app_state->color1_buttons,
         COLOR1_GRID_X, COLOR1_GRID_Y, on_color1_button_press);
