@@ -268,16 +268,16 @@ def install_initrd_native(disk_image_path, image, initrd):
     print("Initrd installed in %s" % disk_image_path)
 
 
-def install_initrd_grub(disk_image_path):
+def install_initrd_grub(disk_image_path, initrd_path):
     if not shutil.which("mcopy"):
         die("Error: mkinitrd.py requires 'mtools' package to install initrd in a disk image")
 
-    cmd = "mcopy -D o -i '%s@@%d' %s ::" % (disk_image_path, FS_OFFSET, INITRD_PATH)
+    cmd = "mcopy -D o -i '%s@@%d' %s ::gentleos.rd" % (disk_image_path, FS_OFFSET, initrd_path)
     print("Running %s" % cmd)
     os.system(cmd)
 
 
-def install_initrd(disk_image_path, initrd):
+def install_initrd(disk_image_path, initrd, initrd_path):
     if not os.path.exists(disk_image_path):
         die("Error: disk image not found")
 
@@ -287,16 +287,16 @@ def install_initrd(disk_image_path, initrd):
     if is_native_image(image):
         install_initrd_native(disk_image_path, image, initrd)
     else:
-        install_initrd_grub(disk_image_path)
+        install_initrd_grub(disk_image_path, initrd_path)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create initial RAM disk for GentleOS/32 in %s" % INITRD_PATH,
-    )
+    parser = argparse.ArgumentParser(description="Create initial RAM disk for GentleOS/32")
     parser.add_argument("files", nargs="*", help="files to add")
     parser.add_argument("--wallpaper", metavar="PATH", help="image to use as the wallpaper")
     parser.add_argument("--disk-image", metavar="PATH", help="disk image to install initrd into")
+    parser.add_argument("-o", "--output", metavar="PATH", default=INITRD_PATH,
+        help="path to save the initrd to (default: %s)" % INITRD_PATH)
     args = parser.parse_args()
 
     files = []
@@ -319,13 +319,13 @@ def main():
     print("Generating initrd:")
     image = build_initrd(files)
 
-    with open(INITRD_PATH, "wb") as f:
+    with open(args.output, "wb") as f:
         f.write(image)
 
-    print("Initrd saved to %s" % INITRD_PATH)
+    print(f"Initrd saved to {args.output}")
 
     if args.disk_image is not None:
-        install_initrd(args.disk_image, image)
+        install_initrd(args.disk_image, image, args.output)
 
 
 if __name__ == "__main__":
