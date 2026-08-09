@@ -138,7 +138,9 @@ gui_wm_render_wallpaper(rect_st rect)
 
     if (gui_wm_pattern) {
         gui_fb_draw_pattern(rect, gui_wm_pattern, COLOR_DESKTOP, COLOR_DESKTOP_ALT);
-    } else if (gui_wm_wallpaper) {
+    } else if (gui_wm_wallpaper && gui_wm_wallpaper->bpp == 1) {
+        gui_fb_draw_pattern(rect, gui_wm_wallpaper, 0x00, 0x0f);
+    } else if (gui_wm_wallpaper && gui_wm_wallpaper->bpp == 8) {
         gui_fb_draw_wallpaper(rect, gui_wm_wallpaper);
     } else {
         gui_fb_draw_rect(rect, COLOR_DESKTOP);

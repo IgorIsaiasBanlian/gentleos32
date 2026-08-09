@@ -167,7 +167,7 @@ load_wallpapers(void)
         bitmap = gui_load_bitmap(file->name);
 
         if (bitmap
-            && bitmap->bpp == 8
+            && (bitmap->bpp == 8 || (bitmap->bpp == 1 && bitmap->size.width % 8 == 0))
             && bitmap->size.width == si->fb_width
             && bitmap->size.height == si->fb_height
         ) {
