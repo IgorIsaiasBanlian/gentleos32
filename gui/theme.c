@@ -29,7 +29,6 @@ gui_theme_set(int theme)
         gui_theme.border = 0x00;
         gui_theme.desktop = 0x0f;
         gui_theme.desktop_alt = 0x00;
-        gui_theme.desktop_pattern = &bitmap_pattern_2;
         gui_theme.card_front_bg = gui_theme.widget_bg;
         break;
 
@@ -47,7 +46,6 @@ gui_theme_set(int theme)
         gui_theme.border = gui_theme.widget_fg;
         gui_theme.desktop = gui_theme.widget_sel_bg;
         gui_theme.desktop_alt = 0x00;
-        gui_theme.desktop_pattern = &bitmap_pattern_4;
         gui_theme.card_front_bg = gui_theme.widget_bg;
         break;
 
@@ -65,7 +63,6 @@ gui_theme_set(int theme)
         gui_theme.border = gui_theme.widget_fg;
         gui_theme.desktop = 0x09;
         gui_theme.desktop_alt = 0x01;
-        gui_theme.desktop_pattern = NULL;
         gui_theme.card_front_bg = 0x0f;
         break;
     }
