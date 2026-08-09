@@ -54,6 +54,7 @@ extern void gui_list_widget_set_page(list_widget_st *list, int page);
 extern void gui_list_widget_set_index(list_widget_st *list, int index);
 extern void gui_list_widget_draw(widget_st *widget);
 extern void gui_list_widget_on_pointer_down(widget_st *widget, event_st event, point_st pos);
+extern void gui_list_widget_init_page_buttons(list_widget_st *list, widget_st *prev_btn, widget_st *next_btn);
 /* gui/main.c */
 extern app_st *gui_apps[];
 extern unsigned gui_apps_count;

@@ -153,3 +153,29 @@ gui_list_widget_on_pointer_down(widget_st *widget, event_st event _unsd, point_s
         list->on_select(list, index);
     }
 }
+
+static void
+gui_list_widget_on_page_button_click(widget_st *widget, event_st event, point_st pos)
+{
+    list_widget_st *list = widget->data;
+    int dp = widget->tag1;
+
+    gui_list_widget_set_page(list, list->cur_page + dp);
+    gui_button_on_pointer_down(widget, event, pos);
+}
+
+global void
+gui_list_widget_init_page_buttons(list_widget_st *list, widget_st *prev_btn, widget_st *next_btn)
+{
+    gui_button_init(prev_btn);
+    prev_btn->bitmap = &sprite_caret_l;
+    prev_btn->data = list;
+    prev_btn->tag1 = -1;
+    prev_btn->on_pointer_down = gui_list_widget_on_page_button_click;
+
+    gui_button_init(next_btn);
+    next_btn->bitmap = &sprite_caret_r;
+    next_btn->data = list;
+    next_btn->tag1 = 1;
+    next_btn->on_pointer_down = gui_list_widget_on_page_button_click;
+}
