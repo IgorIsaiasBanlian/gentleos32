@@ -29,6 +29,24 @@ gui_grid_cell_rect(grid_st *grid, int col, int row)
     };
 }
 
+global grid_pos_st
+gui_grid_cell_at(grid_st *grid, point_st pos)
+{
+    grid_pos_st ret;
+    int x = pos.x - grid->x - grid->border;
+    int y = pos.y - grid->y - grid->border;
+    int step_x = grid->cell_width + 1;
+    int step_y = grid->cell_height + 1;
+
+    ret.col = x / step_x;
+    ret.col = MAX(0, MIN(grid->cols - 1, ret.col));
+
+    ret.row = y / step_y;
+    ret.row = MAX(0, MIN(grid->rows - 1, ret.row));
+
+    return ret;
+}
+
 global void
 gui_grid_fill(grid_st *grid, window_st *window, uint8_t color)
 {

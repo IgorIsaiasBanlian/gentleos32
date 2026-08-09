@@ -133,6 +133,11 @@ typedef struct {
 } grid_st;
 
 typedef struct {
+    int col;
+    int row;
+} grid_pos_st;
+
+typedef struct {
     bitmap_st *icon;
     window_st *main_window;
     int (*init)(void);
