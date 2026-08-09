@@ -108,7 +108,7 @@ select_active_buttons(void)
     app_state_st *a = app_state;
 
     for (int i = 0; i < PATTERN_COUNT; i++) {
-        if (gui_theme.desktop_pattern == patterns[i]) {
+        if (gui_wm_pattern == patterns[i]) {
             a->active_pattern_button = &a->pattern_buttons[i];
             break;
         }
@@ -178,7 +178,7 @@ on_pattern_button_press(widget_st *widget, event_st event _unsd, point_st pos _u
     widget_st *prev = a->active_pattern_button;
     a->active_pattern_button = widget;
 
-    gui_theme.desktop_pattern = patterns[widget->tag1];
+    gui_wm_pattern = patterns[widget->tag1];
 
     if (prev && prev != widget) {
         gui_widget_draw(prev);
@@ -315,10 +315,10 @@ init_theme_list(void)
     a->theme_list.on_select = on_theme_select;
 
     gui_list_widget_init(&a->theme_list);
+    gui_window_add_widget(&a->window, &a->theme_list.widget);
+
     gui_list_widget_set_item_count(&a->theme_list, THEME_COUNT);
     gui_list_widget_set_index(&a->theme_list, gui_theme.index);
-
-    gui_window_add_widget(&a->window, &a->theme_list.widget);
 }
 
 static void

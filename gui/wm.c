@@ -17,7 +17,8 @@ static window_st *gui_wm_panel_window = NULL;
 static window_st *gui_wm_status_window = NULL;
 static window_st *gui_wm_windows[WINDOWS_COUNT_MAX];
 
-static bitmap_st *gui_wm_bg_bitmap = NULL;
+global bitmap_st *gui_wm_wallpaper = NULL;
+global bitmap_st *gui_wm_pattern = NULL;
 
 global void
 gui_wm_toggle_window_active(window_st *w, int active)
@@ -135,11 +136,10 @@ gui_wm_render_wallpaper(rect_st rect)
 {
     gui_fb_draw_start();
 
-    if (gui_theme.desktop_pattern) {
-        gui_fb_draw_pattern(rect, gui_theme.desktop_pattern, COLOR_DESKTOP,
-            COLOR_DESKTOP_ALT);
-    } else if (gui_wm_bg_bitmap) {
-        gui_fb_draw_wallpaper(rect, gui_wm_bg_bitmap);
+    if (gui_wm_pattern) {
+        gui_fb_draw_pattern(rect, gui_wm_pattern, COLOR_DESKTOP, COLOR_DESKTOP_ALT);
+    } else if (gui_wm_wallpaper) {
+        gui_fb_draw_wallpaper(rect, gui_wm_wallpaper);
     } else {
         gui_fb_draw_rect(rect, COLOR_DESKTOP);
     }
@@ -302,15 +302,6 @@ global void
 gui_wm_init(void)
 {
     system_info_st *si = &krn_system_info;
-    bitmap_st *wallpaper = gui_load_bitmap("wallpaper");
-
-    if (wallpaper
-        && wallpaper->bpp == 8
-        && wallpaper->size.width == si->fb_width
-        && wallpaper->size.height == si->fb_height
-    ) {
-        gui_wm_bg_bitmap = wallpaper;
-    }
 
     gui_wm_container.width = si->fb_width - PANEL_WIDTH;
     gui_wm_container.height = si->fb_height - STATUS_HEIGHT;

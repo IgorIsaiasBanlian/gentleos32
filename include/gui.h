@@ -178,7 +178,6 @@ typedef struct {
     uint8_t border;
     uint8_t desktop;
     uint8_t desktop_alt;
-    bitmap_st *desktop_pattern;
     uint8_t card_front_bg;
 
     /* derived */
