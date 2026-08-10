@@ -234,7 +234,7 @@ load_sectors:
 
     jc .error
 
-    movzx eax, al
+    movzx eax, byte [current_count]
     jmp .done
 
 .error:
