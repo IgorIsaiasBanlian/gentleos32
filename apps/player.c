@@ -70,12 +70,13 @@ typedef struct {
 
     widget_st title_bar;
     widget_st close_button;
+    progress_bar_st progress_bar;
     widget_st transport_buttons[TRANSPORT_BUTTON_COUNT];
     list_widget_st play_list;
     widget_st prev_page_button;
     widget_st next_page_button;
 
-    widget_st *widgets[TRANSPORT_BUTTON_COUNT + 5];
+    widget_st *widgets[TRANSPORT_BUTTON_COUNT + 6];
 
     file_st *songs[SONG_MAX_COUNT];
     int song_count;
@@ -137,19 +138,6 @@ draw_title(void)
 }
 
 static void
-draw_progress(void)
-{
-    app_state_st *a = app_state;
-    rect_st outer = gui_rect_make(CONTENT_X, PROGRESS_Y, CONTENT_WIDTH, PROGRESS_HEIGHT);
-    rect_st inner = gui_rect_shrink(outer, 1);
-
-    gui_surface_draw_border(a->window.surface, outer, COLOR_BORDER);
-    gui_surface_draw_rect(a->window.surface, inner, COLOR_WIDGET_BG);
-
-    gui_wm_render_window_region(&a->window, outer);
-}
-
-static void
 draw_time(void)
 {
     app_state_st *a = app_state;
@@ -199,6 +187,12 @@ on_page_button_click(int dir)
 }
 
 static void
+on_progress_bar_down(progress_bar_st *bar _unsd, int value)
+{
+    gui_progress_bar_set_value(bar, value);
+}
+
+static void
 on_button_down(widget_st *widget, event_st event, point_st pos)
 {
     switch (widget->tag1) {
@@ -216,7 +210,6 @@ draw_window(window_st *window)
 {
     gui_window_draw(window, COLOR_WIDGET_BG);
     draw_title();
-    draw_progress();
     draw_time();
 }
 
@@ -273,6 +266,20 @@ init_window(void)
     a->window.on_close = close_window;
 
     gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
+}
+
+static void
+init_progress_bar(void)
+{
+    app_state_st *a = app_state;
+
+    gui_progress_bar_init(&a->progress_bar, 100, 50);
+
+    a->progress_bar.widget.rect = gui_rect_make(CONTENT_X, PROGRESS_Y,
+        CONTENT_WIDTH, PROGRESS_HEIGHT);
+    a->progress_bar.on_pointer_down = on_progress_bar_down;
+
+    gui_window_add_widget(&a->window, &a->progress_bar.widget);
 }
 
 static void
@@ -362,6 +369,7 @@ init_app(void)
 
     init_songs();
     init_window();
+    init_progress_bar();
     init_transport_buttons();
     init_play_list();
     init_page_buttons();
