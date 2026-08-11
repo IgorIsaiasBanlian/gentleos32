@@ -155,6 +155,20 @@ struct list_widget {
     void (*on_select)(list_widget_st *list, int index);
 };
 
+struct progress_bar;
+typedef struct progress_bar progress_bar_st;
+
+struct progress_bar {
+    widget_st widget;
+
+    int max_value;
+    int cur_value;
+
+    int _last_fill_width;
+
+    void (*on_pointer_down)(progress_bar_st *bar, int value);
+};
+
 typedef struct {
     bitmap_st *icon;
     window_st *main_window;

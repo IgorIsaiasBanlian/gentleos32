@@ -77,6 +77,12 @@ extern bitmap_st bitmap_pointer;
 extern void gui_pointer_draw(void);
 extern void gui_pointer_move(uint16_t x, uint16_t y);
 extern void gui_pointer_init(void);
+/* gui/progbar.c */
+extern void gui_progress_bar_init(progress_bar_st *bar, int max_value, int cur_value);
+extern void gui_progress_bar_draw(widget_st *widget);
+extern void gui_progress_bar_on_pointer_down(widget_st *widget, event_st event, point_st pos);
+extern void gui_progress_bar_set_max_value(progress_bar_st *bar, int max_value);
+extern void gui_progress_bar_set_value(progress_bar_st *bar, int value);
 /* gui/rect.c */
 extern int gui_rect_is_empty(rect_st r);
 extern int gui_rect_area(rect_st r);
