@@ -49,6 +49,8 @@ enum {
 
     WINDOW_WIDTH = CONTENT_X + CONTENT_WIDTH + PADDING,
     WINDOW_HEIGHT = PAGE_BUTTON_Y + PAGE_BUTTON_HEIGHT + PADDING,
+
+    SONG_MAX_COUNT = 32,
 };
 
 enum {
@@ -74,6 +76,9 @@ typedef struct {
     widget_st next_page_button;
 
     widget_st *widgets[TRANSPORT_BUTTON_COUNT + 5];
+
+    file_st *songs[SONG_MAX_COUNT];
+    int song_count;
 } app_state_st;
 
 static app_state_st *app_state = NULL;
@@ -88,12 +93,41 @@ static bitmap_st *transport_button_icons[TRANSPORT_BUTTON_COUNT] = {
     &icon_player_loop,
 };
 
+static const char *
+get_song_name(int index)
+{
+    app_state_st *a = app_state;
+
+    if (index < 0 || index >= a->song_count) {
+        return "-";
+    }
+
+    return a->songs[index]->name;
+}
+
+static void
+update_status(void)
+{
+    app_state_st *a = app_state;
+
+    if (!a->window.active) {
+        return;
+    }
+
+    if (a->song_count == 0) {
+        gui_status_set("No songs found");
+        return;
+    }
+
+    gui_status_set("%s", get_song_name(a->play_list.cur_index));
+}
+
 static void
 draw_title(void)
 {
     app_state_st *a = app_state;
     rect_st rect = gui_rect_make(CONTENT_X, TITLE_Y, CONTENT_WIDTH, TITLE_HEIGHT);
-    const char *title = "Song Title";
+    const char *title = get_song_name(a->play_list.cur_index);
 
     gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_BG);
     gui_surface_draw_str_centered(a->window.surface, rect, font_8x8, title,
@@ -130,13 +164,48 @@ draw_time(void)
 }
 
 static void
+select_song(int index)
+{
+    app_state_st *a = app_state;
+
+    gui_list_widget_set_index(&a->play_list, index);
+
+    draw_title();
+    update_status();
+}
+
+static void
+on_play_list_select(list_widget_st *list _unsd, int index)
+{
+    select_song(index);
+}
+
+static const char *
+get_play_list_label(list_widget_st *list _unsd, int index)
+{
+    return get_song_name(index);
+}
+
+static void
+on_page_button_click(int dir)
+{
+    app_state_st *a = app_state;
+
+    if (a->song_count == 0) {
+        return;
+    }
+
+    select_song((a->play_list.cur_index + dir + a->song_count) % a->song_count);
+}
+
+static void
 on_button_down(widget_st *widget, event_st event, point_st pos)
 {
     switch (widget->tag1) {
-    case TRANSPORT_BUTTON_SHUFFLE:
-    case TRANSPORT_BUTTON_LOOP:
-        widget->active = !widget->active;
-        break;
+    case TRANSPORT_BUTTON_PREV: on_page_button_click(-1); break;
+    case TRANSPORT_BUTTON_NEXT: on_page_button_click(1); break;
+    case TRANSPORT_BUTTON_SHUFFLE: widget->active = !widget->active; break;
+    case TRANSPORT_BUTTON_LOOP: widget->active = !widget->active; break;
     }
 
     gui_button_on_pointer_down(widget, event, pos);
@@ -152,6 +221,14 @@ draw_window(window_st *window)
 }
 
 static void
+on_active_change(window_st *window)
+{
+    if (window->active) {
+        update_status();
+    }
+}
+
+static void
 close_window(window_st *window)
 {
     gui_wm_remove_window(window);
@@ -159,6 +236,22 @@ close_window(window_st *window)
 
     heap_free(app_state);
     app_state = NULL;
+}
+
+static void
+init_songs(void)
+{
+    app_state_st *a = app_state;
+    file_st *file;
+    size_t i;
+
+    for (i = 0; i < file_count() && a->song_count < SONG_MAX_COUNT; ++i) {
+        file = file_get(i);
+
+        if (file && file->type == FILE_TYPE_SONG) {
+            a->songs[a->song_count++] = file;
+        }
+    }
 }
 
 static void
@@ -176,6 +269,7 @@ init_window(void)
     a->window.widgets = a->widgets;
     a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
     a->window.draw = draw_window;
+    a->window.on_active_change = on_active_change;
     a->window.on_close = close_window;
 
     gui_window_init_frame(&a->window, &a->title_bar, &a->close_button);
@@ -220,7 +314,12 @@ init_play_list(void)
     a->play_list.grid.x = PLAY_LIST_X;
     a->play_list.grid.y = PLAY_LIST_Y;
 
+    a->play_list.get_label = get_play_list_label;
+    a->play_list.on_select = on_play_list_select;
+
     gui_list_widget_init(&a->play_list);
+    gui_list_widget_set_item_count(&a->play_list, a->song_count);
+
     gui_window_add_widget(&a->window, &a->play_list.widget);
 }
 
@@ -261,6 +360,7 @@ init_app(void)
         return E_NOT_ENOUGH_MEMORY;
     }
 
+    init_songs();
     init_window();
     init_transport_buttons();
     init_play_list();
