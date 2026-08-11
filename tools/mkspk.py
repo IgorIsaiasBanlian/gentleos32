@@ -19,6 +19,7 @@ import mido
 from mkinitrd import SPK_NOTE_NAMES, read_spk, split_ext
 
 DEBUG = 0
+MIN_REST_MS = 1
 
 def die(msg):
     raise SystemExit(msg)
@@ -61,6 +62,26 @@ def close_micro_rests(notes):
 
     if count:
         print(f"Closed {count} micro rests")
+
+    return ret
+
+
+def split_repeated_notes(notes):
+    ret = []
+    count = 0
+
+    for (cur_idx, cur_ms) in notes:
+        (prev_idx, prev_ms) = ret[-1] if ret else (None, 0)
+
+        if cur_idx is not None and prev_idx == cur_idx:
+            ret[-1] = (prev_idx, max(1, prev_ms - MIN_REST_MS))
+            ret.append((None, MIN_REST_MS))
+            count += 1
+
+        ret.append((cur_idx, cur_ms))
+
+    if count:
+        print(f"Split {count} repeated notes")
 
     return ret
 
@@ -111,6 +132,7 @@ def process_mid(mid, track):
     notes.append((None, 2000))
     notes = merge_rests(notes)
     notes = close_micro_rests(notes)
+    notes = split_repeated_notes(notes)
     notes = [(idx, min(ms, 0xffff)) for (idx, ms) in notes]
 
     return notes
