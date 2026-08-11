@@ -28,6 +28,8 @@ extern app_st app_mines;
 extern app_st app_pairs;
 /* apps/patterns.c */
 extern app_st app_patterns;
+/* apps/player.c */
+extern app_st app_player;
 /* apps/snake.c */
 extern app_st app_snake;
 /* apps/sounds.c */
