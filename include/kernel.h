@@ -78,11 +78,6 @@ typedef struct {
     };
 } event_st;
 
-typedef struct {
-    uint16_t pitch;
-    uint16_t duration;
-} note_st;
-
 enum {
     SPEAKER_STATE_STOPPED = 0,
     SPEAKER_STATE_PLAYING = 1,

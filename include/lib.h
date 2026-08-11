@@ -58,6 +58,11 @@ enum {
 };
 
 typedef struct {
+    uint16_t pitch;
+    uint16_t duration; /* Converted from ms to ticks on boot */
+} note_st;
+
+typedef struct {
     int mem_fields_valid;
     uint32_t mem_lower;
     uint32_t mem_upper;

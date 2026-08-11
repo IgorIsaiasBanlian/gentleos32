@@ -5,6 +5,7 @@ extern const char *file_type_names[FILE_TYPE_COUNT];
 extern size_t file_count(void);
 extern file_st *file_get(size_t index);
 extern file_st *file_lookup(const char *name);
+extern void file_init_all(void);
 /* lib/heap.c */
 extern void heap_dump(void);
 extern size_t heap_get_avail_mem(void);
@@ -24,6 +25,9 @@ extern uint32_t rand(void);
 /* lib/sleep.c */
 extern void sleep(uint32_t msecs);
 extern void halt(void);
+/* lib/song.c */
+extern void song_init_notes(file_st *song);
+extern uint32_t song_get_total_ticks(const note_st *notes);
 /* lib/string.c */
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern void *memset(void *dest, int c, size_t n);

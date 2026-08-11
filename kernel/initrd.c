@@ -47,4 +47,6 @@ krn_initrd_init(void)
 
     si->initrd_files_count = header->count;
     si->initrd_files = files;
+
+    file_init_all();
 }

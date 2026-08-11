@@ -59,3 +59,22 @@ file_lookup(const char *name)
     return NULL;
 }
 
+global void
+file_init_all(void)
+{
+    file_st *file;
+    size_t i;
+
+    for (i = 0; i < file_count(); ++i) {
+        file = file_get(i);
+
+        if (!file || !file->addr) {
+            continue;
+        }
+
+        if (file->type == FILE_TYPE_SONG) {
+            song_init_notes(file);
+        }
+    }
+}
+

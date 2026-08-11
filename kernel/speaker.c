@@ -67,7 +67,7 @@ krn_speaker_start_note(void)
         return;
     }
 
-    krn_speaker_state.note_ticks_left = (note->duration * TICK_FREQUENCY + 999) / 1000;
+    krn_speaker_state.note_ticks_left = note->duration;
 
     krn_speaker_set_freq(note->pitch ? note->pitch : REST_PITCH);
 }
@@ -174,7 +174,7 @@ krn_speaker_stop(void *owner)
         return;
     }
 
-    /* Keep song, owner and elapsed msecs for inspection */
+    /* Keep song, owner and elapsed time for inspection */
     krn_speaker_state.state = SPEAKER_STATE_STOPPED;
     krn_speaker_state.note = NULL;
     krn_speaker_set_freq(0);
