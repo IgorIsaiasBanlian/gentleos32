@@ -182,6 +182,44 @@ krn_speaker_stop(void *owner)
     krn_unlock(lock);
 }
 
+global void
+krn_speaker_seek(void *owner, uint32_t ticks)
+{
+    krn_lock_t lock;
+    const note_st *note;
+    uint32_t ticks_before_note = 0;
+
+    lock = krn_lock();
+
+    if (krn_speaker_state.song_owner != owner || krn_speaker_state.song == NULL) {
+        krn_unlock(lock);
+        return;
+    }
+
+    for (note = krn_speaker_state.song; note->duration != 0; ++note) {
+        if (ticks_before_note + note->duration > ticks) {
+            break;
+        }
+
+        ticks_before_note += note->duration;
+    }
+
+    if (note->duration == 0) {
+        krn_unlock(lock);
+        return;
+    }
+
+    krn_speaker_state.song_elapsed_ticks = ticks;
+    krn_speaker_state.note = note;
+    krn_speaker_state.note_ticks_left = note->duration - (ticks - ticks_before_note);
+
+    if (krn_speaker_state.state == SPEAKER_STATE_PLAYING) {
+        krn_speaker_set_freq(note->pitch ? note->pitch : REST_PITCH);
+    }
+
+    krn_unlock(lock);
+}
+
 /* Must be called in interrupt context */
 global void
 krn_speaker_on_tick(void)

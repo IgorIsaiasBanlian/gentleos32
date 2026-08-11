@@ -55,6 +55,7 @@ extern void krn_speaker_play_freq(unsigned hz, void *owner);
 extern void krn_speaker_pause(void *owner);
 extern void krn_speaker_resume(void *owner);
 extern void krn_speaker_stop(void *owner);
+extern void krn_speaker_seek(void *owner, uint32_t ticks);
 extern void krn_speaker_on_tick(void);
 /* kernel/system.c */
 extern uint32_t krn_system_get_total_mem(void);
