@@ -10,13 +10,13 @@
 global void
 gui_progress_bar_init(progress_bar_st *bar, int max_value, int cur_value)
 {
-    bar->max_value = MAX(0, max_value);
-    bar->cur_value = MAX(0, MIN(bar->max_value, cur_value));
     bar->_last_fill_width = 0;
 
     bar->widget.data = bar;
     bar->widget.draw = gui_progress_bar_draw;
     bar->widget.on_pointer_down = gui_progress_bar_on_pointer_down;
+
+    gui_progress_bar_set_values(bar, max_value, cur_value);
 }
 
 static rect_st
@@ -92,6 +92,15 @@ gui_progress_bar_draw(widget_st *widget)
 }
 
 global void
+gui_progress_bar_set_values(progress_bar_st *bar, int max_value, int cur_value)
+{
+    bar->max_value = MAX(0, max_value);
+    bar->cur_value = MAX(0, MIN(bar->max_value, cur_value));
+
+    gui_progress_bar_update_fill(bar);
+}
+
+global void
 gui_progress_bar_on_pointer_down(widget_st *widget, event_st event _unsd, point_st pos)
 {
     progress_bar_st *bar = widget->data;
@@ -110,21 +119,4 @@ gui_progress_bar_on_pointer_down(widget_st *widget, event_st event _unsd, point_
     if (bar->on_pointer_down) {
         bar->on_pointer_down(bar, value);
     }
-}
-
-global void
-gui_progress_bar_set_max_value(progress_bar_st *bar, int max_value)
-{
-    bar->max_value = MAX(0, max_value);
-    bar->cur_value = MIN(bar->max_value, bar->cur_value);
-
-    gui_progress_bar_update_fill(bar);
-}
-
-global void
-gui_progress_bar_set_value(progress_bar_st *bar, int value)
-{
-    bar->cur_value = MAX(0, MIN(bar->max_value, value));
-
-    gui_progress_bar_update_fill(bar);
 }
