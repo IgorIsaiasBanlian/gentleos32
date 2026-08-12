@@ -127,7 +127,7 @@ gui_main(void)
     krn_debug_status_cb = gui_status_set_alert;
 
 #ifdef DEV_AUTOSTART
-    gui_launch_app(gui_apps[DEV_AUTOSTART]);
+    gui_launch_app(&DEV_AUTOSTART);
 #endif
 
     while (1) {
