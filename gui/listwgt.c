@@ -63,12 +63,16 @@ gui_list_widget_draw_cell(list_widget_st *list, int index, rect_st rect)
     uint8_t fg = is_sel ? COLOR_WIDGET_SEL_FG : COLOR_WIDGET_FG;
     uint8_t bg = is_sel ? COLOR_WIDGET_SEL_BG : COLOR_WIDGET_BG;
     const char *label = list->get_label ? list->get_label(list, index) : NULL;
+    const char *right_label = list->get_right_label ? list->get_right_label(list, index) : NULL;
 
     gui_surface_draw_rect(surface, rect, bg);
 
     if (label) {
-        gui_surface_draw_str(surface, rect.x + LABEL_H_PADDING,
-            rect.y + (rect.height - font->size.height) / 2, font, label, fg, bg);
+        gui_surface_draw_str_cl(surface, rect, LABEL_H_PADDING, font, label, fg, bg);
+    }
+
+    if (right_label) {
+        gui_surface_draw_str_cr(surface, rect, LABEL_H_PADDING, font, right_label, fg, bg);
     }
 }
 

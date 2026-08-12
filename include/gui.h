@@ -152,6 +152,7 @@ struct list_widget {
     int cur_index;
 
     const char *(*get_label)(list_widget_st *list, int index);
+    const char *(*get_right_label)(list_widget_st *list, int index);
     void (*on_select)(list_widget_st *list, int index);
 };
 
