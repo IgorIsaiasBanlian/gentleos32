@@ -118,6 +118,26 @@ gui_surface_draw_str_centered(surface_st *surface, rect_st rect,
     gui_surface_draw_str(surface, x, y, font, s, fg, bg);
 }
 
+global void
+gui_surface_draw_str_cl(surface_st *surface, rect_st rect, int padding,
+    font_st *font, const char *s, uint8_t fg, uint8_t bg)
+{
+    int x = rect.x + padding;
+    int y = rect.y + (rect.height - font->size.height) / 2;
+
+    gui_surface_draw_str(surface, x, y, font, s, fg, bg);
+}
+
+global void
+gui_surface_draw_str_cr(surface_st *surface, rect_st rect, int padding,
+    font_st *font, const char *s, uint8_t fg, uint8_t bg)
+{
+    int x = rect.x + rect.width - padding - strlen(s) * font->size.width;
+    int y = rect.y + (rect.height - font->size.height) / 2;
+
+    gui_surface_draw_str(surface, x, y, font, s, fg, bg);
+}
+
 static void
 gui_surface_draw_bitmap_8bpp(surface_st *surface, rect_st src_rect, int dst_x, int dst_y,
     bitmap_st *bitmap)
