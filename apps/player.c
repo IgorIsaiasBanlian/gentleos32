@@ -51,6 +51,7 @@ enum {
     WINDOW_HEIGHT = PAGE_BUTTON_Y + PAGE_BUTTON_HEIGHT + PADDING,
 
     SONG_MAX_COUNT = 32,
+    REFRESH_TICKS = TICK_FREQUENCY * 25 / 100, /* 0.25s */
 };
 
 enum {
@@ -61,6 +62,12 @@ enum {
     TRANSPORT_BUTTON_NEXT,
     TRANSPORT_BUTTON_SHUFFLE,
     TRANSPORT_BUTTON_LOOP,
+};
+
+enum {
+    PLAY_STATE_STOPPED,
+    PLAY_STATE_PLAYING,
+    PLAY_STATE_PAUSED,
 };
 
 typedef struct {
@@ -79,7 +86,13 @@ typedef struct {
     widget_st *widgets[TRANSPORT_BUTTON_COUNT + 6];
 
     file_st *songs[SONG_MAX_COUNT];
+    uint32_t song_ticks[SONG_MAX_COUNT];
     int song_count;
+
+    int play_state;
+    uint32_t total_ticks;
+    uint32_t last_elapsed_secs;
+    uint32_t last_total_secs;
 } app_state_st;
 
 static app_state_st *app_state = NULL;
@@ -106,6 +119,40 @@ get_song_name(int index)
     return a->songs[index]->name;
 }
 
+static const note_st *
+get_song_notes(int index)
+{
+    static note_st stop_note = { 0, 0 };
+    app_state_st *a = app_state;
+
+    if (index < 0 || index >= a->song_count) {
+        return &stop_note;
+    }
+
+    return (const note_st *)app_state->songs[index]->addr;
+}
+
+static int
+get_play_state(const speaker_state_st *st)
+{
+    speaker_state_st local_st;
+
+    if (!st) {
+        krn_speaker_get_state(&local_st);
+        st = &local_st;
+    }
+
+    if (st->song_owner != &app_player) {
+        return PLAY_STATE_STOPPED;
+    }
+
+    switch (st->state) {
+    case SPEAKER_STATE_PLAYING: return PLAY_STATE_PLAYING;
+    case SPEAKER_STATE_PAUSED: return PLAY_STATE_PAUSED;
+    default: return PLAY_STATE_STOPPED;
+    }
+}
+
 static void
 update_status(void)
 {
@@ -120,7 +167,17 @@ update_status(void)
         return;
     }
 
-    gui_status_set("%s", get_song_name(a->play_list.cur_index));
+    switch (a->play_state) {
+    case PLAY_STATE_PLAYING:
+        gui_status_set("Playing: %s", get_song_name(a->play_list.cur_index));
+        break;
+    case PLAY_STATE_PAUSED:
+        gui_status_set("Paused: %s", get_song_name(a->play_list.cur_index));
+        break;
+    default:
+        gui_status_set("Stopped: %s", get_song_name(a->play_list.cur_index));
+        break;
+    }
 }
 
 static void
@@ -138,17 +195,56 @@ draw_title(void)
 }
 
 static void
-draw_time(void)
+draw_time(uint32_t elapsed_ticks)
 {
     app_state_st *a = app_state;
     rect_st rect = gui_rect_make(CONTENT_X, TIME_Y, CONTENT_WIDTH, TIME_HEIGHT);
-    const char *time = "01:23 / 03:45";
+    uint32_t elapsed_secs = elapsed_ticks / TICK_FREQUENCY;
+    uint32_t total_secs = a->total_ticks / TICK_FREQUENCY;
+    char time[16];
+
+    snprintf(time, sizeof(time), "%02u:%02u / %02u:%02u",
+        MIN(elapsed_secs / 60, 99u), elapsed_secs % 60,
+        MIN(total_secs / 60, 99u), total_secs % 60);
 
     gui_surface_draw_rect(a->window.surface, rect, COLOR_WIDGET_BG);
     gui_surface_draw_str_centered(a->window.surface, rect, font_8x8, time,
         COLOR_WIDGET_FG, COLOR_WIDGET_BG);
 
     gui_wm_render_window_region(&a->window, rect);
+
+    a->last_elapsed_secs = elapsed_secs;
+    a->last_total_secs = total_secs;
+}
+
+static void
+sync_playback_state(const speaker_state_st *st, int refresh_status)
+{
+    speaker_state_st local_st;
+    uint32_t elapsed_ticks = 0;
+    app_state_st *a = app_state;
+
+    if (!st) {
+        krn_speaker_get_state(&local_st);
+        st = &local_st;
+    }
+
+    a->play_state = get_play_state(st);
+
+    if (a->play_state != PLAY_STATE_STOPPED) {
+        elapsed_ticks = MIN(st->song_elapsed_ticks, a->total_ticks);
+    }
+
+    if (elapsed_ticks / TICK_FREQUENCY != a->last_elapsed_secs ||
+        a->total_ticks / TICK_FREQUENCY != a->last_total_secs) {
+        draw_time(elapsed_ticks);
+    }
+
+    gui_progress_bar_set_values(&a->progress_bar, a->total_ticks, elapsed_ticks);
+
+    if (refresh_status) {
+        update_status();
+    }
 }
 
 static void
@@ -156,16 +252,194 @@ select_song(int index)
 {
     app_state_st *a = app_state;
 
+    if (index < 0 || index >= a->song_count) {
+        return;
+    }
+
     gui_list_widget_set_index(&a->play_list, index);
 
+    a->total_ticks = a->song_ticks[index];
+    gui_progress_bar_set_values(&a->progress_bar, a->total_ticks, 0);
+
     draw_title();
-    update_status();
+}
+
+static void
+set_song(int index, int force_play)
+{
+    app_state_st *a = app_state;
+    int play_state;
+
+    if (a->song_count == 0) {
+        return;
+    }
+
+    index = (index + a->song_count) % a->song_count;
+
+    select_song(index);
+
+    play_state = get_play_state(NULL);
+
+    if (play_state == PLAY_STATE_PLAYING || force_play) {
+        krn_speaker_play_song(get_song_notes(index), &app_player);
+    } else if (play_state == PLAY_STATE_PAUSED) {
+        krn_speaker_stop(&app_player);
+    }
+
+    sync_playback_state(NULL, 1);
+}
+
+static void
+pause_song(void)
+{
+    krn_speaker_pause(&app_player);
+    sync_playback_state(NULL, 1);
+}
+
+static void
+resume_song(void)
+{
+    krn_speaker_resume(&app_player);
+    sync_playback_state(NULL, 1);
+}
+
+static void
+stop_song(void)
+{
+    krn_speaker_stop(&app_player);
+    sync_playback_state(NULL, 1);
+}
+
+static void
+seek_song(uint32_t ticks)
+{
+    app_state_st *a = app_state;
+    int index = a->play_list.cur_index;
+
+    if (a->total_ticks == 0) {
+        return;
+    }
+
+    ticks = MIN(ticks, a->total_ticks - 1);
+
+    if (get_play_state(NULL) == PLAY_STATE_STOPPED) {
+        if (index < 0 || index >= a->song_count) {
+            return;
+        }
+
+        krn_speaker_play_song(get_song_notes(index), &app_player);
+    }
+
+    krn_speaker_seek(&app_player, ticks);
+
+    sync_playback_state(NULL, 1);
+}
+
+static void
+advance_song(void)
+{
+    app_state_st *a = app_state;
+    int cur_index = a->play_list.cur_index;
+    int new_index;
+
+    if (a->transport_buttons[TRANSPORT_BUTTON_LOOP].active) {
+        set_song(cur_index, 1);
+        return;
+    }
+
+    if (a->transport_buttons[TRANSPORT_BUTTON_SHUFFLE].active && a->song_count > 1) {
+        do {
+            new_index = (int)(rand() % (uint32_t)a->song_count);
+        } while (new_index == cur_index);
+
+        set_song(new_index, 1);
+        return;
+    }
+
+    if (cur_index + 1 >= a->song_count) {
+        select_song(0);
+        stop_song();
+        return;
+    }
+
+    set_song(cur_index + 1, 1);
+}
+
+static void
+on_play_click(void)
+{
+    app_state_st *a = app_state;
+    int play_state = get_play_state(NULL);
+
+    if (play_state == PLAY_STATE_PLAYING) {
+        return;
+    }
+
+    if (play_state == PLAY_STATE_PAUSED) {
+        resume_song();
+    } else {
+        set_song(a->play_list.cur_index, 1);
+    }
+}
+
+static void
+on_shuffle_click(void)
+{
+    app_state_st *a = app_state;
+    widget_st *shuffle_btn = &a->transport_buttons[TRANSPORT_BUTTON_SHUFFLE];
+    widget_st *loop_btn = &a->transport_buttons[TRANSPORT_BUTTON_LOOP];
+
+    shuffle_btn->active = !shuffle_btn->active;
+
+    if (shuffle_btn->active) {
+        loop_btn->active = 0;
+        gui_widget_draw(loop_btn);
+    }
+}
+
+static void
+on_loop_click(void)
+{
+    app_state_st *a = app_state;
+    widget_st *shuffle_btn = &a->transport_buttons[TRANSPORT_BUTTON_SHUFFLE];
+    widget_st *loop_btn = &a->transport_buttons[TRANSPORT_BUTTON_LOOP];
+
+    loop_btn->active = !loop_btn->active;
+
+    if (loop_btn->active) {
+        shuffle_btn->active = 0;
+        gui_widget_draw(shuffle_btn);
+    }
+}
+
+static void
+on_progress_bar_down(progress_bar_st *bar _unsd, int value)
+{
+    seek_song((uint32_t)value);
+}
+
+static void
+on_button_down(widget_st *widget, event_st event, point_st pos)
+{
+    app_state_st *a = app_state;
+
+    switch (widget->tag1) {
+    case TRANSPORT_BUTTON_PREV: set_song(a->play_list.cur_index - 1, 0); break;
+    case TRANSPORT_BUTTON_PLAY: on_play_click(); break;
+    case TRANSPORT_BUTTON_PAUSE: pause_song(); break;
+    case TRANSPORT_BUTTON_STOP: stop_song(); break;
+    case TRANSPORT_BUTTON_NEXT: set_song(a->play_list.cur_index + 1, 0); break;
+    case TRANSPORT_BUTTON_SHUFFLE: on_shuffle_click(); break;
+    case TRANSPORT_BUTTON_LOOP: on_loop_click(); break;
+    }
+
+    gui_button_on_pointer_down(widget, event, pos);
 }
 
 static void
 on_play_list_select(list_widget_st *list _unsd, int index)
 {
-    select_song(index);
+    set_song(index, 0);
 }
 
 static const char *
@@ -174,56 +448,86 @@ get_play_list_label(list_widget_st *list _unsd, int index)
     return get_song_name(index);
 }
 
-static void
-on_page_button_click(int dir)
+static const char *
+get_play_list_right_label(list_widget_st *list _unsd, int index)
 {
-    app_state_st *a = app_state;
+    static char buf[8];
 
-    if (a->song_count == 0) {
+    app_state_st *a = app_state;
+    uint32_t secs;
+
+    if (index < 0 || index >= a->song_count) {
+        return NULL;
+    }
+
+    secs = a->song_ticks[index] / TICK_FREQUENCY;
+
+    snprintf(buf, sizeof(buf), "%02u:%02u", MIN(secs / 60, 99u), secs % 60);
+
+    return buf;
+}
+
+static void
+on_tick(window_st *window)
+{
+    static unsigned tick_count = 0;
+
+    app_state_st *a = app_state;
+    speaker_state_st st;
+    int prev_state = a->play_state;
+
+    krn_speaker_get_state(&st);
+    a->play_state = get_play_state(&st);
+
+    if (st.song_owner != &app_player) {
+        if (prev_state != PLAY_STATE_STOPPED) {
+            sync_playback_state(&st, 1);
+        }
+
         return;
     }
 
-    select_song((a->play_list.cur_index + dir + a->song_count) % a->song_count);
-}
-
-static void
-on_progress_bar_down(progress_bar_st *bar _unsd, int value)
-{
-    gui_progress_bar_set_value(bar, value);
-}
-
-static void
-on_button_down(widget_st *widget, event_st event, point_st pos)
-{
-    switch (widget->tag1) {
-    case TRANSPORT_BUTTON_PREV: on_page_button_click(-1); break;
-    case TRANSPORT_BUTTON_NEXT: on_page_button_click(1); break;
-    case TRANSPORT_BUTTON_SHUFFLE: widget->active = !widget->active; break;
-    case TRANSPORT_BUTTON_LOOP: widget->active = !widget->active; break;
+    if (a->play_state == PLAY_STATE_STOPPED) {
+        advance_song();
+        return;
     }
 
-    gui_button_on_pointer_down(widget, event, pos);
+    if (a->play_state != PLAY_STATE_PLAYING || !window->visible) {
+        return;
+    }
+
+    if (++tick_count >= REFRESH_TICKS) {
+        tick_count = 0;
+        sync_playback_state(&st, 0);
+    }
 }
 
 static void
 draw_window(window_st *window)
 {
+    app_state_st *a = app_state;
+
+    a->last_elapsed_secs = (uint32_t)-1;
+    a->last_total_secs = (uint32_t)-1;
+
     gui_window_draw(window, COLOR_WIDGET_BG);
     draw_title();
-    draw_time();
+    sync_playback_state(NULL, 0);
 }
 
 static void
 on_active_change(window_st *window)
 {
     if (window->active) {
-        update_status();
+        sync_playback_state(NULL, 1);
     }
 }
 
 static void
 close_window(window_st *window)
 {
+    krn_speaker_stop(&app_player);
+
     gui_wm_remove_window(window);
     app_player.main_window = NULL;
 
@@ -242,6 +546,7 @@ init_songs(void)
         file = file_get(i);
 
         if (file && file->type == FILE_TYPE_SONG) {
+            a->song_ticks[a->song_count] = song_get_total_ticks((const note_st *)file->addr);
             a->songs[a->song_count++] = file;
         }
     }
@@ -262,6 +567,7 @@ init_window(void)
     a->window.widgets = a->widgets;
     a->window.widgets_capacity = sizeof(a->widgets) / sizeof(a->widgets[0]);
     a->window.draw = draw_window;
+    a->window.on_tick = on_tick;
     a->window.on_active_change = on_active_change;
     a->window.on_close = close_window;
 
@@ -273,7 +579,7 @@ init_progress_bar(void)
 {
     app_state_st *a = app_state;
 
-    gui_progress_bar_init(&a->progress_bar, 100, 50);
+    gui_progress_bar_init(&a->progress_bar, 0, 0);
 
     a->progress_bar.widget.rect = gui_rect_make(CONTENT_X, PROGRESS_Y,
         CONTENT_WIDTH, PROGRESS_HEIGHT);
@@ -320,8 +626,10 @@ init_play_list(void)
     a->play_list.grid.border = PLAY_LIST_BORDER;
     a->play_list.grid.x = PLAY_LIST_X;
     a->play_list.grid.y = PLAY_LIST_Y;
+    a->play_list.widget.font = font_5x8;
 
     a->play_list.get_label = get_play_list_label;
+    a->play_list.get_right_label = get_play_list_right_label;
     a->play_list.on_select = on_play_list_select;
 
     gui_list_widget_init(&a->play_list);
@@ -373,6 +681,8 @@ init_app(void)
     init_transport_buttons();
     init_play_list();
     init_page_buttons();
+
+    select_song(app_state->play_list.cur_index);
 
     app_player.main_window = &app_state->window;
 
