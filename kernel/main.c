@@ -29,6 +29,8 @@ krn_main(void)
     krn_ps2_init();
     krn_vmware_init();
 
+    file_init_all();
+
     gui_main();
 
     /* NOTREACHED */

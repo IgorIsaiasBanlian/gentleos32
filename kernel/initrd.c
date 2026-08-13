@@ -40,13 +40,8 @@ krn_initrd_init(void)
     for (i = 0; i < header->count; ++i) {
         files[i].addr = (void *)((uint32_t)files[i].addr + (uint32_t)header);
         files[i].name[sizeof(files[i].name) - 1] = 0; /* Just in case */
-
-        krn_debug_printf(" - %s: %08x (%u B, %s)\n", files[i].name,
-            (uint32_t)files[i].addr, files[i].size, file_type_names[files[i].type]);
     }
 
     si->initrd_files_count = header->count;
     si->initrd_files = files;
-
-    file_init_all();
 }
