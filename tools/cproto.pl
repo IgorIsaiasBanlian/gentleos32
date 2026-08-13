@@ -6,7 +6,7 @@
 # File: cproto.pl - Script for auto-generating header files with prototypes
 #
 
-my @SOURCE_DIRS = ("apps", "build", "kernel", "lib", "gui");
+my @SOURCE_DIRS = ("apps", "build", "kernel", "feat", "lib", "gui");
 
 sub uniq {
     my (@list) = @_;

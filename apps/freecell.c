@@ -5,7 +5,7 @@
  * File: freecell.c - FreeCell game
  */
 
-#include <gui.h>
+#include <feat.h>
 
 enum {
     CARD_WIDTH = 38,

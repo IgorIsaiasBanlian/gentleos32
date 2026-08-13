@@ -5,7 +5,7 @@
  * File: blackjack.c - Blackjack game
  */
 
-#include <gui.h>
+#include <feat.h>
 
 enum {
     SPACING = 10,

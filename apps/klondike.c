@@ -5,7 +5,7 @@
  * File: klondike.c - Klondike solitaire
  */
 
-#include <gui.h>
+#include <feat.h>
 
 enum {
     CARD_WIDTH = 38,

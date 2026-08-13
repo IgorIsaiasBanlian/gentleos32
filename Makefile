@@ -31,7 +31,7 @@ KERNEL_LDFLAGS  := -m elf_i386 -nostdlib -z nodefaultlib \
                    -z noexecstack --no-warn-rwx-segments \
                    --orphan-handling=warn
 
-KERNEL_SUBDIRS  := gui apps lib kernel
+KERNEL_SUBDIRS  := lib kernel gui feat apps
 KERNEL_C_SRCS   := $(foreach d,$(KERNEL_SUBDIRS),$(wildcard $(d)/*.c))
 KERNEL_S_SRCS   := $(foreach d,$(KERNEL_SUBDIRS),$(wildcard $(d)/*.s))
 KERNEL_SRCS     := $(KERNEL_C_SRCS) $(KERNEL_S_SRCS)

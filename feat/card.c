@@ -5,7 +5,7 @@
  * File: card.c - Generic code for implementing card games
  */
 
-#include <gui.h>
+#include <feat.h>
 
 global const char *card_rank_str[CARD_RANK_COUNT] = {
     "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"
