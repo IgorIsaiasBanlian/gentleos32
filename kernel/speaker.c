@@ -61,6 +61,7 @@ krn_speaker_start_note(void)
     const note_st *note = krn_speaker_state.note;
 
     if (note == NULL || note->duration == 0) {
+        /* Keep song, owner and elapsed time for inspection */
         krn_speaker_state.state = SPEAKER_STATE_STOPPED;
         krn_speaker_state.note = NULL;
         krn_speaker_set_freq(0);
@@ -174,9 +175,12 @@ krn_speaker_stop(void *owner)
         return;
     }
 
-    /* Keep song, owner and elapsed time for inspection */
     krn_speaker_state.state = SPEAKER_STATE_STOPPED;
+    krn_speaker_state.song = NULL;
+    krn_speaker_state.song_owner = NULL;
+    krn_speaker_state.song_elapsed_ticks = 0;
     krn_speaker_state.note = NULL;
+    krn_speaker_state.note_ticks_left = 0;
     krn_speaker_set_freq(0);
 
     krn_unlock(lock);
