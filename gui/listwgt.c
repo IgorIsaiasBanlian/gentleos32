@@ -82,6 +82,10 @@ gui_list_widget_draw_item(list_widget_st *list, int index)
     int cell = index - list->cur_page * list->page_size;
     rect_st rect;
 
+    if (!list->widget.window) {
+        return;
+    }
+
     if (index >= list->item_count || cell < 0 || cell >= list->page_size) {
         return;
     }
@@ -120,9 +124,15 @@ global void
 gui_list_widget_draw(widget_st *widget)
 {
     list_widget_st *list = widget->data;
-    surface_st *surface = widget->window->surface;
+    surface_st *surface;
     rect_st rect;
     int index;
+
+    if (!widget->window) {
+        return;
+    }
+
+    surface = widget->window->surface;
 
     gui_surface_draw_rect(surface, widget->rect, COLOR_WIDGET_BG);
     gui_surface_draw_border(surface, widget->rect, COLOR_BORDER);
