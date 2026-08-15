@@ -150,10 +150,9 @@ init_nav_buttons(void)
     gui_button_init(&prev_button);
     prev_button.rect.x = 1;
     prev_button.rect.y = window.rect.height - NAV_HEIGHT;
-    prev_button.rect.width = NAV_WIDTH - 1;
+    prev_button.rect.width = NAV_WIDTH;
     prev_button.rect.height = NAV_HEIGHT;
-    prev_button.window = &window;
-    prev_button.label = "<";
+    prev_button.bitmap = &sprite_caret_lm;
     prev_button.hide_border = 1;
     prev_button.on_pointer_up = on_prev_pointer_up;
     gui_window_add_widget(&window, &prev_button);
@@ -163,8 +162,7 @@ init_nav_buttons(void)
     next_button.rect.y = window.rect.height - NAV_HEIGHT;
     next_button.rect.width = NAV_WIDTH;
     next_button.rect.height = NAV_HEIGHT;
-    next_button.window = &window;
-    next_button.label = ">";
+    next_button.bitmap = &sprite_caret_rm;
     next_button.hide_border = 1;
     next_button.on_pointer_up = on_next_pointer_up;
     gui_window_add_widget(&window, &next_button);
