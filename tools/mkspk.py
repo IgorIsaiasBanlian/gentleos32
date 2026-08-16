@@ -15,10 +15,9 @@
 import argparse
 import xml.etree.ElementTree as ET
 
-from mkinitrd import SPK_NOTE_NAMES, split_ext
-
 DEBUG = 0
 MIN_REST_MS = 1
+NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 def die(msg):
     raise SystemExit(msg)
@@ -30,7 +29,11 @@ def ensure(cond, msg):
 
 
 def note_name(note_idx):
-    return f"{SPK_NOTE_NAMES[note_idx % 12]}{note_idx // 12}"
+    return f"{NOTE_NAMES[note_idx % 12]}{note_idx // 12}"
+
+
+def note_pitch(note_idx):
+    return max(19, min(0xffff, round(16.3515978313 * 2.0 ** (note_idx / 12.0))))
 
 
 def merge_rests(notes):
@@ -205,10 +208,8 @@ def write_spk(path, title, notes):
     with open(path, "w") as f:
         f.write(f"title: {title}\n")
         for note_idx, ms in notes:
-            if note_idx is None:
-                f.write(f"P, {ms}\n")
-            else:
-                f.write(f"{note_name(note_idx)}, {ms}\n")
+            pitch = 0 if note_idx is None else note_pitch(note_idx)
+            f.write(f"{pitch}, {ms}\n")
 
 
 def main():

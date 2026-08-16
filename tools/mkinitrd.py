@@ -39,9 +39,7 @@ FILE_TYPE_NAMES = {
 PALETTE_PATH = "misc/vga-256.gpl"
 PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
 
-SPK_NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-SPK_NOTE_REX   = re.compile(r"^\s*([A-G]#?)(\d)\s*,\s*(\d+)\s*$")
-SPK_PAUSE_REX  = re.compile(r"^\s*P\s*,\s*(\d+)\s*$")
+SPK_NOTE_REX   = re.compile(r"^\s*(\d+)\s*,\s*(\d+)\s*$")
 SPK_META_REX   = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
 
 INITRD_PATH  = "gentleos.rd"
@@ -148,15 +146,12 @@ def read_spk(path):
             continue
 
         if m := SPK_NOTE_REX.match(line):
-            note_idx = SPK_NOTE_NAMES.index(m[1]) + int(m[2]) * 12
-            duration = int(m[3])
-        elif m := SPK_PAUSE_REX.match(line):
-            note_idx = None
-            duration = int(m[1])
+            pitch = min(0xffff, int(m[1]))
+            duration = int(m[2])
         else:
             die("Error: %s:%d: invalid syntax" % (path, num))
 
-        segments.append((note_idx, max(1, min(0xffff, duration))))
+        segments.append((pitch, max(1, min(0xffff, duration))))
 
     title = meta.get("title", "")
     if not title:
@@ -175,10 +170,7 @@ def process_spk(path):
 
     data = b""
 
-    for note_idx, duration in segments:
-        pitch = 0
-        if note_idx is not None:
-            pitch = max(19, min(0xffff, round(16.3515978313 * 2.0 ** (note_idx / 12.0))))
+    for pitch, duration in segments:
         data += struct.pack("<HH", pitch, duration)
 
     data += struct.pack("<HH", 0, 0)
