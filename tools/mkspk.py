@@ -3,7 +3,7 @@
 # Copyright (c) 2026 luke8086
 # Distributed under the terms of GPL-2 License.
 #
-# File: mkspk.py - Convert between MusicXML and SPK formats
+# File: mkspk.py - Convert from MusicXML to SPK
 #
 
 # /// script
@@ -15,7 +15,7 @@
 import argparse
 import xml.etree.ElementTree as ET
 
-from mkinitrd import SPK_NOTE_NAMES, read_spk, split_ext
+from mkinitrd import SPK_NOTE_NAMES, split_ext
 
 DEBUG = 0
 MIN_REST_MS = 1
@@ -212,8 +212,8 @@ def write_spk(path, title, notes):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert between MusicXML and SPK formats")
-    parser.add_argument("-i", "--input", metavar="PATH", required=True, help="MusicXML or SPK file to read")
+    parser = argparse.ArgumentParser(description="Convert from MusicXML to SPK")
+    parser.add_argument("-i", "--input", metavar="PATH", required=True, help="MusicXML file to read")
     parser.add_argument("-o", "--output", metavar="PATH", required=True, help="SPK file to write")
     parser.add_argument("-t", "--title", metavar="TITLE", help="Song title")
     parser.add_argument("-d", "--debug", action="store_true", help="Dump input events")
@@ -222,24 +222,11 @@ def main():
     global DEBUG
     DEBUG = args.debug
 
-    (basename, input_ext) = split_ext(args.input)
-    (_, output_ext) = split_ext(args.output)
-
-    if input_ext == "spk":
-        (title, notes) = read_spk(args.input)
-    elif input_ext in ("musicxml", "mxml", "xml"):
-        (title, notes) = read_musicxml(args.input)
-    else:
-        die(f"Error: {args.input}: input file must be .spk, .musicxml")
-
-    title = args.title or title
+    (title, notes) = read_musicxml(args.input)
 
     ensure(notes, f"Error: no playable notes in {args.input}")
 
-    if output_ext == "spk":
-        write_spk(args.output, title, notes)
-    else:
-        die(f"Error: {args.output}: output file must be .spk")
+    write_spk(args.output, args.title or title, notes)
 
     total_ms = sum(ms for (_, ms) in notes)
 
