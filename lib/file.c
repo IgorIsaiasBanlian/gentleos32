@@ -29,14 +29,14 @@ file_get(size_t index)
 {
     system_info_st *si = &krn_system_info;
 
-    if (index < builtin_files_count) {
-        return &builtin_files[index];
-    }
-
-    index -= builtin_files_count;
-
     if (index < si->initrd_files_count) {
         return &si->initrd_files[index];
+    }
+
+    index -= si->initrd_files_count;
+
+    if (index < builtin_files_count) {
+        return &builtin_files[index];
     }
 
     return NULL;
@@ -92,17 +92,17 @@ file_init_all(void)
     system_info_st *si = &krn_system_info;
     size_t i;
 
-    krn_debug_printf("Built-in files:%s", builtin_files_count ? "\n" : " none\n");
-
-    for (i = 0; i < builtin_files_count; ++i) {
-        file_dump(&builtin_files[i]);
-        file_init(&builtin_files[i]);
-    }
-
     krn_debug_printf("Initrd files:%s", si->initrd_files_count ? "\n" : " none\n");
 
     for (i = 0; i < si->initrd_files_count; ++i) {
         file_dump(&si->initrd_files[i]);
         file_init(&si->initrd_files[i]);
+    }
+
+    krn_debug_printf("Built-in files:%s", builtin_files_count ? "\n" : " none\n");
+
+    for (i = 0; i < builtin_files_count; ++i) {
+        file_dump(&builtin_files[i]);
+        file_init(&builtin_files[i]);
     }
 }
