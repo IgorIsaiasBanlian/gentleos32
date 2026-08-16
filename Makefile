@@ -58,8 +58,12 @@ BOOT_DEPS       := $(BOOT_OBJS:.o=.d)
 BOOT_ELF        := $(BUILDDIR)/boot/boot.elf
 BOOT_BIN        := $(BUILDDIR)/boot.bin
 
+SONG_SRCS       := $(wildcard assets/songs/*.musicxml)
+SONG_OBJS       := $(patsubst %.musicxml,$(BUILDDIR)/%.spk,$(SONG_SRCS))
+
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS)) \
-           $(addprefix $(BUILDDIR)/,$(BOOT_SUBDIRS))
+           $(addprefix $(BUILDDIR)/,$(BOOT_SUBDIRS)) \
+           $(BUILDDIR)/assets/songs
 
 all: disks
 	./tools/chkcfg.pl
@@ -97,12 +101,15 @@ $(KERNEL_HIMEM_BIN): $(KERNEL_HIMEM_ELF)
 $(KERNEL_LOMEM_BIN): $(KERNEL_LOMEM_ELF)
 	$(OBJCOPY) -O binary $< $@
 
+$(BUILDDIR)/assets/songs/%.spk: assets/songs/%.musicxml
+	python3 tools/mkspk.py -i $< -o $@
+
 $(BUILDDIR)/data.o: $(BUILDDIR)/data.c
 	$(CC) $(KERNEL_CFLAGS) -MMD -MP -c $< -o $@
 
 ALWAYS_REBUILD:
 
-$(BUILDDIR)/data.c: ALWAYS_REBUILD | $(OBJDIRS)
+$(BUILDDIR)/data.c: $(SONG_OBJS) ALWAYS_REBUILD | $(OBJDIRS)
 	python3 ./tools/mkdata.py
 
 $(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
