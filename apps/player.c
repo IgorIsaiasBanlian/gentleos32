@@ -690,5 +690,6 @@ init_app(void)
 }
 
 global app_st app_player = {
+    .icon = &icon_player,
     .init = init_app,
 };

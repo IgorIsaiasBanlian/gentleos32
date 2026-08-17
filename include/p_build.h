@@ -7,6 +7,7 @@ extern bitmap_st icon_mahjong;
 extern bitmap_st icon_mines;
 extern bitmap_st icon_pairs;
 extern bitmap_st icon_patterns;
+extern bitmap_st icon_player;
 extern bitmap_st icon_tetris;
 extern bitmap_st sprite_mj_ba_2;
 extern bitmap_st sprite_mj_ba_3;
