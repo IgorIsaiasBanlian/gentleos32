@@ -18,6 +18,17 @@ import xml.etree.ElementTree as ET
 DEBUG = 0
 MIN_REST_MS = 1
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+NOTE_TYPES = {
+    "whole": 4.0,
+    "half": 2.0,
+    "quarter": 1.0,
+    "eighth": 0.5,
+    "16th": 0.25,
+    "32nd": 0.125,
+    "64th": 0.0625,
+    "128th": 0.03125,
+    "256th": 0.015625,
+}
 
 def die(msg):
     raise SystemExit(msg)
@@ -111,11 +122,37 @@ def mxml_append_note(notes, held):
         notes.append((note_idx, ms))
 
 
+def mxml_grace_ms(elem, tempo, where):
+    note_type = mxml_text(elem, "type") or "16th"
+
+    ensure(note_type in NOTE_TYPES, f"Error: {where}: invalid note type {note_type!r}")
+
+    quarters = NOTE_TYPES[note_type]
+
+    return max(1, round(quarters * 60000.0 / tempo))
+
+
+def mxml_append_graces(notes, graces, where):
+    total_ms = sum(ms for (_, ms) in graces)
+
+    ensure(notes, f"Error: {where}: grace notes with no preceding note or rest")
+
+    (prev_idx, prev_ms) = notes[-1]
+
+    ensure(prev_ms > total_ms,
+        f"Error: {where}: preceding note or rest is only {prev_ms} ms, "
+        f"{total_ms + 1} ms needed for {len(graces)} grace note(s)")
+
+    notes[-1] = (prev_idx, prev_ms - total_ms)
+    notes.extend(graces)
+
+
 def process_musicxml(root):
     notes = []
     divisions = None
     tempo = 120.0
     held = None
+    graces = []
 
     parts = root.findall("part")
     ensure(parts, "Error: score contains no parts")
@@ -143,10 +180,27 @@ def process_musicxml(root):
                 die(f"Error: {loc}: <{elem.tag}> is not supported")
 
             elif elem.tag == "note":
+                ensure(elem.find("chord") is None, f"Error: {loc}: chords are not supported")
+
                 if elem.find("grace") is not None:
+                    ensure(elem.find("rest") is None, f"Error: {loc}: grace rests are not supported")
+
+                    note_idx = mxml_note_idx(elem, loc)
+                    ms = mxml_grace_ms(elem, tempo, loc)
+
+                    if DEBUG:
+                        print(f"{loc:10s}  {note_name(note_idx):4s}  {ms} (grace)")
+
+                    graces.append((note_idx, ms))
                     continue
 
-                ensure(elem.find("chord") is None, f"Error: {loc}: chords are not supported")
+                if graces:
+                    if held is not None:
+                        mxml_append_note(notes, held)
+                        held = None
+
+                    mxml_append_graces(notes, graces, loc)
+                    graces = []
 
                 duration = mxml_text(elem, "duration")
                 ensure(duration is not None, f"Error: {loc}: note has no duration")
