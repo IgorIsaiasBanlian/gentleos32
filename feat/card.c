@@ -191,7 +191,7 @@ card_back_draw(card_game_st *game, int x, int y)
 {
     rect_st r = gui_rect_make(x, y, game->card_width, game->card_height);
 
-    gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_8,
+    gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_card,
         COLOR_CARD_BACK_BG_1, COLOR_CARD_BACK_BG_2);
     gui_surface_draw_border(game->surface, r, COLOR_BORDER);
 }
@@ -201,7 +201,7 @@ card_back_stub_draw(card_game_st *game, int x, int y, int height)
 {
     rect_st r = gui_rect_make(x, y, game->card_width, height);
 
-    gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_8,
+    gui_surface_draw_pattern_rel(game->surface, r, &bitmap_pattern_card,
         COLOR_CARD_BACK_BG_1, COLOR_CARD_BACK_BG_2);
     gui_surface_draw_h_seg(game->surface, x, y, game->card_width, COLOR_BORDER);
     gui_surface_draw_v_seg(game->surface, x, y, height, COLOR_BORDER);
