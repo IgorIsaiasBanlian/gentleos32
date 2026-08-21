@@ -9,7 +9,7 @@ It has a spin-off called
 [GentleOS/16](https://github.com/luke8086/gentleos),
 which targets even older, 16-bit PCs.
 
-<img src="doc/machimg/t1900c.webp" width="400">
+<img src="doc/t1900c.webp" width="400">
 
 ## Building
 
