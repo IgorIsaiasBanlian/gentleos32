@@ -16,16 +16,17 @@ GRUB_IMAGE      := gentleos32-grub.img
 WEB_IMAGE       := gentleos32-web.img
 DISK_FS_OFFSET  := 1048576
 
-CONFIG_H        := $(BASEDIR)/config.h
 KERNEL_HIMEM_LD := $(BASEDIR)/misc/kernel-himem.ld
 KERNEL_LOMEM_LD := $(BASEDIR)/misc/kernel-lomem.ld
 
 KERNEL_ASFLAGS  :=
 
+KERNEL_CPPFLAGS :=
 KERNEL_CFLAGS   := -std=c11 -m32 -march=i386 -O2 \
                    -ffreestanding -fno-stack-protector -fno-pic \
                    -Wall -Wextra -pedantic \
-                   -I$(BASEDIR)/include
+                   -I$(BASEDIR)/include \
+                   $(KERNEL_CPPFLAGS)
 
 KERNEL_LDFLAGS  := -m elf_i386 -nostdlib -z nodefaultlib \
                    -z noexecstack --no-warn-rwx-segments \
@@ -66,7 +67,6 @@ OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS)) \
            $(BUILDDIR)/assets/songs
 
 all: disks
-	./tools/chkcfg.pl
 
 disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	zcat $(BASEDIR)/misc/grub-disk.img.gz > $(GRUB_IMAGE)
@@ -85,9 +85,6 @@ clean:
 
 $(OBJDIRS):
 	@mkdir -p $@
-
-$(CONFIG_H):
-	[ -f $@ ] || cp $(BASEDIR)/config.sample.h $@
 
 $(KERNEL_HIMEM_ELF): $(KERNEL_OBJS) $(KERNEL_HIMEM_LD)
 	$(LD) $(KERNEL_LDFLAGS) -T$(KERNEL_HIMEM_LD) $(KERNEL_OBJS) -o $@
@@ -112,13 +109,13 @@ ALWAYS_REBUILD:
 $(BUILDDIR)/data.c: $(SONG_OBJS) ALWAYS_REBUILD | $(OBJDIRS)
 	python3 ./tools/mkdata.py
 
-$(BUILDDIR)/%.o: %.c | $(OBJDIRS) $(CONFIG_H)
+$(BUILDDIR)/%.o: %.c | $(OBJDIRS)
 	$(CC) $(KERNEL_CFLAGS) -MMD -MP -c $< -o $@
 
 $(BUILDDIR)/%.o: %.s | $(OBJDIRS)
 	$(NASM) $(KERNEL_ASFLAGS) -f elf32 $< -o $@
 
-$(BUILDDIR)/boot/boot_c.o: boot/boot_c.c | $(OBJDIRS) $(CONFIG_H)
+$(BUILDDIR)/boot/boot_c.o: boot/boot_c.c | $(OBJDIRS)
 	$(CC) $(BOOT_CFLAGS) -MMD -MP -c $< -o $@
 
 $(BOOT_ELF): $(BOOT_OBJS) $(BOOT_LD)

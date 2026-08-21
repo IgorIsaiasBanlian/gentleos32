@@ -11,8 +11,6 @@
 #include <stdarg.h> /* IWYU pragma: keep */
 #include <stdint.h>
 
-#include "../config.h"
-
 #define NULL ((void *)0)
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
