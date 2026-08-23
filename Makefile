@@ -62,6 +62,8 @@ BOOT_BIN        := $(BUILDDIR)/boot.bin
 SONG_SRCS       := $(wildcard assets/songs/*.musicxml)
 SONG_OBJS       := $(patsubst %.musicxml,$(BUILDDIR)/%.spk,$(SONG_SRCS))
 
+INITRD_OBJS     := $(BASEDIR)/vendor/misc/Dachshund.png
+
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS)) \
            $(addprefix $(BUILDDIR)/,$(BOOT_SUBDIRS)) \
            $(BUILDDIR)/assets/songs
@@ -77,7 +79,7 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(DISK_IMAGE)
 
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(WEB_IMAGE) no-menu uart-debug
-	./tools/mkinitrd.py vendor/wallpapers/*.png -o $(BUILDDIR)/gentleos-web.rd --disk-image $(WEB_IMAGE)
+	./tools/mkinitrd.py $(INITRD_OBJS) -o $(BUILDDIR)/gentleos-web.rd --disk-image $(WEB_IMAGE)
 	./tools/padfile.py $(WEB_IMAGE) 1048576
 
 clean:
