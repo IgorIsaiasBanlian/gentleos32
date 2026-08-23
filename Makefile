@@ -76,6 +76,7 @@ disks: $(KERNEL_HIMEM_BIN) $(KERNEL_LOMEM_BIN) $(BOOT_BIN)
 	mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(KERNEL_HIMEM_BIN) ::
 	mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.sample.cfg ::boot/grub/grub.cfg
 	[ -f $(BASEDIR)/misc/grub.cfg ] && mcopy -D o -i $(GRUB_IMAGE)@@$(DISK_FS_OFFSET) $(BASEDIR)/misc/grub.cfg ::boot/grub/grub.cfg || true
+	./tools/mkinitrd.py $(INITRD_OBJS) -o $(BUILDDIR)/gentleos-grub.rd --disk-image $(GRUB_IMAGE)
 
 	./tools/mkdisk.pl $(BOOT_BIN) $(KERNEL_LOMEM_BIN) $(DISK_IMAGE)
 
