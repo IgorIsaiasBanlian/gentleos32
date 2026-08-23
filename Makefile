@@ -62,7 +62,8 @@ BOOT_BIN        := $(BUILDDIR)/boot.bin
 SONG_SRCS       := $(wildcard assets/songs/*.musicxml)
 SONG_OBJS       := $(patsubst %.musicxml,$(BUILDDIR)/%.spk,$(SONG_SRCS))
 
-INITRD_OBJS     := $(BASEDIR)/vendor/misc/Dachshund.png
+INITRD_OBJS     := $(BASEDIR)/vendor/misc/Dachshund.png \
+                   $(BASEDIR)/vendor/misc/Mondrian.png
 
 OBJDIRS := $(addprefix $(BUILDDIR)/,$(KERNEL_SUBDIRS)) \
            $(addprefix $(BUILDDIR)/,$(BOOT_SUBDIRS)) \
