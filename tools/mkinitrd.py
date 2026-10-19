@@ -53,8 +53,7 @@ FILE_TYPE_NAMES = {
 PALETTE_PATH = "misc/vga-256.gpl"
 PALETTE_REX  = re.compile(r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+\$([0-9a-fA-F]+)\s*$")
 
-SPK_NOTE_REX   = re.compile(r"^\s*(\d+)\s*,\s*(\d+)\s*$")
-SPK_META_REX   = re.compile(r"^\s*(\w+)\s*:\s*(.+?)\s*$")
+SPK_NOTE_REX   = re.compile(r"^\s*(\d+)\s+(\d+)\s*$")
 
 SECTOR_LEN    = 512
 
@@ -149,18 +148,17 @@ def process_image(path):
 
 
 def read_spk(path):
-    meta = {}
     segments = []
 
     with open(path) as f:
         lines = f.readlines()
 
-    for num, line in enumerate(lines, 1):
-        if not line.strip():
-            continue
+    title = lines[0].strip() if lines else ""
+    if not title:
+        die("Error: no title in %s" % path)
 
-        if m := SPK_META_REX.match(line):
-            meta[m[1]] = m[2]
+    for num, line in enumerate(lines[1:], 2):
+        if not line.strip():
             continue
 
         if m := SPK_NOTE_REX.match(line):
@@ -170,10 +168,6 @@ def read_spk(path):
             die("Error: %s:%d: invalid syntax" % (path, num))
 
         segments.append((pitch, max(1, min(0xffff, duration))))
-
-    title = meta.get("title", "")
-    if not title:
-        die("Error: no title in %s" % path)
 
     if not segments:
         die("Error: no notes in %s" % path)
