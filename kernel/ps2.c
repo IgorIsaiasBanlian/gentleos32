@@ -191,7 +191,11 @@ krn_ps2_init(void)
     krn_intr_set_handler(0x2c, krn_ps2_handle_intr);
 
     krn_ps2_outb(PS2_CMD_ENABLE_KBD, PS2_PORT_CMD);
-    krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);
+
+    if (mouse_detected) {
+        krn_ps2_send_mouse(PS2_CMD_ENABLE_REPORTING);
+        krn_ps2_skip_data(100); /* ACK */
+    }
 
     krn_debug_printf("ok (mouse %s)\n", mouse_detected ? "detected" : "not detected");
 }
